@@ -49,7 +49,7 @@ exports.loginUser = function (req, res) {
                 // expires in 24 hours
                 //1440
                 var token = jwt.sign(payload, req.app.get('secretKey'), {
-                    expiresIn: 60
+                    expiresIn: 1440
                 });
 
                 // return the information including token as JSON

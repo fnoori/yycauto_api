@@ -1,17 +1,14 @@
+var jwt = require('jsonwebtoken');
+
 module.exports = {
     requireAuthentication: function (req, res, next) {
         var token = req.body.token || req.query.token || req.headers['x-access-token'];
-
-        console.log(req.body);
-        console.log(req.query.token);
-        console.log(req.headers['x-access-token']);
-        console.log(req)
 
         // decode token
         if (token) {
 
             // verifies secret and checks exp
-            jwt.verify(token, app.get('secretKey'), function (err, decoded) {
+            jwt.verify(token, req.app.get('secretKey'), function (err, decoded) {
                 if (err) {
                     return res.json({ success: false, message: 'Failed to authenticate token.' });
                 } else {
