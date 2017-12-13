@@ -43,12 +43,13 @@ exports.loginUser = function (req, res) {
                 // create a token with only our given payload
                 // we don't want to pass in the entire user since that has the password
                 const payload = {
-                    dealershipId: content.dealershipId
+                    dealershipId: content.username
                 };
 
                 // expires in 24 hours
+                //1440
                 var token = jwt.sign(payload, req.app.get('secretKey'), {
-                    expiresIn: 1440
+                    expiresIn: 60
                 });
 
                 // return the information including token as JSON
@@ -60,4 +61,8 @@ exports.loginUser = function (req, res) {
             });
         }
     });
+}
+
+exports.logoutUser = function(req, res) {
+    
 }
