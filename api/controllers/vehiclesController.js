@@ -2,18 +2,27 @@
 
 var mongoose = require('mongoose');
 var vehicles = mongoose.model('vehicles');
+var vehicleDetails = mongoose.model('vehicledetails');
 
-exports.listAllVehicles = function(req, res) {
-    vehicles.find({}, function(err, content) {
+exports.getVehicleDetails = function (req, res) {
+    vehicleDetails.find({}, { _id: false }, function (err, content) {
         if (err) {
             res.send(err);
-        } else {
-            res.json(content)
         }
+        res.json(content);
     });
 }
 
-exports.getAllVehiclesForDealer = function (req, res) {
+exports.getVehicles = function (req, res) {
+    vehicles.find({'AdTier': req.params.adTier}, function (err, content) {
+        if (err) {
+            res.send(err);
+        }
+        res.json(content)
+    }).skip(parseInt(req.params.lazyLoadSkipBy)).limit(10);
+}
+
+exports.getVehiclesForDealer = function (req, res) {
     var findQuery = {}
     var sortQuery = { 'sort': {} }
 
@@ -46,8 +55,8 @@ exports.getAllVehiclesForDealer = function (req, res) {
 
 
 
-exports.listAllVehicles_auth_test = function(req, res) {
-    vehicles.find({}, function(err, content) {
+exports.listAllVehicles_auth_test = function (req, res) {
+    vehicles.find({}, function (err, content) {
         if (err) {
             res.send(err);
         } else {

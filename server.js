@@ -6,6 +6,7 @@ var mongoose = require('mongoose');
 var bodyParser = require('body-parser');
 
 var vehicles = require('./api/models/vehiclesModel');
+var vehicleDetails = require('./api/models/vehicleDetailsModel');
 var users = require('./api/models/userModel');
 var config = require('./config');
 

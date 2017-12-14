@@ -43,7 +43,7 @@ exports.loginUser = function (req, res) {
                 // create a token with only our given payload
                 // we don't want to pass in the entire user since that has the password
                 const payload = {
-                    dealershipId: content.username
+                    username: content.username
                 };
 
                 // expires in 24 hours
