@@ -53,6 +53,15 @@ exports.getVehiclesForDealer = function (req, res) {
     }).skip(parseInt(req.params.perPage) * (parseInt(req.params.currentPage) - 1)).limit(parseInt(req.params.perPage));
 }
 
+exports.dealershipInventoryCount = function(req, res) {
+    dealershipCount.count({'DealershipInfo.Dealership': req.params.dealership}, function(err, count) {
+        if (err) {
+            res.send(err);
+        }
+        res.json(count);
+    });
+}
+
 
 
 exports.listAllVehicles_auth_test = function (req, res) {
