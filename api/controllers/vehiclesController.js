@@ -54,7 +54,7 @@ exports.getVehiclesForDealer = function (req, res) {
 }
 
 exports.dealershipInventoryCount = function(req, res) {
-    dealershipCount.count({'DealershipInfo.Dealership': req.params.dealership}, function(err, count) {
+    vehicles.count({'DealershipInfo.Dealership': req.params.dealership}, function(err, count) {
         if (err) {
             res.send(err);
         }
