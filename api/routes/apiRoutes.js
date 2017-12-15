@@ -32,9 +32,9 @@ module.exports = function(app) {
     app.route('/partnerLogin/:username/:password')
     .get(users.loginUser);
 
-    
+
     // Past this, the routes can be accessed if proper authorization
-    //app.use(userMiddleware.requireAuthentication);
+    app.use(userMiddleware.requireAuthentication);
 
     app.route('/getAllVehiclesForDealer/:sortBy/:sortDesc/:perPage/:currentPage/:searchQuery/:dealership')
     .get(vehicles.getVehiclesForDealer);
