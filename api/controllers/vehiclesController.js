@@ -4,6 +4,9 @@ var mongoose = require('mongoose');
 var vehicles = mongoose.model('vehicles');
 var vehicleDetails = mongoose.model('vehicledetails');
 
+/*
+    Simply returns all the potential characterstics of a vehicle
+*/
 exports.getVehicleDetails = function (req, res) {
     vehicleDetails.find({}, { _id: false }, function (err, content) {
         if (err) {
@@ -13,6 +16,9 @@ exports.getVehicleDetails = function (req, res) {
     });
 }
 
+/*
+    Accepts tier as argument and returns the vehicles for each tier
+*/
 exports.getVehicles = function (req, res) {
     vehicles.find({'AdTier': req.params.adTier}, function (err, content) {
         if (err) {
@@ -22,6 +28,14 @@ exports.getVehicles = function (req, res) {
     }).skip(parseInt(req.params.lazyLoadSkipBy)).limit(10);
 }
 
+/*
+    This is used only for when a dealership wants to manage their inventory
+    Handles:
+        searching
+        sorting
+        acs/desc
+        lazyload
+*/
 exports.getVehiclesForDealer = function (req, res) {
     var findQuery = {}
     var sortQuery = { 'sort': {} }
@@ -53,23 +67,16 @@ exports.getVehiclesForDealer = function (req, res) {
     }).skip(parseInt(req.params.perPage) * (parseInt(req.params.currentPage) - 1)).limit(parseInt(req.params.perPage));
 }
 
+/*
+    Returns the total number of cars for that dealership
+    There may be a better way to do this, maybe in one of the
+        other functions?
+*/
 exports.dealershipInventoryCount = function(req, res) {
     vehicles.count({'DealershipInfo.Dealership': req.params.dealership}, function(err, count) {
         if (err) {
             res.send(err);
         }
         res.json(count);
-    });
-}
-
-
-
-exports.listAllVehicles_auth_test = function (req, res) {
-    vehicles.find({}, function (err, content) {
-        if (err) {
-            res.send(err);
-        } else {
-            res.json(content)
-        }
     });
 }

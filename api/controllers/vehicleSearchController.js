@@ -3,6 +3,9 @@
 var mongoose = require('mongoose'),
     searchVehicles = mongoose.model('vehicles');
 
+/*
+    Basic search accepts any search string and tier is mandatory
+*/
 exports.basicSearch = function (req, res) {
     searchVehicles.find({ $text: { $search: req.params.searchQuery }, 'AdTier': req.params.adTier }, function (err, content) {
         if (err) {
@@ -12,6 +15,11 @@ exports.basicSearch = function (req, res) {
     }).skip(parseInt(req.params.lazyLoadSkipBy)).limit(10);
 }
 
+/*
+    Advanced search creates a query depending on what
+    information came through in the API call.
+    All the parameters are optional except the tier and lazyload
+*/
 exports.advancedSearch = function (req, res) {
     var query = {}
     var priceQuery = {}
@@ -42,22 +50,21 @@ exports.advancedSearch = function (req, res) {
         priceQuery = { $exists: true }
     }
 
-    searchVehicles.
-        find({
-            'BasicInfo.Make': query['make'],
-            'BasicInfo.Model': query['model'],
-            'BasicInfo.BodyType': query['type'],
-            'BasicInfo.ExteriorColor': query['extColor'],
-            'BasicInfo.InteriorColor': query['intColor'],
-            'BasicInfo.FuelType': query['fuelType'],
-            'MechanicalSpecs.Transmission': query['transmission'],
-            'BasicInfo.Price': priceQuery,
-            'AdTier': query['tier']
-        },
-        function (err, content) {
-            if (err) {
-                res.send(err);
-            }
-            res.json(content);
-        }).skip(parseInt(req.params.lazyLoadSkipBy)).limit(10);
+    searchVehicles.find({
+        'BasicInfo.Make': query['make'],
+        'BasicInfo.Model': query['model'],
+        'BasicInfo.BodyType': query['type'],
+        'BasicInfo.ExteriorColor': query['extColor'],
+        'BasicInfo.InteriorColor': query['intColor'],
+        'BasicInfo.FuelType': query['fuelType'],
+        'MechanicalSpecs.Transmission': query['transmission'],
+        'BasicInfo.Price': priceQuery,
+        'AdTier': query['tier']
+    },
+    function (err, content) {
+        if (err) {
+            res.send(err);
+        }
+        res.json(content);
+    }).skip(parseInt(req.params.lazyLoadSkipBy)).limit(10);
 }

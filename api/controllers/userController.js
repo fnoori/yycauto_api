@@ -4,10 +4,16 @@ var mongoose = require('mongoose'),
     users = mongoose.model('users');
 var jwt = require('jsonwebtoken');
 
-/* For password encryption */
+/* 
+    For password encryption 
+*/
 var bcrypt = require('bcrypt');
 var SALT_WORK_FACTOR = 10;
 
+/*
+    This will not work for yycauto just yet
+    This was created to test/learn how account creation is done
+*/
 exports.createAccount = function (req, res) {
     var userData = new users({
         username: req.params.username,
@@ -26,17 +32,20 @@ exports.createAccount = function (req, res) {
 exports.loginUser = function (req, res) {
     users.find({ 'username': req.params.username }, { _id: false }, function (getError, content) {
 
+        // If the user doesn't exist
         if (getError) {
             res.send(getError)
         }
 
+        // If the user does not exist
         if (content.length <= 0) {
-            res.json({ success: false, message: 'Authentication failed. User not found.' });
+            res.json({ success: false, message: 'Authentication failed, username is invalid' });
 
+        // User exists, compare the password passed
         } else if (content.length > 0) {
             bcrypt.compare(req.params.password, content[0].password, function (compareError, isMatch) {
                 if (!isMatch) {
-                    return res.json({ success: false, message: 'Authentication failed. Wrong password.' });
+                    return res.json({ success: false, message: 'Authentication failed, password is invalid' });
                 }
 
                 // if user is found and password is right
@@ -62,8 +71,4 @@ exports.loginUser = function (req, res) {
             });
         }
     });
-}
-
-exports.logoutUser = function(req, res) {
-    
 }

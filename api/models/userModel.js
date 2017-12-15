@@ -13,6 +13,7 @@ var UserSchema = new Schema({
     dealershipId: String
 });
 
+// Encrypts the incoming password
 UserSchema.pre('save', function (next) {
     var user = this;
     if (!user.isModified('password')) {

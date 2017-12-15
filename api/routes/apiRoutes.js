@@ -2,13 +2,13 @@
 
 module.exports = function(app) {
     var users = require('../controllers/userController');
-
     var vehicles = require('../controllers/vehiclesController');
     var vehicleSearch = require('../controllers/vehicleSearchController');
-
     var userMiddleware = require('../middlewares/userMiddlewares');
-    
 
+    /*
+        There routes are generally called when the page loads
+    */
     app.route('/getVehiclesDetails')
     .get(vehicles.getVehicleDetails);
 
@@ -41,9 +41,4 @@ module.exports = function(app) {
 
     app.route('/countDealershipVehicles/:dealership')
     .get(vehicles.dealershipInventoryCount);
-
-
-
-    app.route('/testAuth')
-    .get(vehicles.listAllVehicles_auth_test);
 }

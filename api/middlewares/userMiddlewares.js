@@ -2,11 +2,12 @@ var jwt = require('jsonwebtoken');
 
 module.exports = {
     requireAuthentication: function (req, res, next) {
+
+        // JWT is retrieved from the url
         var token = req.body.token || req.query.token || req.headers['x-access-token'];
 
         // decode token
         if (token) {
-
             // verifies secret and checks exp
             jwt.verify(token, req.app.get('secretKey'), function (err, decoded) {
                 if (err) {
@@ -17,9 +18,7 @@ module.exports = {
                     next();
                 }
             });
-
         } else {
-
             // if there is no token
             // return an error
             return res.status(403).send({
