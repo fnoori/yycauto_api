@@ -43,7 +43,7 @@ exports.loginUser = function (req, res) {
                 // create a token with only our given payload
                 // we don't want to pass in the entire user since that has the password
                 const payload = {
-                    username: content.username
+                    dealershipId: content[0].dealershipId
                 };
 
                 // expires in 24 hours
@@ -56,6 +56,7 @@ exports.loginUser = function (req, res) {
                 res.json({
                     success: true,
                     message: 'Enjoy your token!',
+                    dealershipId: content[0].dealershipId,
                     token: token
                 });
             });
