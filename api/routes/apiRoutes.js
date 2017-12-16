@@ -26,7 +26,7 @@ module.exports = function(app) {
 
 
     // Login and account creation
-    app.route('/createAccount/:username/:password/:dealershipId/:secretKey')
+    app.route('/createAccount/:username/:password/:dealership/:secretKey')
     .post(users.createAccount);
 
     app.route('/partnerLogin/:username/:password')

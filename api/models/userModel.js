@@ -10,7 +10,7 @@ var SALT_WORK_FACTOR = 10;
 var UserSchema = new Schema({
     username: String,
     password: String,
-    dealershipId: String
+    dealership: String
 });
 
 // Encrypts the incoming password

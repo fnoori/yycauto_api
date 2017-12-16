@@ -18,7 +18,7 @@ exports.createAccount = function (req, res) {
     var userData = new users({
         username: req.params.username,
         password: req.params.password,
-        dealershipId: req.params.dealershipId
+        dealership: req.params.dealership
     })
 
     userData.save(function (err, data) {
@@ -52,7 +52,7 @@ exports.loginUser = function (req, res) {
                 // create a token with only our given payload
                 // we don't want to pass in the entire user since that has the password
                 const payload = {
-                    dealershipId: content[0].dealershipId
+                    dealershipId: content[0].dealership
                 };
 
                 // expires in 24 hours
@@ -65,7 +65,7 @@ exports.loginUser = function (req, res) {
                 res.json({
                     success: true,
                     message: 'Enjoy your token!',
-                    dealershipId: content[0].dealershipId,
+                    dealership: content[0].dealership,
                     token: token
                 });
             });
