@@ -59,7 +59,7 @@ exports.getVehiclesForDealer = function (req, res) {
     }
     findQuery['DealershipInfo.Dealership'] = dealership
 
-    vehicles.find(findQuery, { _id: false }, sortQuery, function (err, content) {
+    vehicles.find(findQuery, {}, sortQuery, function (err, content) {
         if (err) {
             res.send(err);
         }
