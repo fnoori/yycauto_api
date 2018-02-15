@@ -3,7 +3,6 @@
 var mongoose = require('mongoose');
 var vehicles = mongoose.model('vehicles');
 var vehicleDetails = mongoose.model('vehicledetails');
-
 /*
     Simply returns all the potential characterstics of a vehicle
 */
