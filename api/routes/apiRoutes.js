@@ -7,9 +7,7 @@ module.exports = function (app) {
     var userMiddleware = require('../middlewares/userMiddlewares');
 
     var multer = require('multer');
-    const upload = multer({
-        dest: './uploads'
-    }).single('avatar');
+    var upload = null;
 
     /*
         There routes are generally called when the page loads
@@ -37,16 +35,24 @@ module.exports = function (app) {
     app.route('/partnerLogin/:username/:password')
         .get(users.loginUser);
 
-    app.post('/profile', function (req, res) {
-        upload(req, res, function(err) {
+    app.post('/:dealershipName/:isVehiclePictures/:isLogo/pictures', function (req, res) {
+        if (req.params.isVehiclePictures != -1) {
+            upload = multer({
+                dest: './uploads/' + req.params.dealershipName + '/' + req.params.isVehiclePictures
+            }).array('pictures', 12);
+        } else if (req.params.isLogo != -1) {
+            upload = multer({
+                dest: './uploads/' + req.params.dealershipName + '/logo'
+            }).array('pictures', 12);
+        }
+
+        upload(req, res, function (err) {
             if (err) {
                 res.send(err);
             }
-
             res.end('File is uploaded')
         })
     });
-
 
     // Past this, the routes can be accessed if proper authorization
     app.use(userMiddleware.requireAuthentication);
