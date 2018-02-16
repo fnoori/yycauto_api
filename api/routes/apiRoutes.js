@@ -37,10 +37,7 @@ module.exports = function (app) {
     app.route('/partnerLogin/:username/:password')
         .get(users.loginUser);
 
-    app.post('/:something/profile', function (req, res) {
-
-        console.log('here\'s something: ' + req.params.something);
-
+    app.post('/profile', function (req, res) {
         upload(req, res, function(err) {
             if (err) {
                 res.send(err);
