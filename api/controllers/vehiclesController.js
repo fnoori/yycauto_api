@@ -66,6 +66,10 @@ exports.getVehiclesForDealer = function (req, res) {
     }).skip(parseInt(req.params.perPage) * (parseInt(req.params.currentPage) - 1)).limit(parseInt(req.params.perPage));
 }
 
+exports.insertVehicle = function(req, res) {
+    
+}
+
 /*
     Returns the total number of cars for that dealership
     There may be a better way to do this, maybe in one of the

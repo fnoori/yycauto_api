@@ -60,6 +60,10 @@ module.exports = function (app) {
     app.route('/getAllVehiclesForDealer/:sortBy/:sortDesc/:perPage/:currentPage/:searchQuery/:dealership')
         .get(vehicles.getVehiclesForDealer);
 
+    app.route('/insertVehicle/:dealershipName/:make/:model/:type/:extColor/:intColor/' +
+        ':fuelType/:transmission/:minPrice/:maxPrice/:tier')
+        .post(vehicles.insertVehicle);
+
     app.route('/countDealershipVehicles/:dealership')
         .get(vehicles.dealershipInventoryCount);
 }
