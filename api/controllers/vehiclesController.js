@@ -67,7 +67,17 @@ exports.getVehiclesForDealer = function (req, res) {
 }
 
 exports.insertVehicle = function(req, res) {
-    
+
+    console.log(req.params);
+
+    var newVehicle = new vehicles(req.params);
+
+    newVehicle.save(function(err, vehicle) {
+        if (err) {
+            res.send(err);
+        }
+        res.json(vehicle);
+    });
 }
 
 /*

@@ -55,13 +55,17 @@ module.exports = function (app) {
     });
 
     // Past this, the routes can be accessed if proper authorization
-    app.use(userMiddleware.requireAuthentication);
+    //app.use(userMiddleware.requireAuthentication);
 
     app.route('/getAllVehiclesForDealer/:sortBy/:sortDesc/:perPage/:currentPage/:searchQuery/:dealership')
         .get(vehicles.getVehiclesForDealer);
 
-    app.route('/insertVehicle/:dealershipName/:make/:model/:type/:extColor/:intColor/' +
-        ':fuelType/:transmission/:minPrice/:maxPrice/:tier')
+    /*
+    app.route('/insertVehicle/:DealershipName/:Make/:Model/:BodyType/:ExteriorColor/:InteriorColor/' +
+        ':FuelType/:Transmission/:Price/:AdTier')
+        .post(vehicles.insertVehicle);
+    */
+   app.route('/insertVehicle/:DealershipInfo.Dealership/:BasicInfo.Make/:BasicInfo.Model/:BasicInfo.Trim')
         .post(vehicles.insertVehicle);
 
     app.route('/countDealershipVehicles/:dealership')

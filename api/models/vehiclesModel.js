@@ -4,89 +4,111 @@ var mongoose = require('mongoose');
 var Schema = mongoose.Schema;
 
 var VehiclesSchema = new Schema({});
-var VehicleInsertSchema = new Schema({
+var InsertVehiclesSchema = new Schema({
     
     // basic info
-    make: {
-        type: String,
-        required: 'Vehicle make is required'
+    BasicInfo: {
+        Make: {
+            type: String,
+            required: 'Vehicle make is required'
+        },
+        Model: {
+            type: String,
+            required: 'Vehicle model is required'
+        },
+        Trim: {
+            type: String
+        },
     },
-    model: {
-        type: String,
-        required: 'Vehicle model is required'
-    },
-    trim: {
+
+    DealershipInfo: {
+        Dealership: {
+            type: String,
+            required: 'Dealership name is required'
+        }
+    }
+
+
+    /*
+    Year: {
         type: String
     },
-    year: {
+    ExteriorColor: {
         type: String
     },
-    extColour: {
+    InteriorColor: {
         type: String
     },
-    intColour: {
+    NumberOfDoors: {
         type: String
     },
-    numDoors: {
+    NumberOfSeats: {
         type: String
     },
-    noSeats: {
+    Price: {
         type: String
     },
-    price: {
+    Kilometres: {
         type: String
     },
-    kilometres: {
-        type: String
-    },
-    fuelType: {
+    FuelType: {
         type: String,
         required: 'Fuel type is required'
     },
-    bodyType: {
+    BodyType: {
         type: String,   
         required: 'Body type is required'
     },
 
+    // Dealership
+    DealershipName: {
+        type: String,
+        required: 'Dealership name is required'
+    },
+
+    AdTier: {
+        type: String,
+        required: 'Ad Tier is required'
+    },
+
     // mechanical
-    carProof: {
+    CarProof: {
         type: String
     },
-    trans: {
+    Transmission: {
         type: String,
         required: 'Transmission is required'
     },
-    engineSize: {
+    EngineSize: {
         type: String
     },
-    recommendedFuel: {
+    RecommendedFuel: {
         type: String
     },
-    cylinders: {
+    Cylinders: {
         type: String
     },
-    horsePower: {
+    Horsepower: {
         type: String
     },
-    torque: {
-        type: String
-    },
-    driveTrain: {
+    Torque: {
         type: String
     },
 
     // economy
-    cityEco: {
+    CityFuelEconomy: {
         type: String
     },
 
-    highwayEco: {
+    HighwayFuelEconomy: {
         type: String
     },
 
-    combinedEco: {
+    CombinedFuelEconomy: {
         type: String
-    },
+    }
+
+    */
 
     /*
     :dealershipName/:make/:model/:type/:extColor/:intColor/' +
@@ -95,4 +117,4 @@ var VehicleInsertSchema = new Schema({
 
 });
 
-module.exports = mongoose.model('vehicles', VehiclesSchema);
+module.exports = mongoose.model('vehicles', InsertVehiclesSchema);
