@@ -69,18 +69,46 @@ exports.getVehiclesForDealer = function (req, res) {
 exports.insertVehicle = function(req, res) {
     console.log(req.params);
 
-    //var newVehicle = new Vehicles(req.params);
+    // prep extra features
+    var extraFeaturesParsed = req.params.ExtraFeatures.split('|');
 
     var newVehicle = new Vehicles({
         BasicInfo: {
             Make: req.params.Make,
             Model: req.params.Model,
-            Trim: req.params.Trim
+            Trim: req.params.Trim,
+            ExteriorColor: req.params.ExteriorColor,
+            InteriorColor: req.params.InteriorColor,
+            Year: req.params.Year,
+            Price: req.params.Price,
+            Kilometres: req.params.Kilometres,
+            FuelType: req.params.FuelType,
+            BodyType: req.params.BodyType,
+            NumberOfDoors: req.params.NumberOfDoors,
+            NumberOfSeats: req.params.NumberOfSeats
         },
 
-        DealershipInfo: {
-            Dealership: req.params.Dealership
-        }
+        AdTier: req.params.AdTier,
+        DescriptionOfVehicle: req.params.DescriptionOfVehicle,
+
+        MechanicalSpecs: {
+            CarProof: req.params.CarProof,
+            'Transmission': req.params.Transmission,
+            'Engine Size (L)': req.params.EngineSize,
+            'Cylinders': req.params.Cylinders,
+            'Horsepower @ RPM': req.params.Horsepower,
+            'Torque (lb - ft) @ RPM': req.params.Torque,
+            'Recommended Fuel': req.params.RecommendedFuel
+        },
+
+        FuelEconomy: {
+            'City (L/100Km)': req.params.CityEco,
+            'Highway (L/100Km)': req.params.HighwayEco,
+            'Combined (L/100Km)': req.params.CombinedEco 
+        },
+
+        ExtraFeatures: extraFeaturesParsed,
+        Dealership: req.params.Dealership
     });
 
     newVehicle.save(function(err, vehicle) {

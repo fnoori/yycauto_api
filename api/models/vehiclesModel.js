@@ -23,6 +23,9 @@ var InsertVehiclesSchema = new Schema({
             type: String,
             required: true
         },
+        InteriorColor: {
+            type: String
+        },
         Year: {
             type: String,
             required: true
@@ -31,7 +34,7 @@ var InsertVehiclesSchema = new Schema({
             type: String,
             required: true
         },
-        Kilometers: {
+        Kilometres: {
             type: String,
             required: true
         },

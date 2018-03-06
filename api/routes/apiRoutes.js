@@ -60,13 +60,8 @@ module.exports = function (app) {
     app.route('/getAllVehiclesForDealer/:sortBy/:sortDesc/:perPage/:currentPage/:searchQuery/:dealership')
         .get(vehicles.getVehiclesForDealer);
 
-    /*
-    app.route('/insertVehicle/:DealershipName/:Make/:Model/:BodyType/:ExteriorColor/:InteriorColor/' +
-        ':FuelType/:Transmission/:Price/:AdTier')
-        .post(vehicles.insertVehicle);
-    */
-   app.route('/insertVehicle/:Dealership/:Make/:Model/:Trim/:ExteriorColor/:Year' +
-            '/:Price/:Kilometers/:FuelType/:BodyType/:NumberOfDoors/:NumberOfSeats' +
+   app.route('/insertVehicle/:Dealership/:Make/:Model/:Trim/:ExteriorColor/:InteriorColor/:Year' +
+            '/:Price/:Kilometres/:FuelType/:BodyType/:NumberOfDoors/:NumberOfSeats' +
             '/:AdTier/:DescriptionOfVehicle/:CarProof/:Transmission/:EngineSize' +
             '/:Cylinders/:Horsepower/:Torque/:RecommendedFuel/:CityEco/:HighwayEco' +
             '/:CombinedEco/:ExtraFeatures')
