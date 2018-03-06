@@ -54,6 +54,11 @@ var InsertVehiclesSchema = new Schema({
         }
     },
 
+    VehiclePictures: {
+        type: Array,
+        required: true
+    },
+
     AdTier: {
         type: String
     },
