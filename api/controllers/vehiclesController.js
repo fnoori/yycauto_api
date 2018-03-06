@@ -1,7 +1,7 @@
 'use strict';
 
 var mongoose = require('mongoose');
-var vehicles = mongoose.model('vehicles');
+var Vehicles = mongoose.model('vehicles');
 var vehicleDetails = mongoose.model('vehicledetails');
 /*
     Simply returns all the potential characterstics of a vehicle
@@ -19,7 +19,7 @@ exports.getVehicleDetails = function (req, res) {
     Accepts tier as argument and returns the vehicles for each tier
 */
 exports.getVehicles = function (req, res) {
-    vehicles.find({'AdTier': req.params.adTier}, function (err, content) {
+    Vehicles.find({'AdTier': req.params.adTier}, function (err, content) {
         if (err) {
             res.send(err);
         }
@@ -58,7 +58,7 @@ exports.getVehiclesForDealer = function (req, res) {
     }
     findQuery['DealershipInfo.Dealership'] = dealership
 
-    vehicles.find(findQuery, {}, sortQuery, function (err, content) {
+    Vehicles.find(findQuery, {}, sortQuery, function (err, content) {
         if (err) {
             res.send(err);
         }
@@ -67,10 +67,21 @@ exports.getVehiclesForDealer = function (req, res) {
 }
 
 exports.insertVehicle = function(req, res) {
-
     console.log(req.params);
 
-    var newVehicle = new vehicles(req.params);
+    //var newVehicle = new Vehicles(req.params);
+
+    var newVehicle = new Vehicles({
+        BasicInfo: {
+            Make: req.params.Make,
+            Model: req.params.Model,
+            Trim: req.params.Trim
+        },
+
+        DealershipInfo: {
+            Dealership: req.params.Dealership
+        }
+    });
 
     newVehicle.save(function(err, vehicle) {
         if (err) {
@@ -86,7 +97,7 @@ exports.insertVehicle = function(req, res) {
         other functions?
 */
 exports.dealershipInventoryCount = function(req, res) {
-    vehicles.count({'DealershipInfo.Dealership': req.params.dealership}, function(err, count) {
+    Vehicles.count({'DealershipInfo.Dealership': req.params.dealership}, function(err, count) {
         if (err) {
             res.send(err);
         }

@@ -65,7 +65,11 @@ module.exports = function (app) {
         ':FuelType/:Transmission/:Price/:AdTier')
         .post(vehicles.insertVehicle);
     */
-   app.route('/insertVehicle/:DealershipInfo.Dealership/:BasicInfo.Make/:BasicInfo.Model/:BasicInfo.Trim')
+   app.route('/insertVehicle/:Dealership/:Make/:Model/:Trim/:ExteriorColor/:Year' +
+            '/:Price/:Kilometers/:FuelType/:BodyType/:NumberOfDoors/:NumberOfSeats' +
+            '/:AdTier/:DescriptionOfVehicle/:CarProof/:Transmission/:EngineSize' +
+            '/:Cylinders/:Horsepower/:Torque/:RecommendedFuel/:CityEco/:HighwayEco' +
+            '/:CombinedEco/:ExtraFeatures')
         .post(vehicles.insertVehicle);
 
     app.route('/countDealershipVehicles/:dealership')

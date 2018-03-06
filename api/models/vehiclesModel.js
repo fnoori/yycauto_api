@@ -10,111 +10,108 @@ var InsertVehiclesSchema = new Schema({
     BasicInfo: {
         Make: {
             type: String,
-            required: 'Vehicle make is required'
+            required: true
         },
         Model: {
             type: String,
-            required: 'Vehicle model is required'
+            required: true
         },
         Trim: {
             type: String
         },
-    },
-
-    DealershipInfo: {
-        Dealership: {
+        ExteriorColor: {
             type: String,
-            required: 'Dealership name is required'
+            required: true
+        },
+        Year: {
+            type: String,
+            required: true
+        },
+        Price: {
+            type: String,
+            required: true
+        },
+        Kilometers: {
+            type: String,
+            required: true
+        },
+        FuelType: {
+            type: String,
+            required: true
+        },
+        BodyType: {
+            type: String,
+            required: true
+        },
+        NumberOfDoors: {
+            type: String
+        },
+        NumberOfSeats: {
+            type: String
         }
-    }
-
-
-    /*
-    Year: {
-        type: String
-    },
-    ExteriorColor: {
-        type: String
-    },
-    InteriorColor: {
-        type: String
-    },
-    NumberOfDoors: {
-        type: String
-    },
-    NumberOfSeats: {
-        type: String
-    },
-    Price: {
-        type: String
-    },
-    Kilometres: {
-        type: String
-    },
-    FuelType: {
-        type: String,
-        required: 'Fuel type is required'
-    },
-    BodyType: {
-        type: String,   
-        required: 'Body type is required'
-    },
-
-    // Dealership
-    DealershipName: {
-        type: String,
-        required: 'Dealership name is required'
     },
 
     AdTier: {
+        type: String
+    },
+
+    DescriptionOfVehicle: {
         type: String,
-        required: 'Ad Tier is required'
+        required: true
     },
 
-    // mechanical
-    CarProof: {
-        type: String
+    MechanicalSpecs: {
+        CarProof: {
+            type: String
+        },
+        'Transmission': {
+            type: String,
+            required: true
+        },
+        'Engine Size (L)': {
+            type: String,
+            required: true
+        },
+        'Cylinders': {
+            type: String,
+            required: true
+        },
+        'Horsepower @ RPM': {
+            type: String,
+            required: true
+        },
+        'Torque (lb - ft) @ RPM': {
+            type: String,
+            required: true
+        },
+        'Recommended Fuel': {
+            type: String,
+            required: true
+        }
     },
-    Transmission: {
-        type: String,
-        required: 'Transmission is required'
+
+    FuelEconomy: {
+        'City (L/100Km)': {
+            type: String,
+            required: true
+        },
+        'Highway (L/100Km)': {
+            type: String,
+            required: true
+        },
+        'Combined (L/100Km)': {
+            type: String,
+            required: true
+        }
     },
-    EngineSize: {
-        type: String
-    },
-    RecommendedFuel: {
-        type: String
-    },
-    Cylinders: {
-        type: String
-    },
-    Horsepower: {
-        type: String
-    },
-    Torque: {
+
+    Dealership: {
         type: String
     },
 
-    // economy
-    CityFuelEconomy: {
-        type: String
-    },
-
-    HighwayFuelEconomy: {
-        type: String
-    },
-
-    CombinedFuelEconomy: {
-        type: String
+    ExtraFeatures: {
+        type: Array
     }
-
-    */
-
-    /*
-    :dealershipName/:make/:model/:type/:extColor/:intColor/' +
-        ':fuelType/:transmission/:minPrice/:maxPrice/:tier
-    */
-
 });
 
 module.exports = mongoose.model('vehicles', InsertVehiclesSchema);
