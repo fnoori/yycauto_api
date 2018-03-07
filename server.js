@@ -11,6 +11,7 @@ var bodyParser = require('body-parser');
 var vehicles = require('./api/models/vehiclesModel');
 var vehicleDetails = require('./api/models/vehicleDetailsModel');
 var users = require('./api/models/userModel');
+var dealerships = require('./api/models/dealershipModel');
 var config = require('./config');
 
 

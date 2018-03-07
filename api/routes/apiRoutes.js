@@ -4,6 +4,7 @@ module.exports = function (app) {
     var users = require('../controllers/userController');
     var vehicles = require('../controllers/vehiclesController');
     var vehicleSearch = require('../controllers/vehicleSearchController');
+    var dealerships = require('../controllers/dealershipController');
     var userMiddleware = require('../middlewares/userMiddlewares');
 
     var multer = require('multer');
@@ -35,7 +36,7 @@ module.exports = function (app) {
     app.route('/partnerLogin/:username/:password')
         .get(users.loginUser);
 
-    app.post('/:dealershipName/:isVehiclePictures/:isLogo/pictures', function (req, res) {
+    app.post('/uploadPictures/:dealershipName/:isVehiclePictures/:isLogo/pictures', function (req, res) {
         if (req.params.isVehiclePictures != -1) {
             upload = multer({
                 dest: './uploads/' + req.params.dealershipName + '/' + req.params.isVehiclePictures
@@ -53,6 +54,9 @@ module.exports = function (app) {
             res.end('File is uploaded')
         })
     });
+
+    app.route('/getDealershipByID/:dealershipID')
+        .get(dealerships.getDealershipDetails);
 
     // Past this, the routes can be accessed if proper authorization
     //app.use(userMiddleware.requireAuthentication);
