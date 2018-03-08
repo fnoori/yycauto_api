@@ -61,6 +61,9 @@ exports.loginUser = function (req, res) {
                     expiresIn: 1440
                 });
 
+
+                //console.log(content);
+
                 // return the information including token as JSON
                 res.json({
                     success: true,

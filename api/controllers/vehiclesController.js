@@ -3,7 +3,7 @@
 var mongoose = require('mongoose');
 var Vehicles = mongoose.model('vehicles');
 var vehicleDetails = mongoose.model('vehicledetails');
-var dealership = mongoose.model('dealerships');
+var Dealerships = mongoose.model('dealerships');
 
 /*
     Simply returns all the potential characterstics of a vehicle
@@ -21,12 +21,17 @@ exports.getVehicleDetails = function (req, res) {
     Accepts tier as argument and returns the vehicles for each tier
 */
 exports.getVehicles = function (req, res) {
-    Vehicles.find({'AdTier': req.params.adTier}, function (err, content) {
+    Vehicles.find({'AdTier': req.params.adTier})
+    .skip(parseInt(req.params.lazyLoadSkipBy)).limit(10)
+    .populate('Dealership')
+    .exec(function (err, content) {
+
         if (err) {
-            res.send(err);
+            return res.send(err);
         }
-        res.json(content)
-    }).skip(parseInt(req.params.lazyLoadSkipBy)).limit(10);
+        res.json(content);
+
+    });
 }
 
 /*
@@ -38,40 +43,39 @@ exports.getVehicles = function (req, res) {
         lazyload
 */
 exports.getVehiclesForDealer = function (req, res) {
-    var findQuery = {}
-    var sortQuery = { 'sort': {} }
+    var findQuery = {};
+    var sortQuery = { 'sort': {} };
 
-    var searchQuery = req.params.searchQuery
-    var sortBy = req.params.sortBy
-    var sortDesc = req.params.sortDesc
-    var dealership = req.params.dealership
+    var searchQuery = req.params.searchQuery;
+    var sortBy = req.params.sortBy;
+    var sortDesc = req.params.sortDesc;
 
     /* Determine if there is a need to sort */
     if (sortBy != '-2' && sortDesc != -2) {
-        var sortCriteria = {}
-        sortCriteria[sortBy] = sortDesc
-        sortQuery['sort'] = sortCriteria
+        var sortCriteria = {};
+        sortCriteria[sortBy] = sortDesc;
+        sortQuery['sort'] = sortCriteria;
     }
 
     /* Determine if there is search query */
     if (searchQuery != -2) {
-        findQuery['$text'] = {}
-        findQuery['$text']['$search'] = searchQuery
+        findQuery['$text'] = {};
+        findQuery['$text']['$search'] = searchQuery;
     }
-    findQuery['DealershipInfo.Dealership'] = dealership
+    findQuery.Dealership = req.params.dealershipID
 
-    Vehicles.find(findQuery, {}, sortQuery, function (err, content) {
+    Vehicles.find(findQuery, {}, sortQuery)
+    .skip(parseInt(req.params.perPage) * (parseInt(req.params.currentPage) - 1)).limit(parseInt(req.params.perPage))
+    .exec(function (err, content) {
         if (err) {
             return res.send(err);
         }
-        
         res.json(content);
-    }).skip(parseInt(req.params.perPage) * (parseInt(req.params.currentPage) - 1)).limit(parseInt(req.params.perPage));
+
+    })
 }
 
 exports.insertVehicle = function(req, res) {
-    console.log(req.params);
-
     // prep extra features
     var extraFeaturesParsed = req.params.ExtraFeatures.split('|');
 
@@ -128,9 +132,11 @@ exports.insertVehicle = function(req, res) {
         other functions?
 */
 exports.dealershipInventoryCount = function(req, res) {
-    Vehicles.count({'DealershipInfo.Dealership': req.params.dealership}, function(err, count) {
+
+    Vehicles.count({'Dealership': req.params.dealershipID})
+    .exec(function(err, count) {
         if (err) {
-            res.send(err);
+            return res.send(err);
         }
         res.json(count);
     });

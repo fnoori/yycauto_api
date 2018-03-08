@@ -4,6 +4,8 @@ var mongoose = require('mongoose');
 var Schema = mongoose.Schema;
 
 var DealershipSchema = new Schema({
+    _id: Schema.Types.ObjectId,
+    
     Dealership: {
         type: String
     },

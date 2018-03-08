@@ -61,7 +61,7 @@ module.exports = function (app) {
     // Past this, the routes can be accessed if proper authorization
     //app.use(userMiddleware.requireAuthentication);
 
-    app.route('/getAllVehiclesForDealer/:sortBy/:sortDesc/:perPage/:currentPage/:searchQuery/:dealership')
+    app.route('/getAllVehiclesForDealer/:sortBy/:sortDesc/:perPage/:currentPage/:searchQuery/:dealershipID')
         .get(vehicles.getVehiclesForDealer);
 
    app.route('/insertVehicle/:Dealership/:Make/:Model/:Trim/:ExteriorColor/:InteriorColor/:Year' +
@@ -71,6 +71,6 @@ module.exports = function (app) {
             '/:CombinedEco/:ExtraFeatures')
         .post(vehicles.insertVehicle);
 
-    app.route('/countDealershipVehicles/:dealership')
+    app.route('/countDealershipVehicles/:dealershipID')
         .get(vehicles.dealershipInventoryCount);
 }

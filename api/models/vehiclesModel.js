@@ -3,8 +3,7 @@
 var mongoose = require('mongoose');
 var Schema = mongoose.Schema;
 
-var VehiclesSchema = new Schema({});
-var InsertVehiclesSchema = new Schema({
+var VehiclesSchema = new Schema({
     
     // basic info
     BasicInfo: {
@@ -114,7 +113,8 @@ var InsertVehiclesSchema = new Schema({
     },
 
     Dealership: {
-        type: String
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'dealerships'
     },
 
     ExtraFeatures: {
@@ -122,4 +122,4 @@ var InsertVehiclesSchema = new Schema({
     }
 });
 
-module.exports = mongoose.model('vehicles', InsertVehiclesSchema);
+module.exports = mongoose.model('vehicles', VehiclesSchema);
