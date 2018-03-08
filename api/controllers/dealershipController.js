@@ -6,7 +6,7 @@ var mongoose = require('mongoose'),
 exports.getDealershipDetails = function(req, res) {
     dealershipDetails.findById(req.params.dealershipID, function (err, content) {
         if (err) {
-            res.send(err);
+            return res.send(err);
         }
         res.json(content);
     });

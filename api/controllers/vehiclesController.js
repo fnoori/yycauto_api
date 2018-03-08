@@ -3,6 +3,8 @@
 var mongoose = require('mongoose');
 var Vehicles = mongoose.model('vehicles');
 var vehicleDetails = mongoose.model('vehicledetails');
+var dealership = mongoose.model('dealerships');
+
 /*
     Simply returns all the potential characterstics of a vehicle
 */
@@ -60,8 +62,9 @@ exports.getVehiclesForDealer = function (req, res) {
 
     Vehicles.find(findQuery, {}, sortQuery, function (err, content) {
         if (err) {
-            res.send(err);
+            return res.send(err);
         }
+        
         res.json(content);
     }).skip(parseInt(req.params.perPage) * (parseInt(req.params.currentPage) - 1)).limit(parseInt(req.params.perPage));
 }
