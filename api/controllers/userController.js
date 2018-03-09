@@ -30,7 +30,9 @@ exports.createAccount = function (req, res) {
 }
 
 exports.loginUser = function (req, res) {
-    users.find({ 'username': req.params.username }, { _id: false }, function (getError, content) {
+    users.find({ 'username': req.params.username }, { _id: false })
+    .populate('dealership')
+    .exec(function (getError, content) {
 
         // If the user doesn't exist
         if (getError) {
@@ -55,6 +57,8 @@ exports.loginUser = function (req, res) {
                     dealershipId: content[0].dealership
                 };
 
+                console.log(content[0]);
+
                 // expires in 24 hours
                 //1440
                 var token = jwt.sign(payload, req.app.get('secretKey'), {
@@ -62,13 +66,14 @@ exports.loginUser = function (req, res) {
                 });
 
 
-                //console.log(content);
+                console.log(content);
 
                 // return the information including token as JSON
                 res.json({
                     success: true,
                     message: 'Enjoy your token!',
-                    dealership: content[0].dealership,
+                    dealership: content[0].dealership._id,
+                    dealershipName: content[0].dealership.Dealership,
                     token: token
                 });
             });

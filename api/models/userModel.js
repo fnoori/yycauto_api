@@ -10,7 +10,10 @@ var SALT_WORK_FACTOR = 10;
 var UserSchema = new Schema({
     username: String,
     password: String,
-    dealership: String
+    dealership: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'dealerships'
+    },
 });
 
 // Encrypts the incoming password

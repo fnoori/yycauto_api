@@ -132,7 +132,6 @@ exports.insertVehicle = function(req, res) {
         other functions?
 */
 exports.dealershipInventoryCount = function(req, res) {
-
     Vehicles.count({'Dealership': req.params.dealershipID})
     .exec(function(err, count) {
         if (err) {
