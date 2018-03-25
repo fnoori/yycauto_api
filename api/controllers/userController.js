@@ -57,16 +57,11 @@ exports.loginUser = function (req, res) {
                     dealershipId: content[0].dealership
                 };
 
-                console.log(content[0]);
-
                 // expires in 24 hours
                 //1440
                 var token = jwt.sign(payload, req.app.get('secretKey'), {
                     expiresIn: 1440
                 });
-
-
-                console.log(content);
 
                 // return the information including token as JSON
                 res.json({
