@@ -1,0 +1,32 @@
+{
+  "name": "yycauto_api",
+  "version": "1.0.0",
+  "description": "An API for yycauto",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "nodemon server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/fnoori/yycauto_api.git"
+  },
+  "author": "Farzam Noori",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/fnoori/yycauto_api/issues"
+  },
+  "homepage": "https://github.com/fnoori/yycauto_api#readme",
+  "dependencies": {
+    "bcrypt": "^2.0.1",
+    "body-parser": "^1.18.2",
+    "express": "^4.16.3",
+    "jsonwebtoken": "^8.2.1",
+    "mongoose": "^5.0.16",
+    "morgan": "^1.9.0",
+    "multer": "^1.3.0"
+  },
+  "devDependencies": {
+    "nodemon": "^1.17.3"
+  }
+}
