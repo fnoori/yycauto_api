@@ -6,6 +6,7 @@ const mongoose = require('mongoose');
 
 // routes
 const vehicleRoutes = require('./api/routes/vehicles');
+const dealershipRoutes = require('./api/routes/dealerships');
 
 mongoose.connect('mongodb+srv://admin:' + process.env.MONGO_ATLAS_PW + '@yycauto-e7yg5.mongodb.net/yycauto');
 
@@ -35,6 +36,7 @@ app.use((req, res, next) => {
 
 // handle routes
 app.use('/vehicles', vehicleRoutes);
+app.use('/dealerships', dealershipRoutes);
 
 // error handling
 app.use((req, res, next) => {
