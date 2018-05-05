@@ -53,6 +53,7 @@ exports.getVehicleByID = (req, res, next) => {
 exports.getVehicleByDealershipID = (req, res, next) => {
     const dealershipID = req.params.dealershipId;
     const perPage = parseInt(req.params.perPage);
+    const lazyLoad = parseInt(req.params.lazyLoad);
 
     Vehicle.find({'Dealership': dealershipID})
     .skip(lazyLoad).limit(perPage)

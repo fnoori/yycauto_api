@@ -10,7 +10,11 @@ exports.getAllDealerships = (req, res, next) => {
             count: docs.length,
             dealerships: docs.map(doc => {
                 return {
-                    content: doc
+                    content: doc,
+                    vehicles: {
+                        type: 'GET',
+                        url: 'http://localhost:3000/vehicles/byDealershipId/0/4/' + doc._id
+                    }
                 }
             })
         };
