@@ -31,7 +31,11 @@ const vehicleSchema = mongoose.Schema({
         "Highway (L/100Km)": {type: String, required: false},
         "Combined (L/100Km)": {type: String, required: false}
     },
-    DealershipID: {type: mongoose.Schema.Types.ObjectId, required: true},
+    Dealership: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Dealership',
+        require: true 
+    },
     AdTier: {type: String, required: true}
 });
 

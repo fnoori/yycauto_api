@@ -4,15 +4,12 @@ const errors = require('../utils/error');
 
 exports.getAllVehicles = (req, res, next) => {
     Vehicle.find()
+    .populate('Dealership')
     .exec()
     .then(docs => {
         const response = {
             count: docs.length,
-            vehicles: docs.map(doc => {
-                return {    
-                    content: doc
-                }
-            })
+            vehicles: docs
         };
         res.status(200).json(response);
     })
@@ -42,8 +39,8 @@ exports.getVehicleByID = (req, res, next) => {
     })
     .catch(err =>  {
         errors.logError(err);
-        res.status(500).json(
-            {error: err}
-        );
+        res.status(500).json({
+            error: err
+        });
     });
 }
