@@ -25,6 +25,7 @@ exports.getVehicleByID = (req, res, next) => {
     const ID = req.params.vehicleId;
 
     Vehicle.findById(ID)
+    .populate('Dealership')
     .exec()
     .then(doc => {
         if (doc) {
@@ -43,4 +44,8 @@ exports.getVehicleByID = (req, res, next) => {
             error: err
         });
     });
+}
+
+exports.getVehicleByDealershipID = (req, res, next) => {
+    const dealershipID = req.params.dealershipId;
 }
