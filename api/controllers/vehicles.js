@@ -3,7 +3,11 @@ const Vehicle = require('../models/vehicle');
 const errors = require('../utils/error');
 
 exports.getAllVehicles = (req, res, next) => {
+    const lazyLoad = parseInt(req.params.lazyLoad);
+    const perPage = parseInt(req.params.perPage);
+
     Vehicle.find()
+    .skip(lazyLoad).limit(perPage)
     .populate('Dealership')
     .exec()
     .then(docs => {
@@ -48,8 +52,10 @@ exports.getVehicleByID = (req, res, next) => {
 
 exports.getVehicleByDealershipID = (req, res, next) => {
     const dealershipID = req.params.dealershipId;
+    const perPage = parseInt(req.params.perPage);
 
     Vehicle.find({'Dealership': dealershipID})
+    .skip(lazyLoad).limit(perPage)
     .exec()
     .then(doc => {
         if (doc) {

@@ -1,7 +1,7 @@
 {
     "BasicInfo": {
-        "Make": "Toyota",
-        "Model": "Corolla",
+        "Make": "Volkswagon",
+        "Model": "Golf",
         "Trim": "SE",
         "Type": "Sedan (4-door)",
         "Year": "2017",
