@@ -1,0 +1,49 @@
+{
+    "BasicInfo": {
+        "Make": "Honda",
+        "Model": "Civic",
+        "Trim": "Touring",
+        "Type": "Sedan (4-door)",
+        "Year": "2017",
+        "Exterior Colour": "Red",
+        "Interior Colour": "Black",
+        "Price": "28000",
+        "Kilometres": "New",
+        "Fuel Type": "Gas",
+        "Doors": "4",
+        "Seats": "5",
+        "Description": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed nec arcu lobortis, lacinia purus sit amet, tincidunt nibh. Morbi semper vitae massa vitae elementum. In sagittis lectus et lectus convallis lobortis. In feugiat sem nec quam porta, sit amet sollicitudin metus tempus."
+    },
+    "MechanicalSpecs": {
+        "CarProof": false,
+        "Transmission": "Auto",
+        "Engine Size (L)": "1.8",
+        "Cylinders": "4",
+        "Horsepower @ RPM": "205 @ 5700",
+        "Torque (lb - ft) @ RPM" : "192 @ 2100",
+        "Recommended Fuel": "Regular"
+    },
+    "FuelEconomy": {
+        "City (L/100Km)": "8.4",
+        "Highway (L/100Km)": "6.2",
+        "Combined (L/100Km)": "7.4"
+    },
+    "VehicleFeatures": [
+        "some feature",
+        "some other feature"
+    ],
+    "VehiclesPhotos": [
+        "some route",
+        "some other route"
+    ],
+    "Dealership": "5aeb920aaabd9015cc28dbcc",
+    "AdTier": "1"
+}
+
+{
+    "Name": "First Dealership",
+    "Phone": "5878993223",
+    "Email": "farzamn80@gmail.com",
+    "Address": "123 abc NW, Calgary, AB",
+    "Logo": "./tst_imgs/dealership_logo.png"
+}
