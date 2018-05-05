@@ -1,13 +1,13 @@
 {
     "BasicInfo": {
-        "Make": "Honda",
-        "Model": "Civic",
-        "Trim": "Touring",
+        "Make": "Toyota",
+        "Model": "Corolla",
+        "Trim": "SE",
         "Type": "Sedan (4-door)",
         "Year": "2017",
-        "Exterior Colour": "Red",
-        "Interior Colour": "Black",
-        "Price": "28000",
+        "Exterior Colour": "Green",
+        "Interior Colour": "White",
+        "Price": "25000",
         "Kilometres": "New",
         "Fuel Type": "Gas",
         "Doors": "4",
@@ -17,16 +17,16 @@
     "MechanicalSpecs": {
         "CarProof": false,
         "Transmission": "Auto",
-        "Engine Size (L)": "1.8",
+        "Engine Size (L)": "1.5",
         "Cylinders": "4",
-        "Horsepower @ RPM": "205 @ 5700",
-        "Torque (lb - ft) @ RPM" : "192 @ 2100",
+        "Horsepower @ RPM": "147 @ 5700",
+        "Torque (lb - ft) @ RPM" : "23 @ 2100",
         "Recommended Fuel": "Regular"
     },
     "FuelEconomy": {
-        "City (L/100Km)": "8.4",
-        "Highway (L/100Km)": "6.2",
-        "Combined (L/100Km)": "7.4"
+        "City (L/100Km)": "8.7",
+        "Highway (L/100Km)": "6.1",
+        "Combined (L/100Km)": "7.9"
     },
     "VehicleFeatures": [
         "some feature",
@@ -36,7 +36,7 @@
         "some route",
         "some other route"
     ],
-    "Dealership": "5aeb920aaabd9015cc28dbcc",
+    "Dealership": ObjectId("5aeb920aaabd9015cc28dbcc"),
     "AdTier": "1"
 }
 
