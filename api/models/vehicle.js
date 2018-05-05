@@ -34,3 +34,5 @@ const vehicleSchema = mongoose.Schema({
     DealershipID: {type: mongoose.Schema.Types.ObjectId, required: true},
     AdTier: {type: String, required: true}
 });
+
+module.exports = mongoose.model('Vehicle', vehicleSchema);

@@ -4,8 +4,10 @@ const morgan = require('morgan');
 const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
 
-//mongoose.connect('mongodb+srv://admin:' + process.env.MONGO_ATLAS_PW + '@yycauto-e7yg5.mongodb.net/yycauto');
-mongoose.connect('mongodb+srv://admin:' + process.env.MONGO_ATLAS_PW + '@yycauto-e7yg5.mongodb.net/test');
+// routes
+const vehicleRoutes = require('./api/routes/vehicles');
+
+mongoose.connect('mongodb+srv://admin:' + process.env.MONGO_ATLAS_PW + '@yycauto-e7yg5.mongodb.net/yycauto');
 
 // setup morgan error detailing
 app.use(morgan('dev'));
@@ -30,6 +32,9 @@ app.use((req, res, next) => {
 
 	next();
 });
+
+// handle routes
+app.use('/vehicles', vehicleRoutes);
 
 // error handling
 app.use((req, res, next) => {
