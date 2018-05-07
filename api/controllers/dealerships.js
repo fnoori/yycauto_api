@@ -2,6 +2,7 @@ const mongoose = require('mongoose');
 const Dealership = require('../models/dealership');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
+const multer = require('multer');
 
 const errors = require('../utils/error');
 
@@ -56,31 +57,65 @@ exports.getDealershipByID = (req, res, next) => {
 }
 
 exports.signUpDealership = (req, res, next) => {
+    const email = req.body.email;
+    const password = req.body.password;
+    const access = req.body.accessLevel;
+    const name = req.body.name;
+    const phone = req.body.phone;
+    const address = req.body.address;
+
+    console.log(req.body.email);
+
+    return;
+
     Dealership.find({
-        'Account Credentials': {
+        'AccountCredentials': {
             'Email': req.body.email
         }
     })
     .exec()
-    .then(user => {
-        // user exists
-        if (user.length >= 1) {
+    .then(dealership => {
+        // dealership exists
+        if (dealership.length >= 1) {
             return res.status(409).json({
                 message: 'Email already in use'
             });
         } else {
-            bcrypt.hash(req.body.password, 10, (err, hash) => {
-                errors.logError(err);
-            });
+            bcrypt.hash(password, 10, (err, hash) => {
+                if (err) {
+                    errors.logError(err);
+                    return res.status(500).json({
+                        error: err
+                    });
+                } else {
+                    const dealership = new Dealership({
+                        _id: new mongoose.Types.ObjectId(),
+                        'Name': name,
+                        'Phone': phone,
+                        'Address': address,
+                        'Logo': req.file,
+                        'AccountCredentials': {
+                            'Email': email,
+                            'Password': hash,
+                            'Access Level': access
+                        }
+                    });
 
-            user.save().then(result => {
-                console.log(result);
-                res.status(201).json({
-                    message: 'Account created'
-                });
-            }).catch(err => {
-                errors.logError(err);
+                    dealership.save().then(result => {
+                        console.log(result);
+                        res.status(201).json({
+                            message: 'Dealership account created'
+                        }).catch(err => {
+                            errors.logError(err);
+                            res.status(500).json({
+                                error: err
+                            });
+                        });
+                    });
+                }
             });
         }
     });
 }
+
+
