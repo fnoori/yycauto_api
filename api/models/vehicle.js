@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 
 const vehicleSchema = mongoose.Schema({
     _id: mongoose.Schema.Types.ObjectId,
-    BasicInfo: {
+    'BasicInfo': {
         'Make': {type: String, required: true},
         'Model': {type: String, required: true},
         'Trim': {type: String, required: true},
@@ -17,7 +17,7 @@ const vehicleSchema = mongoose.Schema({
         'Seats': {type: String, required: false},
         'Description': {type: String, required: false}
     },
-    MechanicalSpecs: {
+    'MechanicalSpecs': {
         'CarProof': {type: String, required: false},
         'Transmission': {type: String, required: true},
         'Engine Size (L)': {type: String, required: false},
@@ -26,17 +26,17 @@ const vehicleSchema = mongoose.Schema({
         'Torque (lb - ft) @ RPM': {type: String, required: false},
         'Recommended Fuel': {type: String, required: true}
     },
-    FuelEconomy: {
+    'FuelEconomy': {
         "City (L/100Km)": {type: String, required: false},
         "Highway (L/100Km)": {type: String, required: false},
         "Combined (L/100Km)": {type: String, required: false}
     },
-    Dealership: {
+    'Dealership': {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Dealership',
         require: true 
     },
-    AdTier: {type: String, required: true}
+    'AdTier': {type: String, required: true}
 });
 
 module.exports = mongoose.model('Vehicle', vehicleSchema);
