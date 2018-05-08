@@ -75,6 +75,9 @@ exports.signUpDealership = (req, res, next) => {
     .then(dealership => {
         // dealership exists
         if (dealership.length >= 1) {
+            // delete the uploaded logo, since it's a duplicate dealership
+            fs.unlink('uploads/initialUploadLoc/' + req.file.originalname);
+
             return res.status(409).json({
                 message: 'Account already exists for this dealership'
             });
