@@ -3,6 +3,7 @@ const Dealership = require('../models/dealership');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const multer = require('multer');
+const fs = require('fs');
 
 const errors = require('../utils/error');
 
@@ -64,9 +65,6 @@ exports.signUpDealership = (req, res, next) => {
     const phone = req.body.phone;
     const address = req.body.address;
 
-    
-
-
     Dealership.find({
         'AccountCredentials.Email':req.body.email
     })
@@ -90,7 +88,6 @@ exports.signUpDealership = (req, res, next) => {
                         'Name': name,
                         'Phone': phone,
                         'Address': address,
-                        'Logo': req.file,
                         'AccountCredentials': {
                             'Email': email,
                             'Password': hash,
@@ -99,31 +96,18 @@ exports.signUpDealership = (req, res, next) => {
                     });
 
                     dealership.save().then(result => {
-                        const dealershipId = result._id;
+                        const dealershipFolder = name.split(' ').join('_') + '__' + result._id;
 
-                        const storage = multer.diskStorage({
-                            destination: function(req, file, cb) {
-                                cb(null, './uploads/' + dealershipId + '/' + dealershipId + '_logo.' + file[0].mimetype.split('/').pop());
-                            },
-                            filename: function(req, file, cb){
-                                cb(null, file[0].originalname);
+                        fs.mkdir('uploads/dealerships/' + dealershipFolder, (err) => {
+                            if (err) {
+                                errors.logError(err);
+                            }                            
+                        });
+                        fs.rename(req.file.path, 'uploads/dealerships/' + dealershipFolder + '/logo.' + req.file.mimetype.split('/').pop(), (err) => {
+                            if (err) {
+                                errors.logError(err);
                             }
                         });
-                        const fileFilter = (req, file, cb) => {
-                            if (file[0].mimetype === 'image/jpeg' ||
-                                file[0].mimetype === 'image/png') {
-                                    cb(null, true);
-                                } else {
-                                    cb(null, false);
-                                }
-                        };
-                        const upload = multer({
-                            storage: storage,
-                            limits: { fileSize: 1000000 },
-                            fileFilter: fileFilter
-                        });
-
-                        upload.array('logo');
 
                         console.log(result);
                         res.status(201).json({
