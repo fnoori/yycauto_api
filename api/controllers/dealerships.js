@@ -66,14 +66,17 @@ exports.signUpDealership = (req, res, next) => {
     const address = req.body.address;
 
     Dealership.find({
-        'AccountCredentials.Email':req.body.email
+        $or: [ 
+            {'AccountCredentials.Email': req.body.email}, 
+            {'Name':req.body.name} 
+        ]
     })
     .exec()
     .then(dealership => {
         // dealership exists
         if (dealership.length >= 1) {
             return res.status(409).json({
-                message: 'Email already in use'
+                message: 'Account already exists for this dealership'
             });
         } else {
             bcrypt.hash(password, 10, (err, hash) => {
@@ -124,5 +127,98 @@ exports.signUpDealership = (req, res, next) => {
         }
     });
 }
+
+exports.loginDealership = (req, res, next) => {
+    const email = req.body.email;
+    const password = req.body.password;
+
+    Dealership.find({ 'AccountCredentials.Email':  email })
+    .exec()
+    .then(dealership => {
+        if (dealership.length < 1) {
+            return res.status(401).json({
+                message: 'Authentication failed'
+            });
+        }
+        
+        bcrypt.compare(password, dealership[0].AccountCredentials.Password, (err, result) => {
+            if (err) {
+                return res.status(401).json({
+                    message: 'Authentication failed'
+                });
+            }
+
+            if (result) {
+                const token = jwt.sign({
+                    email: dealership[0].AccountCredentials.Email,
+                    dealershipId: dealership[0]._id
+                },
+                process.env.JWT_KEY,
+                {
+                    expiresIn: '1h'
+                });
+
+                return res.status(200).json({
+                    message: 'Authentication sccessful',
+                    token: token
+                });
+            }
+
+            return res.status(401).json({
+                message: 'Authentication failed'
+            });
+        });
+    }).catch (err => {
+        errors.logError(err);
+        res.status(500).json({
+            error: err
+        });
+    });
+}
+
+exports.updateDealership = (req, res, next) => {
+    const dealershipId = req.params.dealershipId;
+    var updateOperations = req.body;
+
+    if (updateOperations['AccountCredentials.Password']) {
+        bcrypt.hash(updateOperations['AccountCredentials.Password'], 10, (err, hash) => {
+            if (err) {
+                errors.logError(err);
+                return res.status(500).json({
+                    error: err
+                });
+            }
+            updateOperations['AccountCredentials.Password'] = hash;
+            updateDealershipHelper(updateOperations, dealershipId, res);
+        });
+    } else {
+        updateDealershipHelper(updateOperations, dealershipId, res);
+    }
+}
+
+// help function is needed to be able to extract the hashed password, if password is being changed
+updateDealershipHelper = (updateOperations, dealershipId, res) => {
+    console.log(updateOperations);
+    console.log(dealershipId);
+
+    Dealership.update({_id: dealershipId}, {$set: updateOperations})
+    .exec()
+    .then(result => {
+        res.status(200).json({
+            message: 'Dealership successfully updated',
+            request: {
+                type: 'GET',
+                url: 'http://localhost:3000/dealerships/byId/' + dealershipId
+            }
+        });
+    }).catch(err => {
+        errors.logError(err);
+        res.status(500).json({
+            error: err
+        });
+    });
+}
+
+
 
 

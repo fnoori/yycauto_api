@@ -1,5 +1,6 @@
 const express = require('express');
 const multer = require('multer');
+const checkAuth = require('../middleware/check-auth');
 const getFields = multer();
 const router = express.Router();
 
@@ -29,6 +30,9 @@ const upload = multer({
 
 router.get('/', DealershipsController.getAllDealerships);
 router.get('/byId/:dealershipId', DealershipsController.getDealershipByID);
-router.post('/signUpDealership', upload.single('logo'), DealershipsController.signUpDealership);
+router.post('/signup', upload.single('logo'), DealershipsController.signUpDealership);
+router.post('/login', DealershipsController.loginDealership);
+
+router.patch('/update/:dealershipId', checkAuth, DealershipsController.updateDealership);
 
 module.exports = router;
