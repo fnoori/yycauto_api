@@ -64,14 +64,11 @@ exports.signUpDealership = (req, res, next) => {
     const phone = req.body.phone;
     const address = req.body.address;
 
-    console.log(req.body.email);
+    
 
-    return;
 
     Dealership.find({
-        'AccountCredentials': {
-            'Email': req.body.email
-        }
+        'AccountCredentials.Email':req.body.email
     })
     .exec()
     .then(dealership => {
@@ -102,14 +99,40 @@ exports.signUpDealership = (req, res, next) => {
                     });
 
                     dealership.save().then(result => {
+                        const dealershipId = result._id;
+
+                        const storage = multer.diskStorage({
+                            destination: function(req, file, cb) {
+                                cb(null, './uploads/' + dealershipId + '/' + dealershipId + '_logo.' + file[0].mimetype.split('/').pop());
+                            },
+                            filename: function(req, file, cb){
+                                cb(null, file[0].originalname);
+                            }
+                        });
+                        const fileFilter = (req, file, cb) => {
+                            if (file[0].mimetype === 'image/jpeg' ||
+                                file[0].mimetype === 'image/png') {
+                                    cb(null, true);
+                                } else {
+                                    cb(null, false);
+                                }
+                        };
+                        const upload = multer({
+                            storage: storage,
+                            limits: { fileSize: 1000000 },
+                            fileFilter: fileFilter
+                        });
+
+                        upload.array('logo');
+
                         console.log(result);
                         res.status(201).json({
                             message: 'Dealership account created'
-                        }).catch(err => {
-                            errors.logError(err);
-                            res.status(500).json({
-                                error: err
-                            });
+                        });
+                    }).catch(err => {
+                        errors.logError(err);
+                        res.status(500).json({
+                            error: err
                         });
                     });
                 }
