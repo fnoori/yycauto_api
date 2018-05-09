@@ -15,3 +15,8 @@ exports.logError = (req, res, next) => {
     });    
 }
 
+exports.clientError = (code, message, res) => {
+    return res.status(code).json({
+        message: message
+    });
+}

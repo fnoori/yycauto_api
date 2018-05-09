@@ -6,6 +6,7 @@ const multer = require('multer');
 const fs = require('fs');
 
 const errors = require('../utils/error');
+const validations = require('../utils/validations');
 
 exports.getAllDealerships = (req, res, next) => {
     Dealership.find()
@@ -66,6 +67,36 @@ exports.signUpDealership = (req, res, next) => {
     const name = req.body.name;
     const phone = req.body.phone;
     const address = req.body.address;
+
+    var allErrors = {};
+
+    if (!validations.validateEmail(email)) {
+        /*errors = errors.clientError(400, 
+            `Invalid email address`, 
+            res);
+            */
+           allErrors.email = `Invalid email address`;
+    }
+    if (!validations.validatePassword(password)) {
+        /*errors = errors.clientError(400, 
+            `Password must be at least 8 characters long,
+                contain at least one uppercase character,
+                and at least one number`,
+            res);*/
+            allErrors.password = `Password must be at least 8 characters long,
+            contain at least one uppercase character,
+            and at least one number`;
+    }
+
+    
+
+    if (allErrors !== null) {
+        errors.clientError(400, allErrors, res);
+        console.log('all errors NOT NULL');
+    } else {
+        console.log('all errors NULL');
+    }
+    return;
 
     Dealership.find({
         $or: [ 
