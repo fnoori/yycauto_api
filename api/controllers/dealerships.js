@@ -9,6 +9,7 @@ const errors = require('../utils/error');
 
 exports.getAllDealerships = (req, res, next) => {
     Dealership.find()
+    .select('-AccountCredentials.Password -__v')
     .exec()
     .then(docs => {
         const response = {
@@ -37,6 +38,7 @@ exports.getDealershipByID = (req, res, next) => {
     const ID = req.params.dealershipId;
     
     Dealership.findById(ID)
+    .select('-AccountCredentials.Password -__v')
     .exec()
     .then(doc => {
         if (doc) {
@@ -76,7 +78,7 @@ exports.signUpDealership = (req, res, next) => {
         // dealership exists
         if (dealership.length >= 1) {
             // delete the uploaded logo, since it's a duplicate dealership
-            fs.unlink('uploads/initialUploadLoc/' + req.file.originalname);
+            fs.unlink('uploads/tmp/' + req.file.originalname);
 
             return res.status(409).json({
                 message: 'Account already exists for this dealership'
@@ -102,9 +104,9 @@ exports.signUpDealership = (req, res, next) => {
                     });
 
                     dealership.save().then(result => {
-                        const dealershipFolder = name.split(' ').join('_') + '__' + result._id;
+                        const dealershipFolder = result._id;
 
-                        fs.mkdir('uploads/dealerships/' + dealershipFolder, (err) => {
+                        fs.mkdirSync('uploads/dealerships/' + dealershipFolder, (err) => {
                             if (err) {
                                 errors.logError(err);
                             }                            
@@ -112,6 +114,7 @@ exports.signUpDealership = (req, res, next) => {
                         fs.rename(req.file.path, 'uploads/dealerships/' + dealershipFolder + '/logo.' + req.file.mimetype.split('/').pop(), (err) => {
                             if (err) {
                                 errors.logError(err);
+                                return;
                             }
                         });
 
@@ -183,6 +186,10 @@ exports.updateDealership = (req, res, next) => {
     const dealershipId = req.params.dealershipId;
     var updateOperations = req.body;
 
+    if (req.userData.dealershipId != req.params.dealershipId) {
+        throw Error('Dealership ID from token and provided dealership ID do not match');
+    }
+
     if (updateOperations['AccountCredentials.Password']) {
         bcrypt.hash(updateOperations['AccountCredentials.Password'], 10, (err, hash) => {
             if (err) {
@@ -201,9 +208,6 @@ exports.updateDealership = (req, res, next) => {
 
 // help function is needed to be able to extract the hashed password, if password is being changed
 updateDealershipHelper = (updateOperations, dealershipId, res) => {
-    console.log(updateOperations);
-    console.log(dealershipId);
-
     Dealership.update({_id: dealershipId}, {$set: updateOperations})
     .exec()
     .then(result => {

@@ -1,5 +1,6 @@
 const express = require('express');
 const router = express.Router();
+const checkAuth = require('../middleware/check-auth');
 const multer = require('multer');
 
 const VehiclesController = require('../controllers/vehicles');
