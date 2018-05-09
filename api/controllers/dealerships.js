@@ -71,32 +71,19 @@ exports.signUpDealership = (req, res, next) => {
     var allErrors = {};
 
     if (!validations.validateEmail(email)) {
-        /*errors = errors.clientError(400, 
-            `Invalid email address`, 
-            res);
-            */
-           allErrors.email = `Invalid email address`;
+        allErrors.email = 'Invalid email address';
     }
     if (!validations.validatePassword(password)) {
-        /*errors = errors.clientError(400, 
-            `Password must be at least 8 characters long,
-                contain at least one uppercase character,
-                and at least one number`,
-            res);*/
-            allErrors.password = `Password must be at least 8 characters long,
-            contain at least one uppercase character,
-            and at least one number`;
+            allErrors.password = [
+                'Password must be at least 8 characters long',
+                'Contain at least one uppercase character',
+                'Contain at least one number'
+             ];
     }
 
-    
-
-    if (allErrors !== null) {
-        errors.clientError(400, allErrors, res);
-        console.log('all errors NOT NULL');
-    } else {
-        console.log('all errors NULL');
+    if (Object.keys(allErrors).length > 0) {
+        return errors.clientError(400, allErrors, res);
     }
-    return;
 
     Dealership.find({
         $or: [ 
@@ -137,19 +124,23 @@ exports.signUpDealership = (req, res, next) => {
                     dealership.save().then(result => {
                         const dealershipFolder = result._id;
 
+                        // must create dealership folder for dealerships photos
                         fs.mkdirSync('uploads/dealerships/' + dealershipFolder, (err) => {
                             if (err) {
                                 errors.logError(err);
                             }                            
                         });
-                        fs.rename(req.file.path, 'uploads/dealerships/' + dealershipFolder + '/logo.' + req.file.mimetype.split('/').pop(), (err) => {
-                            if (err) {
-                                errors.logError(err);
-                                return;
-                            }
-                        });
 
-                        console.log(result);
+                        // upload logo if provided
+                        if (req.file) {
+                            fs.rename(req.file.path, 'uploads/dealerships/' + dealershipFolder + '/logo.' + req.file.mimetype.split('/').pop(), (err) => {
+                                if (err) {
+                                    errors.logError(err);
+                                    return;
+                                }
+                            });
+                        }
+
                         res.status(201).json({
                             message: 'Dealership account created'
                         });
