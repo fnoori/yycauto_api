@@ -33,6 +33,6 @@ router.get('/byId/:dealershipId', DealershipsController.getDealershipByID);
 router.post('/signup', upload.single('logo'), DealershipsController.signUpDealership);
 router.post('/login', DealershipsController.loginDealership);
 
-router.patch('/update/:dealershipId', checkAuth, DealershipsController.updateDealership);
+router.patch('/update/:dealershipId', checkAuth, upload.single('logo'), DealershipsController.updateDealership);
 
 module.exports = router;
