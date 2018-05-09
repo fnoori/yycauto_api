@@ -217,7 +217,34 @@ exports.loginDealership = (req, res, next) => {
 exports.updateDealership = (req, res, next) => {
     const dealershipId = req.params.dealershipId;
     var updateOperations = req.body;
+    var allErrors = {};
 
+    // validate incoming updates
+    if (updateOperations['AccountCredentials.Email']) {
+        if (!validations.validateEmail(updateOperations['AccountCredentials.Email'])) {
+            allErrors.email = 'Invalid email address';
+        }
+    }
+    if (updateOperations['AccountCredentials.Password']) {
+        if (!validations.validatePassword(updateOperations['AccountCredentials.Password'])) {
+            allErrors.password = [
+                'Password must be at least 8 characters long',
+                'Contain at least one uppercase character',
+                'Contain at least one number'
+             ];
+        }
+    }
+    if (updateOperations['Phone'].length <= 0) {
+        allErrors.phone = 'If updating phone number, please provide a phone number';
+    }
+    if (updateOperations['Address'].length <= 0) {
+        allErrors.address = 'If updating an address, please provide an address';
+    }
+    if (Object.keys(allErrors).length > 0) {
+        return errors.clientError(400, allErrors, res);
+    }
+
+    // invalid dealership updating
     if (req.userData.dealershipId != req.params.dealershipId) {
         return res.status(403).json({
             error: 'Dealership ID from token and provided dealership ID do not match'
