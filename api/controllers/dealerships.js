@@ -80,8 +80,18 @@ exports.signUpDealership = (req, res, next) => {
                 'Contain at least one number'
              ];
     }
+    if (name.length <= 0) {
+        allErrors.name = 'Must provide dealership name';
+    }
+    if (phone.length <= 0) {
+        allErrors.phone = 'Must provide phone number';
+    }
+    if (address.length <= 0) {
+        allErrors.address = 'Must provide address';
+    }
 
     if (Object.keys(allErrors).length > 0) {
+        fs.unlink('uploads/tmp/' + req.file.originalname);
         return errors.clientError(400, allErrors, res);
     }
 
