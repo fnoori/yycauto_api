@@ -209,7 +209,9 @@ exports.updateDealership = (req, res, next) => {
     var updateOperations = req.body;
 
     if (req.userData.dealershipId != req.params.dealershipId) {
-        throw Error('Dealership ID from token and provided dealership ID do not match');
+        return res.status(403).json({
+            error: 'Dealership ID from token and provided dealership ID do not match'
+        });
     }
 
     if (updateOperations['AccountCredentials.Password']) {
