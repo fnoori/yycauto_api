@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 const Vehicle = require('../models/vehicle');
-const errors = require('../utils/error');
+const errors = require('../utils/resMessages');
 
 exports.getAllVehicles = (req, res, next) => {
     const lazyLoad = parseInt(req.params.lazyLoad);

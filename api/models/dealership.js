@@ -13,7 +13,7 @@ const dealershipSchema = mongoose.Schema({
             match: /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
         },
         'Password': { type: String, required: true },
-        'Access Level': { type: Number, required: true }
+        'AccessLevel': { type: Number, required: true }
     }
 });
 
