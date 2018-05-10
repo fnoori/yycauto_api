@@ -17,6 +17,7 @@ exports.AUTHENTICATION_FAIL = 'Authentication failed';
 exports.UPDATE_PHONE_INVALID = 'If updating phone number, please provide a phone number';
 exports.UPDATE_ADDRESS_INVALID = 'If updating an address, please provide an address';
 exports.DEALERSHIP_UPDATED = 'Dealership successfully update';
+exports.DEALERSHIP_NOT_FOUND_WITH_NAME = 'No dealership found with matching name';
 
 exports.logError = (req, res, next) => {
     var dateTime = new Date();

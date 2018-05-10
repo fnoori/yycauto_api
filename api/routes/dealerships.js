@@ -30,6 +30,8 @@ const upload = multer({
 
 router.get('/', DealershipsController.getAllDealerships);
 router.get('/byId/:dealershipId', DealershipsController.getDealershipByID);
+router.get('/byName/:dealershipName', DealershipsController.getDealershipByName);
+
 router.post('/signup', upload.single('logo'), DealershipsController.signUpDealership);
 router.post('/login', DealershipsController.loginDealership);
 
