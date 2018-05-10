@@ -35,6 +35,31 @@ exports.getAllDealerships = (req, res, next) => {
         });
 }
 
+exports.getDealershipByID = (req, res, next) => {
+    const ID = req.params.dealershipId;
+
+    Dealership.findById(ID)
+        .select('-AccountCredentials.Password -__v')
+        .exec()
+        .then(doc => {
+            if (doc) {
+                res.status(200).json({
+                    dealership: doc
+                });
+            } else {
+                res.status(404).json({
+                    message: 'No dealership found with matching ID'
+                });
+            }
+        })
+        .catch(err => {
+            errors.logError(err);
+            res.status(500).json({
+                error: err
+            });
+        });
+}
+
 exports.signUpDealership = (req, res, next) => {
     var creationOperations = req.body;
     var allErrors = {};
