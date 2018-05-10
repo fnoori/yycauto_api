@@ -2,11 +2,6 @@ const mongoose = require('mongoose');
 const Error = require('../models/error');
 
 exports.INVALID_EMAIL = 'Invalid email address';
-exports.INVALID_PASSWORD = [
-    'Password must be at least 8 characters long',
-    'Contain at least one uppercase character',
-    'Contain at least one number'
-];
 exports.PROVIDE_DEALERSHIP_NAME = 'Must provide dealership name';
 exports.PROVIDE_PHONE_NUMBER = 'Must provide phone number';
 exports.PROVIDE_ADDRESS = 'Must provide address';
@@ -18,6 +13,12 @@ exports.UPDATE_PHONE_INVALID = 'If updating phone number, please provide a phone
 exports.UPDATE_ADDRESS_INVALID = 'If updating an address, please provide an address';
 exports.DEALERSHIP_UPDATED = 'Dealership successfully update';
 exports.DEALERSHIP_NOT_FOUND_WITH_NAME = 'No dealership found with matching name';
+
+exports.INVALID_PASSWORD = [
+    'Password must be at least 8 characters long',
+    'Contain at least one uppercase character',
+    'Contain at least one number'
+];
 
 exports.logError = (req, res, next) => {
     var dateTime = new Date();
