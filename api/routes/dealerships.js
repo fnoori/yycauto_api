@@ -28,11 +28,12 @@ const upload = multer({
     fileFilter: fileFilter
 });
 
-router.get('/', DealershipsController.getAllDealerships);
+router.get('/:lazyLoad/:perPage', DealershipsController.getAllDealerships);
 router.get('/byId/:dealershipId', DealershipsController.getDealershipByID);
 router.get('/byName/:dealershipName', DealershipsController.getDealershipByName);
 
-router.post('/signup', upload.single('logo'), DealershipsController.signUpDealership);
+router.post('/signup', checkAuth, upload.single('logo'), DealershipsController.signUpDealership);
+router.post('/admin/signup', DealershipsController.signUpAdmin);
 router.post('/login', DealershipsController.loginDealership);
 
 router.patch('/update/:dealershipId', checkAuth, upload.single('logo'), DealershipsController.updateDealership);

@@ -11,8 +11,12 @@ const validations = require('../utils/validations');
 const toExcludeFromFind = '-AccountCredentials.Password -__v -_id';
 
 exports.getAllDealerships = (req, res, next) => {
+    const perPage = parseInt(req.params.perPage);
+    const lazyLoad = parseInt(req.params.lazyLoad);
+
     Dealership.find()
-    .select(toExcludeFromFind).exec().then(docs => {
+    .select(toExcludeFromFind)
+    .skip(lazyLoad).limit(perPage).exec().then(docs => {
         const response = {
             count: docs.length,
             dealerships: docs.map(doc => {
@@ -26,8 +30,7 @@ exports.getAllDealerships = (req, res, next) => {
             })
         };
         res.status(200).json(response);
-    })
-    .catch(err => {
+    }).catch(err => {
         console.log(err);
         res.status(500).json({
             error: err
@@ -78,6 +81,13 @@ exports.getDealershipByName = (req, res, next) => {
 exports.signUpDealership = (req, res, next) => {
     var creationOperations = req.body;
     var allErrors = {};
+
+    console.log(req.userData.accessLevel);
+
+    // ensure admin user is logged in
+    if (req.userData.accessLevel != 1) {
+        return resMessages.resMessagesToReturn(403, 'Only admin users can create dealership accounts', res); 
+    }
 
     allErrors = validations.validateDealershipCreation(creationOperations);
 
@@ -159,6 +169,36 @@ exports.signUpDealership = (req, res, next) => {
     });
 }
 
+exports.signUpAdmin = (req, res, next) => {
+    const adminCreationOperation = req.body;
+
+    bcrypt.hash(adminCreationOperation.password, 10, (err, hash) => {
+        if (err) {
+            resMessages.logError(err);
+            resMessages.resMessagesToReturn(500, err, res);
+        } else {
+            const newAdmin = new Dealership({
+                _id: new mongoose.Types.ObjectId(),
+                'Name': 'admin',
+                'Phone': 'admin',
+                'Address': 'admin',
+                'AccountCredentials': {
+                    'Email': adminCreationOperation.email,
+                    'Password': hash,
+                    'AccessLevel': 1
+                }
+            });
+
+            newAdmin.save().then(result => {
+                resMessages.resMessagesToReturn(201, resMessages.ADMIN_CREATED, res);
+            }).catch(err => {
+                resMessages.logError(err);
+                resMessages.resMessagesToReturn(500, err, res);
+            });
+        }
+    });
+}
+
 exports.loginDealership = (req, res, next) => {
     const email = req.body.email;
     const password = req.body.password;
@@ -181,12 +221,13 @@ exports.loginDealership = (req, res, next) => {
             if (result) {
                 const token = jwt.sign({
                     email: dealership[0].AccountCredentials.Email,
-                    dealershipId: dealership[0]._id
+                    dealershipId: dealership[0]._id,
+                    accessLevel: dealership[0].AccountCredentials.AccessLevel
                 },
-                    process.env.JWT_KEY,
-                    {
-                        expiresIn: '1h'
-                    });
+                process.env.JWT_KEY,
+                {
+                    expiresIn: '1h'
+                });
 
                 return res.status(200).json({
                     message: 'Authentication sccessful',
