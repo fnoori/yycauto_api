@@ -8,165 +8,154 @@ const fs = require('fs');
 const resMessages = require('../utils/resMessages');
 const validations = require('../utils/validations');
 
-const toExcludeFromFind = '-AccountCredentials.Password -__v -_id';
+const toExcludeFromFind = '-AccountCredentials.Password -__v -_id -AccountCredentials.AccessLevel';
 
 exports.getAllDealerships = (req, res, next) => {
     const perPage = parseInt(req.params.perPage);
     const lazyLoad = parseInt(req.params.lazyLoad);
 
     Dealership.find()
-    .select(toExcludeFromFind)
-    .skip(lazyLoad).limit(perPage).exec().then(docs => {
-        const response = {
-            count: docs.length,
-            dealerships: docs.map(doc => {
-                return {
-                    content: doc,
-                    vehicles: {
-                        type: 'GET',
-                        url: 'http://localhost:3000/vehicles/byDealershipId/0/4/' + doc._id
+        .select(toExcludeFromFind)
+        .where('AccountCredentials.AccessLevel').nin([1])
+        .skip(lazyLoad).limit(perPage).exec().then(docs => {
+            const response = {
+                count: docs.length,
+                dealerships: docs.map(doc => {
+                    return {
+                        content: doc,
+                        vehicles: {
+                            type: 'GET',
+                            url: 'http://localhost:3000/vehicles/byDealershipId/0/4/' + doc._id
+                        }
                     }
-                }
-            })
-        };
-        res.status(200).json(response);
-    }).catch(err => {
-        console.log(err);
-        res.status(500).json({
-            error: err
+                })
+            };
+            res.status(200).json(response);
+        }).catch(err => {
+            resMessages.resMessagesToReturn(500, err, res);
         });
-    });
 }
 
 exports.getDealershipByID = (req, res, next) => {
     const ID = req.params.dealershipId;
 
     Dealership.findById(ID)
-    .select(toExcludeFromFind).exec().then(doc => {
-        if (doc) {
-            res.status(200).json({
-                dealership: doc
-            });
-        } else {
-            res.status(404).json({
-                message: 'No dealership found with matching ID'
-            });
-        }
-    }).catch(err => {
-        resMessages.logError(err);
-        res.status(500).json({
-            error: err
+        .select(toExcludeFromFind).exec().then(doc => {
+            if (doc) {
+                res.status(200).json({
+                    dealership: doc
+                });
+            } else {
+                resMessages.resMessagesToReturn(404, 'No dealership found with matching ID', res);
+            }
+        }).catch(err => {
+            resMessages.logError(err);
+            resMessages.resMessagesToReturn(500, err, res);
         });
-    });
 }
 
 exports.getDealershipByName = (req, res, next) => {
     const name = req.params.dealershipName;
 
     Dealership.find({ Name: name })
-    .select(toExcludeFromFind).exec().then(doc => {
-        if (doc) {
-            res.status(200).json({
-                dealership: doc
-            });
-        } else {
-            resMessages.resMessagesToReturn(404, resMessages.DEALERSHIP_NOT_FOUND_WITH_NAME, res);
-        }
-    }).catch(err => {
-        resMessages.logError(err);
-        resMessages.resMessagesToReturn(500, err, res);
-    });
+        .select(toExcludeFromFind).exec().then(doc => {
+            if (doc) {
+                res.status(200).json({
+                    dealership: doc
+                });
+            } else {
+                resMessages.resMessagesToReturn(404, resMessages.DEALERSHIP_NOT_FOUND_WITH_NAME, res);
+            }
+        }).catch(err => {
+            resMessages.logError(err);
+            resMessages.resMessagesToReturn(500, err, res);
+        });
 }
 
 exports.signUpDealership = (req, res, next) => {
-    var creationOperations = req.body;
-    var allErrors = {};
+    Dealership.findById(req.userData.dealershipId)
+        .select('AccountCredentials.AccessLevel')
+        .exec().then(dealership => {
+            // check access level of currently logged in user
+            if (dealership.AccountCredentials.AccessLevel != 1) {
+                return resMessages.resMessagesToReturn(403, 'Only admin users can create dealership accounts', res);
+            }
 
-    console.log(req.userData.accessLevel);
+            var creationOperations = req.body;
+            var allErrors = {};
 
-    // ensure admin user is logged in
-    if (req.userData.accessLevel != 1) {
-        return resMessages.resMessagesToReturn(403, 'Only admin users can create dealership accounts', res); 
-    }
+            allErrors = validations.validateDealershipCreation(creationOperations);
 
-    allErrors = validations.validateDealershipCreation(creationOperations);
+            if (Object.keys(allErrors).length > 0) {
+                if (req.file) {
+                    fs.unlink('uploads/tmp/' + req.file.originalname);
+                }
+                return resMessages.resMessagesToReturn(400, allErrors, res);
+            }
 
-    if (Object.keys(allErrors).length > 0) {
-        if (req.file) {
-            fs.unlink('uploads/tmp/' + req.file.originalname);
-        }
-        return resMessages.resMessagesToReturn(400, allErrors, res);
-    }
-
-    Dealership.find({
-        $or: [
-            { 'AccountCredentials.Email': creationOperations['AccountCredentials.Email'] },
-            { 'Name': creationOperations.Name }
-        ]
-    }).exec().then(dealership => {
-        // dealership exists
-        if (dealership.length >= 1) {
-            // delete the uploaded logo, since it's a duplicate dealership
-            fs.unlink('uploads/tmp/' + req.file.originalname);
-
-            return res.status(409).json({
-                message: 'Account already exists for this dealership'
-            });
-        } else {
-            bcrypt.hash(creationOperations['AccountCredentials.Password'], 10, (err, hash) => {
-                if (err) {
-                    resMessages.logError(err);
-                    return res.status(500).json({
-                        error: err
-                    });
+            Dealership.find({
+                $or: [
+                    { 'AccountCredentials.Email': creationOperations['AccountCredentials.Email'] },
+                    { 'Name': creationOperations.Name }
+                ]
+            }).exec().then(dealership => {
+                // dealership exists
+                if (dealership.length >= 1) {
+                    // delete the uploaded logo, since it's a duplicate dealership
+                    fs.unlink('uploads/tmp/' + req.file.originalname);
+                    return resMessages.resMessagesToReturn(409, 'Account already exists for this dealership', res);
                 } else {
-                    const newDealership = new Dealership({
-                        _id: new mongoose.Types.ObjectId(),
-                        'Name': creationOperations.Name,
-                        'Phone': creationOperations.Phone,
-                        'Address': creationOperations.Address,
-                        'AccountCredentials': {
-                            'Email': creationOperations['AccountCredentials.Email'],
-                            'Password': hash,
-                            'AccessLevel': creationOperations['AccountCredentials.AccessLevel']
-                        }
-                    });
-
-                    //console.log(newDealership)
-
-                    newDealership.save().then(result => {
-                        const dealershipFolder = result._id;
-
-                        // must create dealership folder for dealerships photos
-                        fs.mkdirSync('uploads/dealerships/' + dealershipFolder, (err) => {
-                            if (err) {
-                                resMessages.logError(err);
-                            }
-                        });
-
-                        // upload logo if provided
-                        if (req.file) {
-                            fs.rename(req.file.path, 'uploads/dealerships/' + dealershipFolder + '/logo.' + req.file.mimetype.split('/').pop(), (err) => {
-                                if (err) {
-                                    resMessages.logError(err);
-                                    return;
+                    bcrypt.hash(creationOperations['AccountCredentials.Password'], 10, (err, hash) => {
+                        if (err) {
+                            resMessages.logError(err);
+                            return resMessages.resMessagesToReturn(500, err, res);
+                        } else {
+                            const newDealership = new Dealership({
+                                _id: new mongoose.Types.ObjectId(),
+                                'Name': creationOperations.Name,
+                                'Phone': creationOperations.Phone,
+                                'Address': creationOperations.Address,
+                                'AccountCredentials': {
+                                    'Email': creationOperations['AccountCredentials.Email'],
+                                    'Password': hash,
+                                    'AccessLevel': 2
                                 }
                             });
-                        }
 
-                        res.status(201).json({
-                            message: 'Dealership account created'
-                        });
-                    }).catch(err => {
-                        resMessages.logError(err);
-                        res.status(500).json({
-                            error: err
-                        });
+                            newDealership.save().then(result => {
+                                const dealershipFolder = result._id;
+
+                                // must create dealership folder for dealerships photos
+                                fs.mkdirSync('uploads/dealerships/' + dealershipFolder, (err) => {
+                                    if (err) {
+                                        resMessages.logError(err);
+                                        return resMessages.resMessagesToReturn(500, err, res);
+                                    }
+                                });
+
+                                // upload logo if provided
+                                if (req.file) {
+                                    fs.rename(req.file.path, 'uploads/dealerships/' + dealershipFolder + '/logo.' + req.file.mimetype.split('/').pop(), (err) => {
+                                        if (err) {
+                                            resMessages.logError(err);
+                                            return resMessages.resMessagesToReturn(500, err, res);
+                                        }
+                                    });
+                                }
+                                
+                                resMessages.resMessagesToReturn(201, 'Dealership account created', res);
+                            }).catch(err => {
+                                resMessages.logError(err);
+                                return resMessages.resMessagesToReturn(500, err, res);
+                            });
+                        }
                     });
                 }
             });
-        }
-    });
+        }).catch(err => {
+            resMessages.logError(err);
+            resMessages.resMessagesToReturn(500, err, res);
+        });
 }
 
 exports.signUpAdmin = (req, res, next) => {
@@ -204,47 +193,37 @@ exports.loginDealership = (req, res, next) => {
     const password = req.body.password;
 
     Dealership.find({ 'AccountCredentials.Email': email })
-    .exec().then(dealership => {
-        if (dealership.length < 1) {
-            return res.status(401).json({
-                message: resMessages.AUTHENTICATION_FAIL
-            });
-        }
-
-        bcrypt.compare(password, dealership[0].AccountCredentials.Password, (err, result) => {
-            if (err) {
-                return res.status(401).json({
-                    message: resMessages.AUTHENTICATION_FAIL
-                });
+        .exec().then(dealership => {
+            if (dealership.length < 1) {
+                return resMessages.resMessagesToReturn(401, resMessages.AUTHENTICATION_FAIL, res);
             }
 
-            if (result) {
-                const token = jwt.sign({
-                    email: dealership[0].AccountCredentials.Email,
-                    dealershipId: dealership[0]._id,
-                    accessLevel: dealership[0].AccountCredentials.AccessLevel
-                },
-                process.env.JWT_KEY,
-                {
-                    expiresIn: '1h'
-                });
+            bcrypt.compare(password, dealership[0].AccountCredentials.Password, (err, result) => {
+                if (err) {
+                    return resMessages.resMessagesToReturn(401, resMessages.AUTHENTICATION_FAIL, res);
+                }
 
-                return res.status(200).json({
-                    message: 'Authentication sccessful',
-                    token: token
-                });
-            }
+                if (result) {
+                    const token = jwt.sign({
+                        dealershipId: dealership[0]._id
+                    },
+                        process.env.JWT_KEY,
+                        {
+                            expiresIn: '1h'
+                        });
 
-            return res.status(401).json({
-                message: resMessages.AUTHENTICATION_FAIL
+                    return res.status(200).json({
+                        message: 'Authentication sccessful',
+                        token: token
+                    });
+                }
+
+                return resMessages.resMessagesToReturn(401, resMessages.AUTHENTICATION_FAIL, res);
             });
+        }).catch(err => {
+            resMessages.logError(err);
+            resMessages.resMessagesToReturn(500, err, res);
         });
-    }).catch(err => {
-        resMessages.logError(err);
-        res.status(500).json({
-            error: err
-        });
-    });
 }
 
 exports.updateDealership = (req, res, next) => {
@@ -270,66 +249,66 @@ exports.updateDealership = (req, res, next) => {
         updateOperations['AccountCredentials.Password']) {
 
         Dealership.findById(req.userData.dealershipId)
-        .select('AccountCredentials.Password -_id')
-        .exec().then(dealership => {
-            if (dealership.length < 1) {
-                return resMessages.resMessagesToReturn(401, resMessages.DEALERSHIP_NOT_FOUND_WITH_ID, res);
-            }
-            
-            // validate
-            bcrypt.compare(updateOperations.OldPassword, dealership.AccountCredentials.Password, (compareError, result) => {
-                if (compareError) {
-                    return resMessages.resMessagesToReturn(401, resMessages.OLD_PASSWORD_INCORRECT, res);
+            .select('AccountCredentials.Password -_id')
+            .exec().then(dealership => {
+                if (dealership.length < 1) {
+                    return resMessages.resMessagesToReturn(401, resMessages.DEALERSHIP_NOT_FOUND_WITH_ID, res);
                 }
-                if (result) {
-                    // update
-                    bcrypt.hash(updateOperations['AccountCredentials.Password'], 10, (err, hash) => {
-                        if (err) {
-                            resMessages.logError(err);
-                            return resMessages.resMessagesToReturn(500, err, res);
-                        }
-                        updateOperations['AccountCredentials.Password'] = hash;
 
-                        updateDealershipHelper(updateOperations, req.userData.dealershipId, req.file, res);
-                    });
-                } else {
-                    return resMessages.resMessagesToReturn(401, resMessages.OLD_PASSWORD_INCORRECT, res);
-                }
+                // validate
+                bcrypt.compare(updateOperations.OldPassword, dealership.AccountCredentials.Password, (compareError, result) => {
+                    if (compareError) {
+                        return resMessages.resMessagesToReturn(401, resMessages.OLD_PASSWORD_INCORRECT, res);
+                    }
+                    if (result) {
+                        // update
+                        bcrypt.hash(updateOperations['AccountCredentials.Password'], 10, (err, hash) => {
+                            if (err) {
+                                resMessages.logError(err);
+                                return resMessages.resMessagesToReturn(500, err, res);
+                            }
+                            updateOperations['AccountCredentials.Password'] = hash;
+
+                            updateDealershipHelper(updateOperations, req.userData.dealershipId, req.file, res);
+                        });
+                    } else {
+                        return resMessages.resMessagesToReturn(401, resMessages.OLD_PASSWORD_INCORRECT, res);
+                    }
+                });
+            }).catch(err => {
+                resMessages.logError(err);
+                resMessages.resMessagesToReturn(500, err, res);
             });
-        }).catch(err => {
-            resMessages.logError(err);
-            resMessages.resMessagesToReturn(500, err, res);
-        });
     } else {
         updateDealershipHelper(updateOperations, req.userData.dealershipId, req.file, res);
     }
 }
 
 updateDealershipHelper = (updateOperations, dealershipId, logoFile, res) => {
-    Dealership.update({ _id: dealershipId }, {$set: updateOperations })
-    .exec().then(result => {
-        // if updating logo
-        if (logoFile) {
-            fs.rename(logoFile.path, 'uploads/dealerships/' + dealershipId + '/logo.' + logoFile.mimetype.split('/').pop(), (err) => {
-                if (err) {
-                    resMessages.logError(err);
-                    resMessages.resMessagesToReturn(500, err, res);
-                    return;
-                }
-            });
-        }
-
-        const successMessage = {
-            message: resMessages.DEALERSHIP_UPDATED,
-            request: {
-                type: 'GET',
-                url: 'http://localhost:3000/dealerships/byId/' + dealershipId
+    Dealership.update({ _id: dealershipId }, { $set: updateOperations })
+        .exec().then(result => {
+            // if updating logo
+            if (logoFile) {
+                fs.rename(logoFile.path, 'uploads/dealerships/' + dealershipId + '/logo.' + logoFile.mimetype.split('/').pop(), (err) => {
+                    if (err) {
+                        resMessages.logError(err);
+                        resMessages.resMessagesToReturn(500, err, res);
+                        return;
+                    }
+                });
             }
-        };
-        resMessages.resMessagesToReturn(200, successMessage, res);
 
-    }).catch(err => {
-        resMessages.logError(err);
-        resMessages.resMessagesToReturn(500, err, res);
-    });
+            const successMessage = {
+                message: resMessages.DEALERSHIP_UPDATED,
+                request: {
+                    type: 'GET',
+                    url: 'http://localhost:3000/dealerships/byId/' + dealershipId
+                }
+            };
+            resMessages.resMessagesToReturn(200, successMessage, res);
+
+        }).catch(err => {
+            resMessages.logError(err);
+            resMessages.resMessagesToReturn(500, err, res);
+        });
 }
