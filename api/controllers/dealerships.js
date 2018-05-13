@@ -89,7 +89,7 @@ exports.signUpDealership = (req, res, next) => {
 
             if (Object.keys(allErrors).length > 0) {
                 if (req.file) {
-                    fs.unlink('uploads/tmp/' + req.file.originalname);
+                    fs.unlink('uploads/tmp/logos/' + req.file.originalname);
                 }
                 return resMessages.resMessagesToReturn(400, allErrors, res);
             }
@@ -103,7 +103,7 @@ exports.signUpDealership = (req, res, next) => {
                 // dealership exists
                 if (dealership.length >= 1) {
                     // delete the uploaded logo, since it's a duplicate dealership
-                    fs.unlink('uploads/tmp/' + req.file.originalname);
+                    fs.unlink('uploads/tmp/logos/' + req.file.originalname);
                     return resMessages.resMessagesToReturn(409, 'Account already exists for this dealership', res);
                 } else {
                     bcrypt.hash(creationOperations['AccountCredentials.Password'], 10, (err, hash) => {
@@ -240,7 +240,7 @@ exports.updateDealership = (req, res, next) => {
     allErrors = validations.validateDealershipUpdate(updateOperations);
     if (Object.keys(allErrors).length > 0) {
         if (req.file) {
-            fs.unlink('uploads/tmp/' + req.file.originalname);
+            fs.unlink('uploads/tmp/logos/' + req.file.originalname);
         }
         return resMessages.resMessagesToReturn(400, allErrors, res);
     }

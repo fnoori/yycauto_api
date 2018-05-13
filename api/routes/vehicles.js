@@ -7,7 +7,7 @@ const VehiclesController = require('../controllers/vehicles');
 
 const storage = multer.diskStorage({
     destination: function(req, file, cb) {
-        cb(null, 'uploads/tmp/vehicleImages');
+        cb(null, 'uploads/tmp/vehicles/');
     },
     filename: function(req, file, cb){
         cb(null, file.originalname);
@@ -32,6 +32,6 @@ router.get('/byId/:vehicleId', VehiclesController.getVehicleByID);
 router.get('/byDealershipId/:lazyLoad/:perPage/:dealershipId', VehiclesController.getVehicleByDealershipID);
 router.get('/byDealershipName/:lazyLoad/:perPage/:dealershipName', VehiclesController.getVehicleByDealershipName);
 
-router.post('/addNewVehicle/:dealershipId', checkAuth, upload.any(), VehiclesController.addNewVehicle);
+router.post('/addNewVehicle/:dealershipId', checkAuth, upload.array('vehicleImages'), VehiclesController.addNewVehicle);
 
 module.exports = router;

@@ -2,6 +2,7 @@ const mongoose = require('mongoose');
 const Vehicle = require('../models/vehicle');
 const Dealership = require('../models/dealership');
 const resMessages = require('../utils/resMessages');
+const fs = require('fs');
 
 const omitFromFind = '-_id -Dealership._id';
 
@@ -86,7 +87,6 @@ exports.getVehicleByDealershipName = (req, res, next) => {
 }
 
 exports.addNewVehicle = (req, res, next) => {
-
     // ensure dealership is adding to their own inventory
     if (req.userData.dealershipId != req.params.dealershipId) {
         return resMessages.resMessagesToReturn(403,
@@ -112,6 +112,26 @@ exports.addNewVehicle = (req, res, next) => {
             const newVehicle = new Vehicle(vehicleData);
 
             newVehicle.save().then(saveResult => {
+
+                fs.mkdirSync('uploads/dealerships/' + saveResult.Dealership._id + '/vehicles/' + saveResult._id, (createDirErr) => {
+                    if (createDirErr) {
+                        resMessages.logError(createDirErr);
+                        return resMessages.resMessagesToReturn(500, createDirErr, res);
+                    }
+                });
+
+                for (var i = 0; i < req.files.length; i++) {
+                    fs.rename(req.files[i].path, 'uploads/dealerships/' + 
+                                saveResult.Dealership._id + '/vehicles/' + 
+                                saveResult._id + '/' + req.files[i].originalname, (renameErr) => {
+                        if (renameErr) {
+                            resMessages.logError(renameErr);
+                            return resMessages.resMessagesToReturn(500, renameErr, res);
+                        }
+                    });
+                }
+
+
                 resMessages.resMessagesToReturn(201, 'Vehicle created', res);
             }).catch(saveError => {
                 resMessages.logError(saveError);
