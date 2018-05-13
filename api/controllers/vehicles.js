@@ -70,3 +70,29 @@ exports.getVehicleByDealershipID = (req, res, next) => {
         });
     });
 }
+
+exports.getVehicleByDealershipName = (req, res, next) => {
+    const dealershipID = req.params.dealershipName;
+    const perPage = parseInt(req.params.perPage);
+    const lazyLoad = parseInt(req.params.lazyLoad);
+
+    Vehicle.find({'Dealership': dealershipID})
+    .skip(lazyLoad).limit(perPage).exec().then(doc => {
+        if (doc) {
+            const response = {
+                count: doc.length,
+                'Dealership Vehicles': doc
+            };
+            res.status(200).json(response);
+        } else {
+            res.status(404).json({
+                message: 'No dealership found with matching ID'
+            });
+        }
+    }).catch(err => {
+        errors.logError(err);
+        res.status(500).json({
+            error: err
+        });
+    });
+}
