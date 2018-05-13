@@ -32,9 +32,10 @@ const vehicleSchema = mongoose.Schema({
         "Combined (L/100Km)": {type: String, required: false}
     },
     'Dealership': {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'Dealership',
-        require: true 
+        _id: {type: mongoose.Schema.Types.ObjectId, required: true},
+        Name: {type: String, required: true},
+        Phone: {type: String, required: true},
+        Address: {type: String, required: true}
     },
     'AdTier': {type: String, required: true}
 });
