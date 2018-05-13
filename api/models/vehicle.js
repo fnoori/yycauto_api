@@ -34,9 +34,11 @@ const vehicleSchema = mongoose.Schema({
     'Dealership': {
         _id: {type: mongoose.Schema.Types.ObjectId, required: true},
         Name: {type: String, required: true},
+        Email: {type: String, required: true},
         Phone: {type: String, required: true},
         Address: {type: String, required: true}
     },
+    'VehicleFeatures': {type: Array, required: false},
     'AdTier': {type: String, required: true}
 });
 
