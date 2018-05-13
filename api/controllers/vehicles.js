@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 const Vehicle = require('../models/vehicle');
-const errors = require('../utils/resMessages');
+const resMessages = require('../utils/resMessages');
 
 const omitFromFind = '-_id -Dealership._id';
 
@@ -19,10 +19,8 @@ exports.getAllVehicles = (req, res, next) => {
         res.status(200).json(response);
     })
     .catch(err => {
-        errors.logError(err);
-        res.status(500).json({
-            error: err
-        });
+        resMessages.logError(err);
+        resMessages.resMessagesToReturn(500, err, res);
     });
 }
 
@@ -40,10 +38,8 @@ exports.getVehicleByID = (req, res, next) => {
             });
         }
     }).catch(err =>  {
-        errors.logError(err);
-        res.status(500).json({
-            error: err
-        });
+        resMessages.logError(err);
+        resMessages.resMessagesToReturn(500, err, res);
     });
 }
 
@@ -67,10 +63,8 @@ exports.getVehicleByDealershipID = (req, res, next) => {
             });
         }
     }).catch(err => {
-        errors.logError(err);
-        res.status(500).json({
-            error: err
-        });
+        resMessages.logError(err);
+        resMessages.resMessagesToReturn(500, err, res);
     });
 }
 
@@ -84,20 +78,16 @@ exports.getVehicleByDealershipName = (req, res, next) => {
     .select(omitFromFind)
     .exec().then(doc => {
         if (doc) {
-            const response = {
-                count: doc.length,
-                'Dealership Vehicles': doc
-            };
-            res.status(200).json(response);
+            res.status(200).json(doc);
         } else {
-            res.status(404).json({
-                message: 'No dealership found with matching ID'
-            });
+            resMessages.resMessagesToReturn(404, 'No dealership found with matching ID', res);
         }
     }).catch(err => {
-        errors.logError(err);
-        res.status(500).json({
-            error: err
-        });
+        resMessages.logError(err);
+        resMessages.resMessagesToReturn(500, err, res);
     });
+}
+
+exports.addNewVehicle = (req, res, next) => {
+
 }
