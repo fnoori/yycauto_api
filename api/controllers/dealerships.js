@@ -58,6 +58,7 @@ exports.getDealershipByName = (req, res, next) => {
     const name = req.params.dealershipName;
 
     Dealership.find({ Name: name })
+        .where('AccountCredentials.AccessLevel').nin([1])
         .select(toExcludeFromFind).exec().then(doc => {
             if (doc) {
                 res.status(200).json({
