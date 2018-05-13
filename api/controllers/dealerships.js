@@ -18,19 +18,7 @@ exports.getAllDealerships = (req, res, next) => {
         .select(toExcludeFromFind)
         .where('AccountCredentials.AccessLevel').nin([1])
         .skip(lazyLoad).limit(perPage).exec().then(docs => {
-            const response = {
-                count: docs.length,
-                dealerships: docs.map(doc => {
-                    return {
-                        content: doc,
-                        vehicles: {
-                            type: 'GET',
-                            url: 'http://localhost:3000/vehicles/byDealershipId/0/4/' + doc._id
-                        }
-                    }
-                })
-            };
-            res.status(200).json(response);
+            res.status(200).json(docs);
         }).catch(err => {
             resMessages.resMessagesToReturn(500, err, res);
         });
@@ -61,9 +49,7 @@ exports.getDealershipByName = (req, res, next) => {
         .where('AccountCredentials.AccessLevel').nin([1])
         .select(toExcludeFromFind).exec().then(doc => {
             if (doc) {
-                res.status(200).json({
-                    dealership: doc
-                });
+                res.status(200).json({dealership: doc});
             } else {
                 resMessages.resMessagesToReturn(404, resMessages.DEALERSHIP_NOT_FOUND_WITH_NAME, res);
             }
