@@ -131,7 +131,6 @@ exports.addNewVehicle = (req, res, next) => {
                     });
                 }
 
-
                 resMessages.resMessagesToReturn(201, 'Vehicle created', res);
             }).catch(saveError => {
                 resMessages.logError(saveError);
@@ -145,6 +144,4 @@ exports.addNewVehicle = (req, res, next) => {
         resMessages.logError(err);
         resMessages.resMessagesToReturn(500, err, res);
     });
-
-    return;
 }
