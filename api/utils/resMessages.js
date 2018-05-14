@@ -21,6 +21,8 @@ exports.INVALID_PASSWORD = [
     'Contain at least one number'
 ];
 
+exports.FIELD_CANNOT_BE_EMPTY = 'Field cannot be empty';
+
 exports.logError = (req, res, next) => {
     var dateTime = new Date();
 

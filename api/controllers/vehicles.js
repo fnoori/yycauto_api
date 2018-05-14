@@ -2,9 +2,10 @@ const mongoose = require('mongoose');
 const Vehicle = require('../models/vehicle');
 const Dealership = require('../models/dealership');
 const resMessages = require('../utils/resMessages');
+const validations = require('../utils/validations');
 const fs = require('fs');
 
-const omitFromFind = '-_id -Dealership._id';
+const omitFromFind = '-__v -Dealership._id';
 
 exports.getAllVehicles = (req, res, next) => {
     const lazyLoad = parseInt(req.params.lazyLoad);
@@ -87,6 +88,15 @@ exports.getVehicleByDealershipName = (req, res, next) => {
 }
 
 exports.addNewVehicle = (req, res, next) => {
+    var allErrors = {};
+    var creationOperatinos = req.body;
+
+    allErrors = validations.validateVehicleCreation(creationOperatinos);
+
+    return;
+
+
+
     // ensure dealership is adding to their own inventory
     if (req.userData.dealershipId != req.params.dealershipId) {
         return resMessages.resMessagesToReturn(403,
@@ -157,4 +167,8 @@ exports.addNewVehicle = (req, res, next) => {
         resMessages.logError(err);
         resMessages.resMessagesToReturn(500, err, res);
     });
+}
+
+exports.updateVehicle = (req, res, next) => {
+
 }

@@ -34,4 +34,6 @@ router.get('/byDealershipName/:lazyLoad/:perPage/:dealershipName', VehiclesContr
 
 router.post('/addNewVehicle/:dealershipId', checkAuth, upload.array('vehicleImages'), VehiclesController.addNewVehicle);
 
+router.patch('/update/:dealershipId', checkAuth, upload.array('vehicleImages'), VehiclesController.updateVehicle);
+
 module.exports = router;
