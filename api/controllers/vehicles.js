@@ -93,9 +93,13 @@ exports.addNewVehicle = (req, res, next) => {
             resMessages.DEALERSHIP_ID_TOKEN_NOT_MATCH, res);
     }
 
+    if (req.files.length <= 0) {
+        return resMessages.resMessagesToReturn(400, 'Must include photos of vehicle', res);
+    }
+
     const vehicleInfo = req.body; 
 
-    Dealership.findById(vehicleInfo.DealershipId)
+    Dealership.findById(req.userData.dealershipId)
     .select('AccountCredentials.Email Name Phone Address _id').exec()
     .then(dealershipResult => {
         if (dealershipResult) {
@@ -107,13 +111,20 @@ exports.addNewVehicle = (req, res, next) => {
             vehicleData['Dealership.Name'] = dealershipResult.Name;
             vehicleData['Dealership.Address'] = dealershipResult.Address;
             vehicleData['Dealership.Phone'] = dealershipResult.Phone;
-            vehicleData['Dealership._id'] = dealershipResult._id;
+            vehicleData['Dealership._id'] = req.userData.dealershipId;
 
             const newVehicle = new Vehicle(vehicleData);
 
             newVehicle.save().then(saveResult => {
 
-                fs.mkdirSync('uploads/dealerships/' + saveResult.Dealership._id + '/vehicles/' + saveResult._id, (createDirErr) => {
+                fs.mkdirSync('uploads/dealerships/' + req.userData.dealershipId + '/vehicles/', (createVehicleDirErr) => {
+                    if (createVehicleDirErr) {
+                        resMessages.logError(createVehicleDirErr);
+                        return resMessages.resMessagesToReturn(500, createVehicleDirErr, res);
+                    }
+                });
+
+                fs.mkdirSync('uploads/dealerships/' + req.userData.dealershipId + '/vehicles/' + saveResult._id, (createDirErr) => {
                     if (createDirErr) {
                         resMessages.logError(createDirErr);
                         return resMessages.resMessagesToReturn(500, createDirErr, res);
@@ -122,7 +133,7 @@ exports.addNewVehicle = (req, res, next) => {
 
                 for (var i = 0; i < req.files.length; i++) {
                     fs.rename(req.files[i].path, 'uploads/dealerships/' + 
-                                saveResult.Dealership._id + '/vehicles/' + 
+                                req.userData.dealershipId + '/vehicles/' + 
                                 saveResult._id + '/' + req.files[i].originalname, (renameErr) => {
                         if (renameErr) {
                             resMessages.logError(renameErr);
