@@ -117,12 +117,14 @@ exports.addNewVehicle = (req, res, next) => {
 
             newVehicle.save().then(saveResult => {
 
-                fs.mkdirSync('uploads/dealerships/' + req.userData.dealershipId + '/vehicles/', (createVehicleDirErr) => {
-                    if (createVehicleDirErr) {
-                        resMessages.logError(createVehicleDirErr);
-                        return resMessages.resMessagesToReturn(500, createVehicleDirErr, res);
-                    }
-                });
+                if (!fs.existsSync('uploads/dealerships/' + req.userData.dealershipId + '/vehicles/')) {
+                    fs.mkdirSync('uploads/dealerships/' + req.userData.dealershipId + '/vehicles/', (createVehicleDirErr) => {
+                        if (createVehicleDirErr) {
+                            resMessages.logError(createVehicleDirErr);
+                            return resMessages.resMessagesToReturn(500, createVehicleDirErr, res);
+                        }
+                    });
+                }
 
                 fs.mkdirSync('uploads/dealerships/' + req.userData.dealershipId + '/vehicles/' + saveResult._id, (createDirErr) => {
                     if (createDirErr) {
