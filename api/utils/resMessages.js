@@ -14,6 +14,7 @@ exports.UPDATE_ADDRESS_INVALID = 'If updating an address, please provide an addr
 exports.DEALERSHIP_UPDATED = 'Dealership successfully update';
 exports.DEALERSHIP_NOT_FOUND_WITH_NAME = 'No dealership found with matching name';
 exports.ADMIN_CREATED = 'Admin account created';
+exports.VEHICLE_UPDATED = 'Vehicle successfully updated';
 
 exports.INVALID_PASSWORD = [
     'Password must be at least 8 characters long',

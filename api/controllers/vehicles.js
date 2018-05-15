@@ -15,11 +15,7 @@ exports.getAllVehicles = (req, res, next) => {
     .skip(lazyLoad).limit(perPage)
     .select(omitFromFind)
     .exec().then(docs => {
-        const response = {
-            count: docs.length,
-            vehicles: docs
-        };
-        res.status(200).json(response);
+        res.status(200).json(docs);
     })
     .catch(err => {
         resMessages.logError(err);
@@ -53,11 +49,7 @@ exports.getVehicleByDealershipID = (req, res, next) => {
     .select(omitFromFind)
     .skip(lazyLoad).limit(perPage).exec().then(doc => {
         if (doc) {
-            const response = {
-                count: doc.length,
-                'Dealership Vehicles': doc
-            };
-            res.status(200).json(response);
+            res.status(200).json(doc);
         } else {
             resMessages.resMessagesToReturn(404, 'No dealership found with matching ID', res);
         }
@@ -107,7 +99,7 @@ exports.addNewVehicle = (req, res, next) => {
         return resMessages.resMessagesToReturn(400, 'Must include photos of vehicle', res);
     }
 
-    allErrors = validations.validateVehicleCreation(creationOperatinos);
+    allErrors = validations.validateVehicleData(creationOperatinos);
 
     if (Object.keys(allErrors).length > 0) {
         if (req.files) {
@@ -183,5 +175,52 @@ exports.addNewVehicle = (req, res, next) => {
 }
 
 exports.updateVehicle = (req, res, next) => {
+    var allErrors = {};
+    var updateOperations = req.body;
 
+    // ensure dealership is adding to their own inventory
+    if (req.userData.dealershipId != req.params.dealershipId) {
+        if (req.files) {
+            for (var i = 0; i < req.files.length; i++) {
+                fs.unlink('uploads/tmp/vehicles/' + req.files[i].filename);
+            }
+        }
+        
+        return resMessages.resMessagesToReturn(403,
+            resMessages.DEALERSHIP_ID_TOKEN_NOT_MATCH, res);
+    }
+
+    allErrors = validations.validateVehicleData(updateOperations);
+
+    if (Object.keys(allErrors).length > 0) {
+        if (req.files) {
+            for (var i = 0; i < req.files.length; i++) {
+                fs.unlink('uploads/tmp/vehicles/' + req.files[i].filename);
+            }
+        }
+
+        return resMessages.resMessagesToReturn(400, allErrors, res);
+    }
+
+    const vehicleInfo = req.body; 
+
+    Vehicle.update({_id: req.params.vehicleId}, {$set: updateOperations})
+    .exec().then(result => {
+        if (req.files) {
+            for (var i = 0; i < req.files.length; i++) {
+                fs.rename(req.files[i].path, 'uploads/dealerships/' + 
+                            req.userData.dealershipId + '/vehicles/' + 
+                            req.params.vehicleId + '/' + req.files[i].filename, (renameErr) => {
+                    if (renameErr) {
+                        resMessages.logError(renameErr);
+                        return resMessages.resMessagesToReturn(500, renameErr, res);
+                    }
+                });
+            }
+        }
+        resMessages.resMessagesToReturn(200, resMessages.VEHICLE_UPDATED, res);
+    }).catch(err => {
+        resMessages.logError(err);
+        resMessages.resMessagesToReturn(500, err, res);
+    });
 }

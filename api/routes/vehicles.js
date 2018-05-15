@@ -29,11 +29,11 @@ const upload = multer({
 
 router.get('/:lazyLoad/:perPage', VehiclesController.getAllVehicles);
 router.get('/byId/:vehicleId', VehiclesController.getVehicleByID);
-router.get('/byDealershipId/:lazyLoad/:perPage/:dealershipId', VehiclesController.getVehicleByDealershipID);
+router.get('/byDealershipId/:lazyLoad/:perPage/:dealershipId', checkAuth, VehiclesController.getVehicleByDealershipID);
 router.get('/byDealershipName/:lazyLoad/:perPage/:dealershipName', VehiclesController.getVehicleByDealershipName);
 
 router.post('/addNewVehicle/:dealershipId', checkAuth, upload.array('vehicleImages'), VehiclesController.addNewVehicle);
 
-router.patch('/update/:dealershipId', checkAuth, upload.array('vehicleImages'), VehiclesController.updateVehicle);
+router.patch('/update/:dealershipId/:vehicleId', checkAuth, upload.array('vehicleImages'), VehiclesController.updateVehicle);
 
 module.exports = router;

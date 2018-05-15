@@ -29,7 +29,7 @@ const upload = multer({
 });
 
 router.get('/:lazyLoad/:perPage', DealershipsController.getAllDealerships);
-router.get('/byId/:dealershipId', DealershipsController.getDealershipByID);
+router.get('/byId/:dealershipId', checkAuth, DealershipsController.getDealershipByID);
 router.get('/byName/:dealershipName', DealershipsController.getDealershipByName);
 
 router.post('/signUp', checkAuth, upload.single('logo'), DealershipsController.signUpDealership);

@@ -58,7 +58,7 @@ exports.validateDealershipCreation = (creationOperations) => {
     return allErrors;
 }
 
-exports.validateVehicleCreation = (creationOperations) => {
+exports.validateVehicleData = (creationOperations) => {
     var allErrors = {};
     var toCheck = creationOperations;
 
