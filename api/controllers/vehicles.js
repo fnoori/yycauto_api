@@ -157,8 +157,6 @@ exports.addNewVehicle = (req, res, next) => {
 
                 
                 for (var i = 0; i < req.files.length; i++) {
-                    console.log(req.files[i].path);
-                    console.log(req.files[i].filename);
                     fs.rename(req.files[i].path, 'uploads/dealerships/' + 
                                 req.userData.dealershipId + '/vehicles/' + 
                                 saveResult._id + '/' + req.files[i].filename, (renameErr) => {
