@@ -61,6 +61,7 @@ typings/
 .next
 
 # uploads directory
-uploads/tmp/logos
-uploads/tmp/vehicles
-uploads/tmp/dealerships
+uploads/tmp/logos/
+uploads/tmp/vehicles/
+uploads/tmp/dealerships/
+uploads/dealerships/
