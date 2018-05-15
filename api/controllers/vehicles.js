@@ -113,6 +113,7 @@ exports.addNewVehicle = (req, res, next) => {
 
     const vehicleInfo = req.body; 
 
+    // first check if the dealership exists
     Dealership.findById(req.userData.dealershipId)
     .select('AccountCredentials.Email Name Phone Address _id').exec()
     .then(dealershipResult => {
@@ -129,8 +130,10 @@ exports.addNewVehicle = (req, res, next) => {
 
             const newVehicle = new Vehicle(vehicleData);
 
+            // save data
             newVehicle.save().then(saveResult => {
 
+                // check if the 'vehicles' directory exists for that dealership, if not, make new directory
                 if (!fs.existsSync('uploads/dealerships/' + req.userData.dealershipId + '/vehicles/')) {
                     fs.mkdirSync('uploads/dealerships/' + req.userData.dealershipId + '/vehicles/', (createVehicleDirErr) => {
                         if (createVehicleDirErr) {
@@ -140,6 +143,7 @@ exports.addNewVehicle = (req, res, next) => {
                     });
                 }
 
+                // create directory for the specific vehicle (where the images will be stored)
                 fs.mkdirSync('uploads/dealerships/' + req.userData.dealershipId + '/vehicles/' + saveResult._id, (createDirErr) => {
                     if (createDirErr) {
                         resMessages.logError(createDirErr);
@@ -147,7 +151,7 @@ exports.addNewVehicle = (req, res, next) => {
                     }
                 });
 
-                
+                // move the vehicle images from the tmp directory to the dealership directory
                 for (var i = 0; i < req.files.length; i++) {
                     fs.rename(req.files[i].path, 'uploads/dealerships/' + 
                                 req.userData.dealershipId + '/vehicles/' + 
@@ -178,7 +182,7 @@ exports.updateVehicle = (req, res, next) => {
     var allErrors = {};
     var updateOperations = req.body;
 
-    // ensure dealership is adding to their own inventory
+    // ensure dealership is updating to their own inventory
     if (req.userData.dealershipId != req.params.dealershipId) {
         if (req.files) {
             for (var i = 0; i < req.files.length; i++) {
@@ -192,6 +196,15 @@ exports.updateVehicle = (req, res, next) => {
 
     allErrors = validations.validateVehicleData(updateOperations);
 
+    // check if there is already a maximum number files for this vehicle
+    if (req.files) {
+        var result = fs.readdirSync('uploads/dealerships/' + req.userData.dealershipId + 
+        '/vehicles/' + req.params.vehicleId);
+        if (result.length >= 7) {
+            allErrors['Max Files'] = 'Maximum of 7 files reached, please delete one and try uploading again';
+        }
+    }
+
     if (Object.keys(allErrors).length > 0) {
         if (req.files) {
             for (var i = 0; i < req.files.length; i++) {
@@ -204,6 +217,7 @@ exports.updateVehicle = (req, res, next) => {
 
     const vehicleInfo = req.body; 
 
+    // since the validation is already done earlier, simply pass the update operations to $set
     Vehicle.update({_id: req.params.vehicleId}, {$set: updateOperations})
     .exec().then(result => {
         if (req.files) {
