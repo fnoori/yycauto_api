@@ -62,12 +62,8 @@ exports.validateVehicleCreation = (creationOperations) => {
     var allErrors = {};
     var toCheck = creationOperations;
 
-    console.log(toCheck);
-    console.log('tocheck: ' + toCheck['BasicInfo.Make']);
-
     if (this.isNullOrEmpty(toCheck['BasicInfo.Make'])) {
-        console.log('make is null or empty');
-        allErrors.Make = resMessages.FIELD_CANNOT_BE_EMPTY;
+        allErrors['BasicInfo.Make'] = resMessages.FIELD_CANNOT_BE_EMPTY;
     }
     if (this.isNullOrEmpty(toCheck['BasicInfo.Model'])) {
         allErrors['BasicInfo.Model'] = resMessages.FIELD_CANNOT_BE_EMPTY;
@@ -100,13 +96,11 @@ exports.validateVehicleCreation = (creationOperations) => {
         allErrors['AdTier'] = resMessages.FIELD_CANNOT_BE_EMPTY;
     }
 
-    console.log(allErrors);
-
     return allErrors;
 }
 
 exports.isNullOrEmpty = (input) => {
-    if (input == null || input.lenght <= 0) {
+    if (input == null || input.length <= 0) {
         return true;
     }
 

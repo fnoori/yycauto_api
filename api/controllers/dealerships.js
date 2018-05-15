@@ -75,7 +75,7 @@ exports.signUpDealership = (req, res, next) => {
 
             if (Object.keys(allErrors).length > 0) {
                 if (req.file) {
-                    fs.unlink('uploads/tmp/logos/' + req.file.originalname);
+                    fs.unlink('uploads/tmp/logos/' + req.file.filename);
                 }
                 return resMessages.resMessagesToReturn(400, allErrors, res);
             }
@@ -89,7 +89,7 @@ exports.signUpDealership = (req, res, next) => {
                 // dealership exists
                 if (dealership.length >= 1) {
                     // delete the uploaded logo, since it's a duplicate dealership
-                    fs.unlink('uploads/tmp/logos/' + req.file.originalname);
+                    fs.unlink('uploads/tmp/logos/' + req.file.filename);
                     return resMessages.resMessagesToReturn(409, 'Account already exists for this dealership', res);
                 } else {
                     bcrypt.hash(creationOperations['AccountCredentials.Password'], 10, (err, hash) => {
@@ -122,7 +122,7 @@ exports.signUpDealership = (req, res, next) => {
 
                                 // upload logo if provided
                                 if (req.file) {
-                                    fs.rename(req.file.path, 'uploads/dealerships/' + dealershipFolder + '/logo.' + req.file.mimetype.split('/').pop(), (err) => {
+                                    fs.rename(req.file.path, 'uploads/dealerships/' + dealershipFolder + '/logo.' + req.file.filename, (err) => {
                                         if (err) {
                                             resMessages.logError(err);
                                             return resMessages.resMessagesToReturn(500, err, res);
@@ -219,6 +219,10 @@ exports.updateDealership = (req, res, next) => {
 
     // invalid dealership updating
     if (req.userData.dealershipId != req.params.dealershipId) {
+        if (req.file) {
+            fs.unlink('uploads/tmp/logos/' + req.file.filename);
+        }
+        
         return resMessages.resMessagesToReturn(403,
             resMessages.DEALERSHIP_ID_TOKEN_NOT_MATCH, res);
     }
@@ -226,7 +230,7 @@ exports.updateDealership = (req, res, next) => {
     allErrors = validations.validateDealershipUpdate(updateOperations);
     if (Object.keys(allErrors).length > 0) {
         if (req.file) {
-            fs.unlink('uploads/tmp/logos/' + req.file.originalname);
+            fs.unlink('uploads/tmp/logos/' + req.file.filename);
         }
         return resMessages.resMessagesToReturn(400, allErrors, res);
     }
@@ -276,7 +280,7 @@ updateDealershipHelper = (updateOperations, dealershipId, logoFile, res) => {
         .exec().then(result => {
             // if updating logo
             if (logoFile) {
-                fs.rename(logoFile.path, 'uploads/dealerships/' + dealershipId + '/logo.' + logoFile.mimetype.split('/').pop(), (err) => {
+                fs.rename(logoFile.path, 'uploads/dealerships/' + dealershipId + '/logo.' + logoFile.filename, (err) => {
                     if (err) {
                         resMessages.logError(err);
                         resMessages.resMessagesToReturn(500, err, res);

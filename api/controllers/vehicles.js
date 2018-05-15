@@ -91,20 +91,32 @@ exports.addNewVehicle = (req, res, next) => {
     var allErrors = {};
     var creationOperatinos = req.body;
 
-    allErrors = validations.validateVehicleCreation(creationOperatinos);
-
-    return;
-
-
-
     // ensure dealership is adding to their own inventory
     if (req.userData.dealershipId != req.params.dealershipId) {
+        if (req.files) {
+            for (var i = 0; i < req.files.length; i++) {
+                fs.unlink('uploads/tmp/vehicles/' + req.files[i].filename);
+            }
+        }
+        
         return resMessages.resMessagesToReturn(403,
             resMessages.DEALERSHIP_ID_TOKEN_NOT_MATCH, res);
     }
 
     if (req.files.length <= 0) {
         return resMessages.resMessagesToReturn(400, 'Must include photos of vehicle', res);
+    }
+
+    allErrors = validations.validateVehicleCreation(creationOperatinos);
+
+    if (Object.keys(allErrors).length > 0) {
+        if (req.files) {
+            for (var i = 0; i < req.files.length; i++) {
+                fs.unlink('uploads/tmp/vehicles/' + req.files[i].filename);
+            }
+        }
+
+        return resMessages.resMessagesToReturn(400, allErrors, res);
     }
 
     const vehicleInfo = req.body; 
@@ -143,10 +155,13 @@ exports.addNewVehicle = (req, res, next) => {
                     }
                 });
 
+                
                 for (var i = 0; i < req.files.length; i++) {
+                    console.log(req.files[i].path);
+                    console.log(req.files[i].filename);
                     fs.rename(req.files[i].path, 'uploads/dealerships/' + 
                                 req.userData.dealershipId + '/vehicles/' + 
-                                saveResult._id + '/' + req.files[i].originalname, (renameErr) => {
+                                saveResult._id + '/' + req.files[i].filename, (renameErr) => {
                         if (renameErr) {
                             resMessages.logError(renameErr);
                             return resMessages.resMessagesToReturn(500, renameErr, res);
