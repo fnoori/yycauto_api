@@ -288,14 +288,7 @@ updateDealershipHelper = (updateOperations, dealershipId, logoFile, res) => {
                     }
                 });
             }
-
-            const successMessage = {
-                message: resMessages.DEALERSHIP_UPDATED,
-                request: {
-                    type: 'GET',
-                    url: 'http://localhost:3000/dealerships/byId/' + dealershipId
-                }
-            };
+            message: resMessages.DEALERSHIP_UPDATED,
             resMessages.resMessagesToReturn(200, successMessage, res);
 
         }).catch(err => {

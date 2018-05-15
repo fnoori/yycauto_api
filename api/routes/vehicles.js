@@ -32,8 +32,8 @@ router.get('/byDealershipId/:lazyLoad/:perPage/:dealershipId', checkAuth, Vehicl
 router.get('/byDealershipName/:lazyLoad/:perPage/:dealershipName', VehiclesController.getVehicleByDealershipName);
 router.get('/:lazyLoad/:perPage', VehiclesController.getAllVehicles);
 
-router.post('/addNewVehicle/:dealershipId', checkAuth, upload.array('vehicleImages', 6), VehiclesController.addNewVehicle);
+router.post('/addNewVehicle/:dealershipId', checkAuth, upload.array('vehicleImages', 7), VehiclesController.addNewVehicle);
 
-router.patch('/update/:dealershipId/:vehicleId', checkAuth, upload.array('vehicleImages', 6), VehiclesController.updateVehicle);
+router.patch('/update/:dealershipId/:vehicleId', checkAuth, upload.array('vehicleImages', 7), VehiclesController.updateVehicle);
 
 module.exports = router;

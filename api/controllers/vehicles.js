@@ -202,6 +202,9 @@ exports.updateVehicle = (req, res, next) => {
         '/vehicles/' + req.params.vehicleId);
         if (result.length >= 7) {
             allErrors['Max Files'] = 'Maximum of 7 files reached, please delete one and try uploading again';
+            for (var i = 0; i < req.files.length; i++) {
+                fs.unlink('uploads/tmp/vehicles/' + req.files[i].filename);
+            }
         }
     }
 
