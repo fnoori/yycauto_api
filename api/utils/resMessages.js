@@ -15,14 +15,13 @@ exports.DEALERSHIP_UPDATED = 'Dealership successfully update';
 exports.DEALERSHIP_NOT_FOUND_WITH_NAME = 'No dealership found with matching name';
 exports.ADMIN_CREATED = 'Admin account created';
 exports.VEHICLE_UPDATED = 'Vehicle successfully updated';
+exports.FIELD_CANNOT_BE_EMPTY = 'Field cannot be empty';
 
 exports.INVALID_PASSWORD = [
     'Password must be at least 8 characters long',
     'Contain at least one uppercase character',
     'Contain at least one number'
 ];
-
-exports.FIELD_CANNOT_BE_EMPTY = 'Field cannot be empty';
 
 exports.logError = (req, res, next) => {
     var dateTime = new Date();
