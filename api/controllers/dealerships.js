@@ -113,10 +113,10 @@ exports.signUpDealership = (req, res, next) => {
                                 const dealershipFolder = result.Name.split(' ').join('_');
 
                                 // must create dealership folder for dealerships photos
-                                fs.mkdirSync('uploads/dealerships/' + dealershipFolder, (err) => {
+                                fs.mkdirSync('uploads/dealerships/' + dealershipFolderr, (err) => {
                                     if (err) {
                                         resMessages.logError(err);
-                                        return resMessages.resMessagesToReturn(500, err, res);
+                                        resMessages.resMessagesToReturn(500, err, res);
                                     }
                                 });
 
@@ -125,7 +125,7 @@ exports.signUpDealership = (req, res, next) => {
                                     fs.rename(req.file.path, 'uploads/dealerships/' + dealershipFolder + '/logo.' + req.file.mimetype.split('/').pop(), (err) => {
                                         if (err) {
                                             resMessages.logError(err);
-                                            return resMessages.resMessagesToReturn(500, err, res);
+                                            resMessages.resMessagesToReturn(500, err, res);
                                         }
                                     });
                                 }
@@ -133,7 +133,7 @@ exports.signUpDealership = (req, res, next) => {
                                 resMessages.resMessagesToReturn(201, 'Dealership account created', res);
                             }).catch(err => {
                                 resMessages.logError(err);
-                                return resMessages.resMessagesToReturn(500, err, res);
+                                resMessages.resMessagesToReturn(500, err, res);
                             });
                         }
                     });
