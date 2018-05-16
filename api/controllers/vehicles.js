@@ -134,8 +134,8 @@ exports.addNewVehicle = (req, res, next) => {
             newVehicle.save().then(saveResult => {
 
                 // check if the 'vehicles' directory exists for that dealership, if not, make new directory
-                if (!fs.existsSync('uploads/dealerships/' + req.userData.dealershipId + '/vehicles/')) {
-                    fs.mkdirSync('uploads/dealerships/' + req.userData.dealershipId + '/vehicles/', (createVehicleDirErr) => {
+                if (!fs.existsSync('uploads/dealerships/' + req.userData.dealershipName.split(' ').join('_') + '/vehicles/')) {
+                    fs.mkdirSync('uploads/dealerships/' + req.userData.dealershipName.split(' ').join('_') + '/vehicles/', (createVehicleDirErr) => {
                         if (createVehicleDirErr) {
                             resMessages.logError(createVehicleDirErr);
                             return resMessages.resMessagesToReturn(500, createVehicleDirErr, res);
@@ -144,7 +144,7 @@ exports.addNewVehicle = (req, res, next) => {
                 }
 
                 // create directory for the specific vehicle (where the images will be stored)
-                fs.mkdirSync('uploads/dealerships/' + req.userData.dealershipId + '/vehicles/' + saveResult._id, (createDirErr) => {
+                fs.mkdirSync('uploads/dealerships/' + req.userData.dealershipName.split(' ').join('_') + '/vehicles/' + saveResult._id, (createDirErr) => {
                     if (createDirErr) {
                         resMessages.logError(createDirErr);
                         return resMessages.resMessagesToReturn(500, createDirErr, res);
@@ -154,7 +154,7 @@ exports.addNewVehicle = (req, res, next) => {
                 // move the vehicle images from the tmp directory to the dealership directory
                 for (var i = 0; i < req.files.length; i++) {
                     fs.rename(req.files[i].path, 'uploads/dealerships/' + 
-                                req.userData.dealershipId + '/vehicles/' + 
+                                req.userData.dealershipName.split(' ').join('_') + '/vehicles/' + 
                                 saveResult._id + '/' + req.files[i].filename, (renameErr) => {
                         if (renameErr) {
                             resMessages.logError(renameErr);
@@ -198,7 +198,7 @@ exports.updateVehicle = (req, res, next) => {
 
     // check if there is already a maximum number files for this vehicle
     if (req.files) {
-        var result = fs.readdirSync('uploads/dealerships/' + req.userData.dealershipId + 
+        var result = fs.readdirSync('uploads/dealerships/' + req.userData.dealershipName.split(' ').join('_') + 
         '/vehicles/' + req.params.vehicleId);
         if (result.length >= 7) {
             allErrors['Max Files'] = 'Maximum of 7 files reached, please delete one and try uploading again';
@@ -226,7 +226,7 @@ exports.updateVehicle = (req, res, next) => {
         if (req.files) {
             for (var i = 0; i < req.files.length; i++) {
                 fs.rename(req.files[i].path, 'uploads/dealerships/' + 
-                            req.userData.dealershipId + '/vehicles/' + 
+                            req.userData.dealershipName.split(' ').join('_') + '/vehicles/' + 
                             req.params.vehicleId + '/' + req.files[i].filename, (renameErr) => {
                     if (renameErr) {
                         resMessages.logError(renameErr);

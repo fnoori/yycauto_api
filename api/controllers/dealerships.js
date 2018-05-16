@@ -110,7 +110,7 @@ exports.signUpDealership = (req, res, next) => {
                             });
 
                             newDealership.save().then(result => {
-                                const dealershipFolder = result._id;
+                                const dealershipFolder = result.Name.split(' ').join('_');
 
                                 // must create dealership folder for dealerships photos
                                 fs.mkdirSync('uploads/dealerships/' + dealershipFolder, (err) => {
@@ -122,7 +122,7 @@ exports.signUpDealership = (req, res, next) => {
 
                                 // upload logo if provided
                                 if (req.file) {
-                                    fs.rename(req.file.path, 'uploads/dealerships/' + dealershipFolder + '/logo.' + req.file.filename, (err) => {
+                                    fs.rename(req.file.path, 'uploads/dealerships/' + dealershipFolder + '/logo.' + req.file.mimetype.split('/').pop(), (err) => {
                                         if (err) {
                                             resMessages.logError(err);
                                             return resMessages.resMessagesToReturn(500, err, res);
@@ -192,7 +192,8 @@ exports.loginDealership = (req, res, next) => {
 
                 if (result) {
                     const token = jwt.sign({
-                        dealershipId: dealership[0]._id
+                        dealershipId: dealership[0]._id,
+                        dealershipName: dealership[0].Name
                     },
                         process.env.JWT_KEY,
                         {
@@ -260,27 +261,30 @@ exports.updateDealership = (req, res, next) => {
                             }
                             updateOperations['AccountCredentials.Password'] = hash;
 
-                            updateDealershipHelper(updateOperations, req.userData.dealershipId, req.file, res);
+                            updateDealershipHelper(updateOperations, req.userData.dealershipId, req.userData.dealershipName, req.file, res);
                         });
                     } else {
                         return resMessages.resMessagesToReturn(401, resMessages.OLD_PASSWORD_INCORRECT, res);
                     }
                 });
             }).catch(err => {
+                if (req.file) {
+                    fs.unlink('uploads/tmp/logos/' + req.file.filename);
+                }
                 resMessages.logError(err);
                 resMessages.resMessagesToReturn(500, err, res);
             });
     } else {
-        updateDealershipHelper(updateOperations, req.userData.dealershipId, req.file, res);
+        updateDealershipHelper(updateOperations, req.userData.dealershipId, req.userData.dealershipName, req.file, res);
     }
 }
 
-updateDealershipHelper = (updateOperations, dealershipId, logoFile, res) => {
+updateDealershipHelper = (updateOperations, dealershipId, dealershipName, logoFile, res) => {
     Dealership.update({ _id: dealershipId }, { $set: updateOperations })
         .exec().then(result => {
             // if updating logo
             if (logoFile) {
-                fs.rename(logoFile.path, 'uploads/dealerships/' + dealershipId + '/logo.' + logoFile.filename, (err) => {
+                fs.rename(logoFile.path, 'uploads/dealerships/' + dealershipName.split(' ').join('_') + '/logo.' + logoFile.mimetype.split('/').pop(), (err) => {
                     if (err) {
                         resMessages.logError(err);
                         resMessages.resMessagesToReturn(500, err, res);
@@ -288,8 +292,7 @@ updateDealershipHelper = (updateOperations, dealershipId, logoFile, res) => {
                     }
                 });
             }
-            message: resMessages.DEALERSHIP_UPDATED,
-            resMessages.resMessagesToReturn(200, successMessage, res);
+            resMessages.resMessagesToReturn(200, resMessages.DEALERSHIP_UPDATED, res);
 
         }).catch(err => {
             resMessages.logError(err);
