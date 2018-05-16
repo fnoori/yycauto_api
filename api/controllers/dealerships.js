@@ -132,6 +132,7 @@ exports.signUpDealership = (req, res, next) => {
                                 
                                 resMessages.resMessagesToReturn(201, 'Dealership account created', res);
                             }).catch(err => {
+                                emptyLogosTmpDir('uploads/tmp/logos/');
                                 resMessages.logError(err);
                                 resMessages.resMessagesToReturn(500, err, res);
                             });
@@ -295,7 +296,17 @@ updateDealershipHelper = (updateOperations, dealershipId, dealershipName, logoFi
             resMessages.resMessagesToReturn(200, resMessages.DEALERSHIP_UPDATED, res);
 
         }).catch(err => {
+            emptyLogosTmpDir('uploads/tmp/logos/');
             resMessages.logError(err);
             resMessages.resMessagesToReturn(500, err, res);
         });
+}
+
+// delete files from tmp directory since operation failed
+emptyLogosTmpDir = (dirname) => {
+    var tmpLogos = fs.readdirSync(dirname);
+
+    if (tmpLogos.length > 0) {
+        fs.unlink(dirname + tmpLogos[0]);
+    }
 }
