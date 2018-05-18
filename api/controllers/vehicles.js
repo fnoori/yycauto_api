@@ -4,6 +4,7 @@ const Dealership = require('../models/dealership');
 const resMessages = require('../utils/resMessages');
 const validations = require('../utils/validations');
 const fs = require('fs');
+const rimraf = require('rimraf');
 
 const omitFromFind = '-__v -Dealership._id';
 
@@ -292,6 +293,33 @@ exports.updateVehicle = (req, res, next) => {
         emptyVehiclesTmpDir('uploads/tmp/vehicles/');
         resMessages.logError(err);
         resMessages.resMessagesToReturn(500, err, res);
+    });
+}
+
+exports.deleteVehicle = (req, res, next) => {
+    const dealershipId = req.params.dealershipId;
+    const vehicleId = req.params.vehicleId;
+    const dealershipName = req.params.dealershipName;
+
+    // ensure dealership is deleting to their own inventory
+    if (req.userData.dealershipId != dealershipId) {
+        return resMessages.resMessagesToReturn(403,
+            resMessages.DEALERSHIP_ID_TOKEN_NOT_MATCH, res);
+    }    
+
+    Vehicle.remove({_id: vehicleId, 'Dealership._id': dealershipId})
+    .exec().then(result => {
+        rimraf('uploads/dealerships/' + dealershipName.split(' ').join('_') + '/vehicles/' + vehicleId, (rimrafErr) => {
+            if (rimrafErr) {
+                resMessages.logError(rimrafErr);
+                return resMessages(500, rimrafErr, res);
+            }
+        });
+
+        return resMessages.resMessagesToReturn(200, 'Vehicle deleted sucessfully', res);
+    }).catch(removeErr => {
+        resMessages.logError(removeErr);
+        resMessages.resMessagesToReturn(500, removeErr, res);
     });
 }
 
