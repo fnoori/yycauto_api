@@ -4,6 +4,7 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const multer = require('multer');
 const fs = require('fs');
+const rimraf = require('rimraf');
 
 const resMessages = require('../utils/resMessages');
 const validations = require('../utils/validations');
@@ -113,7 +114,7 @@ exports.signUpDealership = (req, res, next) => {
                                 const dealershipFolder = result.Name.split(' ').join('_');
 
                                 // must create dealership folder for dealerships photos
-                                fs.mkdirSync('uploads/dealerships/' + dealershipFolderr, (err) => {
+                                fs.mkdirSync('uploads/dealerships/' + dealershipFolder, (err) => {
                                     if (err) {
                                         resMessages.logError(err);
                                         resMessages.resMessagesToReturn(500, err, res);
@@ -297,6 +298,40 @@ updateDealershipHelper = (updateOperations, dealershipId, dealershipName, logoFi
 
         }).catch(err => {
             emptyLogosTmpDir('uploads/tmp/logos/');
+            resMessages.logError(err);
+            resMessages.resMessagesToReturn(500, err, res);
+        });
+}
+
+exports.deleteDealershipById = (req, res, next) => {
+    const dealershipId = req.params.dealershipId;
+    const dealershipName = req.params.dealershipName;
+
+    Dealership.findById(req.userData.dealershipId)
+        .select('AccountCredentials.AccessLevel')
+        .exec().then(dealership => {
+            // check access level of currently logged in user
+            if (dealership.AccountCredentials.AccessLevel != 1 &&
+                req.userData.dealershipId != req.params.dealershipId) {
+                return resMessages.resMessagesToReturn(403, 'Incorrect permission to delete dealership account', res);
+            }
+
+            rimraf('uploads/dealerships/' + dealershipName.split(' ').join('_'), (rimrafErr) => {
+                if (rimrafErr) {
+                    resMessages.logError(rimrafErr);
+                    return resMessages(500, rimrafErr, res);
+                }
+            });
+
+            Dealership.remove({_id: dealershipId})
+            .exec().then(result => {
+                return resMessages.resMessagesToReturn(200, 'Dealership deleted successfully', res);
+            }).catch(removeError => {
+                resMessages.logError(removeError);
+                resMessages.resMessagesToReturn(500, removeError, res);
+            });
+
+        }).catch(err => {
             resMessages.logError(err);
             resMessages.resMessagesToReturn(500, err, res);
         });

@@ -38,4 +38,6 @@ router.post('/login', DealershipsController.loginDealership);
 
 router.patch('/update/:dealershipId', checkAuth, upload.single('logo'), DealershipsController.updateDealership);
 
+router.delete('/delete/:dealershipId/:dealershipName', checkAuth, DealershipsController.deleteDealershipById);
+
 module.exports = router;
