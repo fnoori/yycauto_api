@@ -191,6 +191,7 @@ exports.addNewVehicle = (req, res, next) => {
 
                 resMessages.resMessagesToReturn(201, 'Vehicle created', res);
             }).catch(saveError => {
+                emptyVehiclesTmpDir('uploads/tmp/vehicles/');
                 resMessages.logError(saveError);
                 resMessages.resMessagesToReturn(500, saveError, res);
             })
@@ -244,10 +245,35 @@ exports.updateVehicle = (req, res, next) => {
         return resMessages.resMessagesToReturn(400, allErrors, res);
     }
 
-    const vehicleInfo = req.body; 
+    var vehicleData = {};
+    vehicleData['BasicInfo.Make'] = updateOperations['BasicInfo.Make'];
+    vehicleData['BasicInfo.Model'] = updateOperations['BasicInfo.Model'];
+    vehicleData['BasicInfo.Trim'] = updateOperations['BasicInfo.Trim'];
+    vehicleData['BasicInfo.Type'] = updateOperations['BasicInfo.Type'];
+    vehicleData['BasicInfo.Year'] = updateOperations['BasicInfo.Year'];
+    vehicleData['BasicInfo.Exterior Colour'] = updateOperations['BasicInfo.Exterior Colour'];
+    vehicleData['BasicInfo.Interior Colour'] = updateOperations['BasicInfo.Interior Colour'];
+    vehicleData['BasicInfo.Price'] = updateOperations['BasicInfo.Price'];
+    vehicleData['BasicInfo.Kilometres'] = updateOperations['BasicInfo.Kilometres'];
+    vehicleData['BasicInfo.Fuel Type'] = updateOperations['BasicInfo.Fuel Type'];
+    vehicleData['BasicInfo.Doors'] = updateOperations['BasicInfo.Doors'];
+    vehicleData['BasicInfo.Seats'] = updateOperations['BasicInfo.Seats'];
+    vehicleData['BasicInfo.Description'] = updateOperations['BasicInfo.Description'];
+    vehicleData['MechanicalSpecs.CarProof'] = updateOperations['MechanicalSpecs.CarProof'];
+    vehicleData['MechanicalSpecs.Transmission'] = updateOperations['MechanicalSpecs.Transmission'];
+    vehicleData['MechanicalSpecs.Engine Size (L)'] = updateOperations['MechanicalSpecs.Engine Size (L)'];
+    vehicleData['MechanicalSpecs.Cylinders'] = updateOperations['MechanicalSpecs.Cylinders'];
+    vehicleData['MechanicalSpecs.Horsepower @ RPM'] = updateOperations['MechanicalSpecs.Horsepower @ RPM'];
+    vehicleData['MechanicalSpecs.Torque (lb - ft) @ RPM'] = updateOperations['MechanicalSpecs.Torque (lb - ft) @ RPM'];
+    vehicleData['MechanicalSpecs.Recommended Fuel'] = updateOperations['MechanicalSpecs.Recommended Fuel'];
+    vehicleData['FuelEconomy.City (L/100Km)'] = updateOperations['FuelEconomy.City (L/100Km)'];
+    vehicleData['FuelEconomy.Highway (L/100Km)'] = updateOperations['FuelEconomy.Highway (L/100Km)'];
+    vehicleData['FuelEconomy.Combined (L/100Km)'] = updateOperations['FuelEconomy.Combined (L/100Km)'];
+    vehicleData['AdTier'] = updateOperations['AdTier'];
+    vehicleData['VehicleFeatures'] = updateOperations['VehicleFeatures'];
 
     // since the validation is already done earlier, simply pass the update operations to $set
-    Vehicle.update({_id: req.params.vehicleId}, {$set: updateOperations})
+    Vehicle.update({_id: req.params.vehicleId}, {$set: vehicleData})
     .exec().then(result => {
         if (req.files) {
             for (var i = 0; i < req.files.length; i++) {
@@ -263,7 +289,17 @@ exports.updateVehicle = (req, res, next) => {
         }
         resMessages.resMessagesToReturn(200, resMessages.VEHICLE_UPDATED, res);
     }).catch(err => {
+        emptyVehiclesTmpDir('uploads/tmp/vehicles/');
         resMessages.logError(err);
         resMessages.resMessagesToReturn(500, err, res);
     });
+}
+
+// delete files from tmp directory since operation failed
+emptyVehiclesTmpDir = (dirname) => {
+    var tmpLogos = fs.readdirSync(dirname);
+
+    if (tmpLogos.length > 0) {
+        fs.unlink(dirname + tmpLogos[0]);
+    }
 }
