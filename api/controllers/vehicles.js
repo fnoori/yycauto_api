@@ -1,10 +1,12 @@
 const mongoose = require('mongoose');
 const Vehicle = require('../models/vehicle');
 const Dealership = require('../models/dealership');
-const resMessages = require('../utils/resMessages');
-const validations = require('../utils/validations');
 const fs = require('fs');
 const rimraf = require('rimraf');
+
+const resMessages = require('../utils/resMessages');
+const validations = require('../utils/validations');
+const utilities = require('../utils/utility');
 
 const omitFromFind = '-__v -Dealership._id';
 
@@ -192,7 +194,7 @@ exports.addNewVehicle = (req, res, next) => {
 
                 resMessages.resMessagesToReturn(201, 'Vehicle created', res);
             }).catch(saveError => {
-                emptyVehiclesTmpDir('uploads/tmp/vehicles/');
+                utilities.emptyDir('uploads/tmp/vehicles/');
                 resMessages.logError(saveError);
                 resMessages.resMessagesToReturn(500, saveError, res);
             })
@@ -276,6 +278,7 @@ exports.updateVehicle = (req, res, next) => {
     // since the validation is already done earlier, simply pass the update operations to $set
     Vehicle.update({_id: req.params.vehicleId}, {$set: vehicleData})
     .exec().then(result => {
+        console.log(resssss);
         if (req.files) {
             for (var i = 0; i < req.files.length; i++) {
                 fs.rename(req.files[i].path, 'uploads/dealerships/' + 
@@ -290,7 +293,7 @@ exports.updateVehicle = (req, res, next) => {
         }
         resMessages.resMessagesToReturn(200, resMessages.VEHICLE_UPDATED, res);
     }).catch(err => {
-        emptyVehiclesTmpDir('uploads/tmp/vehicles/');
+        utilities.emptyDir('uploads/tmp/vehicles/');
         resMessages.logError(err);
         resMessages.resMessagesToReturn(500, err, res);
     });
@@ -299,7 +302,6 @@ exports.updateVehicle = (req, res, next) => {
 exports.deleteVehicle = (req, res, next) => {
     const dealershipId = req.params.dealershipId;
     const vehicleId = req.params.vehicleId;
-    const dealershipName = req.params.dealershipName;
 
     // ensure dealership is deleting to their own inventory
     if (req.userData.dealershipId != dealershipId) {
@@ -309,7 +311,7 @@ exports.deleteVehicle = (req, res, next) => {
 
     Vehicle.remove({_id: vehicleId, 'Dealership._id': dealershipId})
     .exec().then(result => {
-        rimraf('uploads/dealerships/' + dealershipName.split(' ').join('_') + '/vehicles/' + vehicleId, (rimrafErr) => {
+        rimraf('uploads/dealerships/' + req.userData.dealershipName.split(' ').join('_') + '/vehicles/' + vehicleId, (rimrafErr) => {
             if (rimrafErr) {
                 resMessages.logError(rimrafErr);
                 return resMessages(500, rimrafErr, res);
@@ -321,13 +323,4 @@ exports.deleteVehicle = (req, res, next) => {
         resMessages.logError(removeErr);
         resMessages.resMessagesToReturn(500, removeErr, res);
     });
-}
-
-// delete files from tmp directory since operation failed
-emptyVehiclesTmpDir = (dirname) => {
-    var tmpLogos = fs.readdirSync(dirname);
-
-    if (tmpLogos.length > 0) {
-        fs.unlink(dirname + tmpLogos[0]);
-    }
 }

@@ -36,6 +36,6 @@ router.post('/addNewVehicle/:dealershipId', checkAuth, upload.array('vehicleImag
 
 router.patch('/update/:dealershipId/:vehicleId', checkAuth, upload.array('vehicleImages', 7), VehiclesController.updateVehicle);
 
-router.delete('/delete/:dealershipId/:dealershipName/:vehicleId', checkAuth, VehiclesController.deleteVehicle);
+router.delete('/delete/:dealershipId/:vehicleId', checkAuth, VehiclesController.deleteVehicle);
 
 module.exports = router;
