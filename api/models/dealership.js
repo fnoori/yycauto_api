@@ -15,8 +15,7 @@ const dealershipSchema = mongoose.Schema({
         },
         'Password': { 
             type: String,
-            required: true,
-            match: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d]{8,}$/
+            required: true
         },
         'AccessLevel': { type: Number, required: true }
     }

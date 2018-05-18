@@ -118,7 +118,7 @@ exports.addNewVehicle = (req, res, next) => {
     .select('AccountCredentials.Email Name Phone Address _id').exec()
     .then(dealershipResult => {
         if (dealershipResult) {
-            const vehicleData = vehicleInfo;
+            var vehicleData = {};
             delete vehicleData.DealershipId;
 
             vehicleData['_id'] = new mongoose.Types.ObjectId(),
@@ -127,6 +127,32 @@ exports.addNewVehicle = (req, res, next) => {
             vehicleData['Dealership.Address'] = dealershipResult.Address;
             vehicleData['Dealership.Phone'] = dealershipResult.Phone;
             vehicleData['Dealership._id'] = req.userData.dealershipId;
+
+            vehicleData['BasicInfo.Make'] = vehicleInfo['BasicInfo.Make'];
+            vehicleData['BasicInfo.Model'] = vehicleInfo['BasicInfo.Model'];
+            vehicleData['BasicInfo.Trim'] = vehicleInfo['BasicInfo.Trim'];
+            vehicleData['BasicInfo.Type'] = vehicleInfo['BasicInfo.Type'];
+            vehicleData['BasicInfo.Year'] = vehicleInfo['BasicInfo.Year'];
+            vehicleData['BasicInfo.Exterior Colour'] = vehicleInfo['BasicInfo.Exterior Colour'];
+            vehicleData['BasicInfo.Interior Colour'] = vehicleInfo['BasicInfo.Interior Colour'];
+            vehicleData['BasicInfo.Price'] = vehicleInfo['BasicInfo.Price'];
+            vehicleData['BasicInfo.Kilometres'] = vehicleInfo['BasicInfo.Kilometres'];
+            vehicleData['BasicInfo.Fuel Type'] = vehicleInfo['BasicInfo.Fuel Type'];
+            vehicleData['BasicInfo.Doors'] = vehicleInfo['BasicInfo.Doors'];
+            vehicleData['BasicInfo.Seats'] = vehicleInfo['BasicInfo.Seats'];
+            vehicleData['BasicInfo.Description'] = vehicleInfo['BasicInfo.Description'];
+            vehicleData['MechanicalSpecs.CarProof'] = vehicleInfo['MechanicalSpecs.CarProof'];
+            vehicleData['MechanicalSpecs.Transmission'] = vehicleInfo['MechanicalSpecs.Transmission'];
+            vehicleData['MechanicalSpecs.Engine Size (L)'] = vehicleInfo['MechanicalSpecs.Engine Size (L)'];
+            vehicleData['MechanicalSpecs.Cylinders'] = vehicleInfo['MechanicalSpecs.Cylinders'];
+            vehicleData['MechanicalSpecs.Horsepower @ RPM'] = vehicleInfo['MechanicalSpecs.Horsepower @ RPM'];
+            vehicleData['MechanicalSpecs.Torque (lb - ft) @ RPM'] = vehicleInfo['MechanicalSpecs.Torque (lb - ft) @ RPM'];
+            vehicleData['MechanicalSpecs.Recommended Fuel'] = vehicleInfo['MechanicalSpecs.Recommended Fuel'];
+            vehicleData['FuelEconomy.City (L/100Km)'] = vehicleInfo['FuelEconomy.City (L/100Km)'];
+            vehicleData['FuelEconomy.Highway (L/100Km)'] = vehicleInfo['FuelEconomy.Highway (L/100Km)'];
+            vehicleData['FuelEconomy.Combined (L/100Km)'] = vehicleInfo['FuelEconomy.Combined (L/100Km)'];
+            vehicleData['AdTier'] = vehicleInfo['AdTier'];
+            vehicleData['VehicleFeatures'] = vehicleInfo['VehicleFeatures'];
 
             const newVehicle = new Vehicle(vehicleData);
 
