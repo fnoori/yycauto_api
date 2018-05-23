@@ -1,21 +1,39 @@
 const mongoose = require('mongoose');
 const Error = require('../models/error');
 
-exports.INVALID_EMAIL = 'Invalid email address';
+exports.AUTHENTICATION_SUCCESS = 'Authentication sccessful';
+
+exports.ADMIN_CREATED = 'Admin account created';
+exports.ADMIN_ONLY_CREATE_DEALERSHIP = 'Only admin users can create dealership accounts';
+
+// dealership strings
 exports.PROVIDE_DEALERSHIP_NAME = 'Must provide dealership name';
-exports.PROVIDE_PHONE_NUMBER = 'Must provide phone number';
-exports.PROVIDE_ADDRESS = 'Must provide address';
 exports.DEALERSHIP_NOT_FOUND_WITH_ID = 'No dealership found with provided ID';
+exports.DEALERSHIP_UPDATED = 'Dealership successfully update';
 exports.DEALERSHIP_ID_TOKEN_NOT_MATCH = 'Dealership ID from token and provided dealership ID do not match';
+exports.DEALERSHIP_NOT_FOUND_WITH_NAME = 'No dealership found with matching name';
+exports.DEALERSHIP_CREATED = 'Dealership account created';
+exports.DEALERSHIP_DELETED = 'Dealership deleted successfully';
+
+// vehicle strings
+exports.VEHICLE_UPDATED = 'Vehicle successfully updated';
+exports.VEHICLE_NOT_FOUND_WITH_ID = 'No vehicle found with matching ID';
+exports.MUST_INCLUDE_VEHICLE_PHOTOS = 'Must include photos of vehicle';
+exports.VEHICLE_CREATED = 'Vehicle created';
+exports.VEHICLE_DELETED_SUCCESSFULLY = 'Vehicle deleted sucessfully';
+
+// misc
+exports.DEALERHSHIP_ALREADY_EXISTS = 'Account already exists for this dealership';
+exports.INVALID_EMAIL = 'Invalid email address';
 exports.OLD_PASSWORD_INCORRECT = 'Old password is incorrect';
 exports.AUTHENTICATION_FAIL = 'Authentication failed';
 exports.UPDATE_PHONE_INVALID = 'If updating phone number, please provide a phone number';
 exports.UPDATE_ADDRESS_INVALID = 'If updating an address, please provide an address';
-exports.DEALERSHIP_UPDATED = 'Dealership successfully update';
-exports.DEALERSHIP_NOT_FOUND_WITH_NAME = 'No dealership found with matching name';
-exports.ADMIN_CREATED = 'Admin account created';
-exports.VEHICLE_UPDATED = 'Vehicle successfully updated';
 exports.FIELD_CANNOT_BE_EMPTY = 'Field cannot be empty';
+exports.PROVIDE_PHONE_NUMBER = 'Must provide phone number';
+exports.PROVIDE_ADDRESS = 'Must provide address';
+exports.CANNOT_DELETE_DEALERSHIP = 'Incorrect permission to delete dealership account';
+exports.MAX_IMAGES_REACHED_VEHICLE = 'Maximum of 7 files reached, please delete one and try uploading again';
 
 exports.INVALID_PASSWORD = [
     'Password must be at least 8 characters long',

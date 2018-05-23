@@ -10,6 +10,8 @@ const resMessages = require('../utils/resMessages');
 const validations = require('../utils/validations');
 const utilities = require('../utils/utility');
 
+const rootTmpLogoDir = 'uploads/tmp/logos/';
+
 const toExcludeFromFind = '-AccountCredentials.Password -__v -_id -AccountCredentials.AccessLevel';
 
 exports.getAllDealerships = (req, res, next) => {
@@ -36,7 +38,7 @@ exports.getDealershipByID = (req, res, next) => {
                     dealership: doc
                 });
             } else {
-                resMessages.resMessagesToReturn(404, 'No dealership found with matching ID', res);
+                resMessages.resMessagesToReturn(404, resMessages.DEALERSHIP_NOT_FOUND_WITH_ID, res);
             }
         }).catch(err => {
             resMessages.logError(err);
@@ -67,7 +69,7 @@ exports.signUpDealership = (req, res, next) => {
         .exec().then(dealership => {
             // check access level of currently logged in user
             if (dealership.AccountCredentials.AccessLevel != 1) {
-                return resMessages.resMessagesToReturn(403, 'Only admin users can create dealership accounts', res);
+                return resMessages.resMessagesToReturn(403, resMessages.ADMIN_ONLY_CREATE_DEALERSHIP, res);
             }
 
             var creationOperations = req.body;
@@ -77,7 +79,7 @@ exports.signUpDealership = (req, res, next) => {
 
             if (Object.keys(allErrors).length > 0) {
                 if (req.file) {
-                    fs.unlink('uploads/tmp/logos/' + req.file.filename);
+                    fs.unlink(rootTmpLogoDir + req.file.filename);
                 }
                 return resMessages.resMessagesToReturn(400, allErrors, res);
             }
@@ -91,8 +93,8 @@ exports.signUpDealership = (req, res, next) => {
                 // dealership exists
                 if (dealership.length >= 1) {
                     // delete the uploaded logo, since it's a duplicate dealership
-                    fs.unlink('uploads/tmp/logos/' + req.file.filename);
-                    return resMessages.resMessagesToReturn(409, 'Account already exists for this dealership', res);
+                    fs.unlink(rootTmpLogoDir + req.file.filename);
+                    return resMessages.resMessagesToReturn(409, resMessages.DEALERHSHIP_ALREADY_EXISTS, res);
                 } else {
                     bcrypt.hash(creationOperations['AccountCredentials.Password'], 10, (err, hash) => {
                         if (err) {
@@ -132,9 +134,9 @@ exports.signUpDealership = (req, res, next) => {
                                     });
                                 }
                                 
-                                resMessages.resMessagesToReturn(201, 'Dealership account created', res);
+                                resMessages.resMessagesToReturn(201, resMessages.DEALERSHIP_CREATED, res);
                             }).catch(err => {
-                                utilities.emptyDir('uploads/tmp/logos/');
+                                utilities.emptyDir(rootTmpLogoDir);
                                 resMessages.logError(err);
                                 resMessages.resMessagesToReturn(500, err, res);
                             });
@@ -204,7 +206,7 @@ exports.loginDealership = (req, res, next) => {
                         });
 
                     return res.status(200).json({
-                        message: 'Authentication sccessful',
+                        message: resMessages.AUTHENTICATION_SUCCESS,
                         token: token
                     });
                 }
@@ -224,7 +226,7 @@ exports.updateDealership = (req, res, next) => {
     // invalid dealership updating
     if (req.userData.dealershipId != req.params.dealershipId) {
         if (req.file) {
-            fs.unlink('uploads/tmp/logos/' + req.file.filename);
+            fs.unlink(rootTmpLogoDir + req.file.filename);
         }
         
         return resMessages.resMessagesToReturn(403,
@@ -234,7 +236,7 @@ exports.updateDealership = (req, res, next) => {
     allErrors = validations.validateDealershipUpdate(updateOperations);
     if (Object.keys(allErrors).length > 0) {
         if (req.file) {
-            fs.unlink('uploads/tmp/logos/' + req.file.filename);
+            fs.unlink(rootTmpLogoDir + req.file.filename);
         }
         return resMessages.resMessagesToReturn(400, allErrors, res);
     }
@@ -272,7 +274,7 @@ exports.updateDealership = (req, res, next) => {
                 });
             }).catch(err => {
                 if (req.file) {
-                    fs.unlink('uploads/tmp/logos/' + req.file.filename);
+                    fs.unlink(rootTmpLogoDir + req.file.filename);
                 }
                 resMessages.logError(err);
                 resMessages.resMessagesToReturn(500, err, res);
@@ -298,7 +300,7 @@ updateDealershipHelper = (updateOperations, dealershipId, dealershipName, logoFi
             resMessages.resMessagesToReturn(200, resMessages.DEALERSHIP_UPDATED, res);
 
         }).catch(err => {
-            utilities.emptyDir('uploads/tmp/logos/');
+            utilities.emptyDir(rootTmpLogoDir);
             resMessages.logError(err);
             resMessages.resMessagesToReturn(500, err, res);
         });
@@ -314,7 +316,7 @@ exports.deleteDealershipById = (req, res, next) => {
             // check access level of currently logged in user
             if (dealership.AccountCredentials.AccessLevel != 1 &&
                 req.userData.dealershipId != req.params.dealershipId) {
-                return resMessages.resMessagesToReturn(403, 'Incorrect permission to delete dealership account', res);
+                return resMessages.resMessagesToReturn(403, resMessages.CANNOT_DELETE_DEALERSHIP, res);
             }
 
             rimraf('uploads/dealerships/' + dealershipName.split(' ').join('_'), (rimrafErr) => {
@@ -326,7 +328,7 @@ exports.deleteDealershipById = (req, res, next) => {
 
             Dealership.remove({_id: dealershipId})
             .exec().then(result => {
-                return resMessages.resMessagesToReturn(200, 'Dealership deleted successfully', res);
+                return resMessages.resMessagesToReturn(200, resMessages.DEALERSHIP_DELETED, res);
             }).catch(removeError => {
                 resMessages.logError(removeError);
                 resMessages.resMessagesToReturn(500, removeError, res);

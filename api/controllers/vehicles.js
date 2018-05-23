@@ -8,6 +8,8 @@ const resMessages = require('../utils/resMessages');
 const validations = require('../utils/validations');
 const utilities = require('../utils/utility');
 
+const rootTempVehicleDir = 'uploads/tmp/vehicles/';
+
 const omitFromFind = '-__v -Dealership._id';
 
 exports.getAllVehicles = (req, res, next) => {
@@ -35,7 +37,7 @@ exports.getVehicleByID = (req, res, next) => {
                 vehicle: doc
             });
         } else {
-            resMessages.resMessagesToReturn(404, 'No vehicle found with matching ID', res);
+            resMessages.resMessagesToReturn(404, resMessages.VEHICLE_NOT_FOUND_WITH_ID, res);
         }
     }).catch(err =>  {
         resMessages.logError(err);
@@ -54,7 +56,7 @@ exports.getVehicleByDealershipID = (req, res, next) => {
         if (doc) {
             res.status(200).json(doc);
         } else {
-            resMessages.resMessagesToReturn(404, 'No dealership found with matching ID', res);
+            resMessages.resMessagesToReturn(404, resMessages.DEALERSHIP_NOT_FOUND_WITH_ID, res);
         }
     }).catch(err => {
         resMessages.logError(err);
@@ -74,7 +76,7 @@ exports.getVehicleByDealershipName = (req, res, next) => {
         if (doc) {
             res.status(200).json(doc);
         } else {
-            resMessages.resMessagesToReturn(404, 'No dealership found with matching ID', res);
+            resMessages.resMessagesToReturn(404, resMessages.DEALERSHIP_NOT_FOUND_WITH_ID, res);
         }
     }).catch(err => {
         resMessages.logError(err);
@@ -90,7 +92,7 @@ exports.addNewVehicle = (req, res, next) => {
     if (req.userData.dealershipId != req.params.dealershipId) {
         if (req.files) {
             for (var i = 0; i < req.files.length; i++) {
-                fs.unlink('uploads/tmp/vehicles/' + req.files[i].filename);
+                fs.unlink(rootTempVehicleDir + req.files[i].filename);
             }
         }
         
@@ -99,7 +101,7 @@ exports.addNewVehicle = (req, res, next) => {
     }
 
     if (req.files.length <= 0) {
-        return resMessages.resMessagesToReturn(400, 'Must include photos of vehicle', res);
+        return resMessages.resMessagesToReturn(400, resMessages.MUST_INCLUDE_VEHICLE_PHOTOS, res);
     }
 
     allErrors = validations.validateVehicleData(creationOperatinos);
@@ -107,7 +109,7 @@ exports.addNewVehicle = (req, res, next) => {
     if (Object.keys(allErrors).length > 0) {
         if (req.files) {
             for (var i = 0; i < req.files.length; i++) {
-                fs.unlink('uploads/tmp/vehicles/' + req.files[i].filename);
+                fs.unlink(rootTempVehicleDir + req.files[i].filename);
             }
         }
 
@@ -192,15 +194,15 @@ exports.addNewVehicle = (req, res, next) => {
                     });
                 }
 
-                resMessages.resMessagesToReturn(201, 'Vehicle created', res);
+                resMessages.resMessagesToReturn(201, resMessages.VEHICLE_CREATED, res);
             }).catch(saveError => {
-                utilities.emptyDir('uploads/tmp/vehicles/');
+                utilities.emptyDir(rootTempVehicleDir);
                 resMessages.logError(saveError);
                 resMessages.resMessagesToReturn(500, saveError, res);
             })
 
         } else {
-            resMessages.resMessagesToReturn(404, 'No dealership found with matching ID', res);
+            resMessages.resMessagesToReturn(404, resMessages.DEALERSHIP_NOT_FOUND_WITH_ID, res);
         }
     }).catch(err => {
         resMessages.logError(err);
@@ -216,7 +218,7 @@ exports.updateVehicle = (req, res, next) => {
     if (req.userData.dealershipId != req.params.dealershipId) {
         if (req.files) {
             for (var i = 0; i < req.files.length; i++) {
-                fs.unlink('uploads/tmp/vehicles/' + req.files[i].filename);
+                fs.unlink(rootTempVehicleDir + req.files[i].filename);
             }
         }
         
@@ -231,9 +233,9 @@ exports.updateVehicle = (req, res, next) => {
         var result = fs.readdirSync('uploads/dealerships/' + req.userData.dealershipName.split(' ').join('_') + 
         '/vehicles/' + req.params.vehicleId);
         if (result.length >= 7) {
-            allErrors['Max Files'] = 'Maximum of 7 files reached, please delete one and try uploading again';
+            allErrors['Max Files'] = resMessages.MAX_IMAGES_REACHED_VEHICLE;
             for (var i = 0; i < req.files.length; i++) {
-                fs.unlink('uploads/tmp/vehicles/' + req.files[i].filename);
+                fs.unlink(rootTempVehicleDir + req.files[i].filename);
             }
         }
     }
@@ -241,7 +243,7 @@ exports.updateVehicle = (req, res, next) => {
     if (Object.keys(allErrors).length > 0) {
         if (req.files) {
             for (var i = 0; i < req.files.length; i++) {
-                fs.unlink('uploads/tmp/vehicles/' + req.files[i].filename);
+                fs.unlink(rootTempVehicleDir + req.files[i].filename);
             }
         }
 
@@ -293,7 +295,7 @@ exports.updateVehicle = (req, res, next) => {
         }
         resMessages.resMessagesToReturn(200, resMessages.VEHICLE_UPDATED, res);
     }).catch(err => {
-        utilities.emptyDir('uploads/tmp/vehicles/');
+        utilities.emptyDir(rootTempVehicleDir);
         resMessages.logError(err);
         resMessages.resMessagesToReturn(500, err, res);
     });
@@ -318,7 +320,7 @@ exports.deleteVehicle = (req, res, next) => {
             }
         });
 
-        return resMessages.resMessagesToReturn(200, 'Vehicle deleted sucessfully', res);
+        return resMessages.resMessagesToReturn(200, resMessages.VEHICLE_DELETED_SUCCESSFULLY, res);
     }).catch(removeErr => {
         resMessages.logError(removeErr);
         resMessages.resMessagesToReturn(500, removeErr, res);
