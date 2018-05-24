@@ -308,10 +308,12 @@ exports.deleteVehicle = (req, res, next) => {
     if (req.userData.dealershipId != dealershipId) {
         return resMessages.resMessagesToReturn(403,
             resMessages.DEALERSHIP_ID_TOKEN_NOT_MATCH, res);
-    }    
+    }
 
-    Vehicle.remove({_id: vehicleId, 'Dealership._id': dealershipId})
+    Vehicle.remove({'_id': vehicleId, 'Dealership._id': dealershipId})
     .exec().then(result => {
+        console.log(result);
+
         rimraf('uploads/dealerships/' + req.userData.dealershipName.split(' ').join('_') + '/vehicles/' + vehicleId, (rimrafErr) => {
             if (rimrafErr) {
                 resMessages.logError(rimrafErr);
