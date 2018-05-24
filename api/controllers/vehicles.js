@@ -232,11 +232,11 @@ exports.updateVehicle = (req, res, next) => {
     if (req.files) {
         var result = fs.readdirSync('uploads/dealerships/' + req.userData.dealershipName.split(' ').join('_') + 
         '/vehicles/' + req.params.vehicleId);
-        if (result.length >= 7) {
+
+        console.log('result.length + req.files.length: ' + (result.length + req.files.length));
+
+        if (result.length >= 7 || (result.length + req.files.length) > 7 ) {
             allErrors['Max Files'] = resMessages.MAX_IMAGES_REACHED_VEHICLE;
-            for (var i = 0; i < req.files.length; i++) {
-                fs.unlink(rootTempVehicleDir + req.files[i].filename);
-            }
         }
     }
 
@@ -280,7 +280,6 @@ exports.updateVehicle = (req, res, next) => {
     // since the validation is already done earlier, simply pass the update operations to $set
     Vehicle.update({_id: req.params.vehicleId}, {$set: vehicleData})
     .exec().then(result => {
-        console.log(resssss);
         if (req.files) {
             for (var i = 0; i < req.files.length; i++) {
                 fs.rename(req.files[i].path, 'uploads/dealerships/' + 
