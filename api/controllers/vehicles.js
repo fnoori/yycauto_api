@@ -313,7 +313,10 @@ exports.deleteVehicle = (req, res, next) => {
     Vehicle.remove({'_id': vehicleId, 'Dealership._id': dealershipId})
     .exec().then(result => {
         console.log(result);
-
+        if (result.n === 0) {
+            return resMessages.resMessagesToReturn(500, resMessages.SERVER_DELETE_VEHICLE_ERROR, res);
+        }
+        
         rimraf('uploads/dealerships/' + req.userData.dealershipName.split(' ').join('_') + '/vehicles/' + vehicleId, (rimrafErr) => {
             if (rimrafErr) {
                 resMessages.logError(rimrafErr);

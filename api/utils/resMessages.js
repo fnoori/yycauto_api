@@ -35,6 +35,9 @@ exports.PROVIDE_ADDRESS = 'Must provide address';
 exports.CANNOT_DELETE_DEALERSHIP = 'Incorrect permission to delete dealership account';
 exports.MAX_IMAGES_REACHED_VEHICLE = 'Maximum of 7 files reached, please delete one and try uploading again';
 
+// server error
+exports.SERVER_DELETE_VEHICLE_ERROR = 'A server error occurred when trying to delete this vehicle';
+
 exports.INVALID_PASSWORD = [
     'Password must be at least 8 characters long',
     'Contain at least one uppercase character',
