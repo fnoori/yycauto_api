@@ -8,7 +8,10 @@ const mongoose = require('mongoose');
 const vehicleRoutes = require('./api/routes/vehicles');
 const dealershipRoutes = require('./api/routes/dealerships');
 
-mongoose.connect(process.env.MONGODB_URI);
+mongoose.connect(process.env.MONGODB_URI)
+.then().catch(err => {
+	
+});
 
 // setup morgan error detailing
 app.use(morgan('dev'));

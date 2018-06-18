@@ -36,10 +36,9 @@ const vehicleSchema = mongoose.Schema({
         Name: {type: String, required: true, max: 50},
         Email: {type: String, required: true, max: 50},
         Phone: {type: String, required: true, max: 15},
-        Address: {type: String, required: true, max: 50},
-        LogoLocation: {type: String, required: true, max: 100}
+        Address: {type: String, required: true, max: 50}
     },
-    'VehiclePhotoLocation': {type: String, required: true},
+    'VehiclePhotoLocation': {type: Array, required: true},
     'VehicleFeatures': {type: Array, required: false},
     'AdTier': {type: String, required: true}
 });
