@@ -1,1 +1,1 @@
-web: NODE_ENV=production node server.js
+web: NODE_ENV=production pm2 start server.js
