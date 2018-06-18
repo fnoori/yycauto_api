@@ -21,6 +21,7 @@
     "bcrypt": "^2.0.1",
     "body-parser": "^1.18.2",
     "express": "^4.16.3",
+    "forever": "^0.15.3",
     "fs": "0.0.1-security",
     "jsonwebtoken": "^8.2.1",
     "mongoose": "^5.0.17",
