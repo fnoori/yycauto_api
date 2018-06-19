@@ -10,7 +10,7 @@ const dealershipRoutes = require('./api/routes/dealerships');
 
 mongoose.connect(process.env.MONGODB_URI)
 .then().catch(err => {
-	
+	console.log('Mongo Connection Error', err);
 });
 
 // setup morgan error detailing
