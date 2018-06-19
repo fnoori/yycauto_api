@@ -1,1 +1,1 @@
-web: pm2 start server.js
+web: pm2-runtime server.js -i max
