@@ -20,6 +20,7 @@
   },
   "homepage": "https://github.com/fnoori/yycauto_api#readme",
   "dependencies": {
+    "@google-cloud/storage": "^1.7.0",
     "bcrypt": "^2.0.1",
     "body-parser": "^1.18.2",
     "dotenv": "^6.0.0",
