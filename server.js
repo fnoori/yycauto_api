@@ -7,8 +7,6 @@ if (process.env.NODE_ENV === 'development') {
 const http = require('http');
 const app = require('./app');
 
-console.log(process.env);
-
 const port = process.env.PORT || 3000;
 const server = http.createServer(app);
 server.listen(port);
