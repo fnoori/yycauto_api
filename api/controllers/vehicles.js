@@ -94,7 +94,11 @@ exports.addNewVehicle = (req, res, next) => {
     if (req.userData.dealershipId != req.params.dealershipId) {
         if (req.files) {
             for (var i = 0; i < req.files.length; i++) {
-                fs.unlink(rootTempVehicleDir + req.files[i].filename);
+                fs.unlink(rootTempVehicleDir + req.files[i].filename, err => {
+                    if (err) {
+                        console.log('Failed to delete temporary file');
+                    }
+                });
             }
         }
         

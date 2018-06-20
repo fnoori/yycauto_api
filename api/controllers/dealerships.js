@@ -81,7 +81,11 @@ exports.signUpDealership = (req, res, next) => {
 
             if (Object.keys(allErrors).length > 0) {
                 if (req.file) {
-                    fs.unlink(rootTmpLogoDir + req.file.filename);
+                    fs.unlink(rootTmpLogoDir + req.file.filename, err => {
+                        if (err) {
+                            console.log('Failed to delete temporary file');
+                        }
+                    });
                 }
                 return resMessages.resMessagesToReturn(400, allErrors, res);
             }
@@ -95,7 +99,11 @@ exports.signUpDealership = (req, res, next) => {
                 // dealership exists
                 if (dealership.length >= 1) {
                     // delete the uploaded logo, since it's a duplicate dealership
-                    fs.unlink(rootTmpLogoDir + req.file.filename);
+                    fs.unlink(rootTmpLogoDir + req.file.filename, err => {
+                        if (err) {
+                            console.log('Failed to delete temporary file');
+                        }
+                    });
                     return resMessages.resMessagesToReturn(409, resMessages.DEALERHSHIP_ALREADY_EXISTS, res);
                 } else {
                     bcrypt.hash(creationOperations['AccountCredentials.Password'], 10, (err, hash) => {
@@ -216,7 +224,11 @@ exports.updateDealership = (req, res, next) => {
     // invalid dealership updating
     if (req.userData.dealershipId != req.params.dealershipId) {
         if (req.file) {
-            fs.unlink(rootTmpLogoDir + req.file.filename);
+            fs.unlink(rootTmpLogoDir + req.file.filename, err => {
+                if (err) {
+                    console.log('Failed to delete temporary file');
+                }
+            });
         }
         
         return resMessages.resMessagesToReturn(403,
@@ -226,7 +238,11 @@ exports.updateDealership = (req, res, next) => {
     allErrors = validations.validateDealershipUpdate(updateOperations);
     if (Object.keys(allErrors).length > 0) {
         if (req.file) {
-            fs.unlink(rootTmpLogoDir + req.file.filename);
+            fs.unlink(rootTmpLogoDir + req.file.filename, err => {
+                if (err) {
+                    console.log('Failed to delete temporary file');
+                }
+            });
         }
         return resMessages.resMessagesToReturn(400, allErrors, res);
     }
@@ -262,9 +278,21 @@ exports.updateDealership = (req, res, next) => {
                         return resMessages.resMessagesToReturn(401, resMessages.OLD_PASSWORD_INCORRECT, res);
                     }
                 });
+
+                const dealershipFolder = result.Name.split(' ').join('_');
+                // upload logo if provided
+                if (req.file) {
+                    const logoDest = '/dealerships/' + dealershipFolder + '/logo.' + req.file.mimetype.split('/').pop();
+                    googleBucket.uploadFile(rootTmpLogoDir + req.file.filename, logoDest);
+                }
+
             }).catch(err => {
                 if (req.file) {
-                    fs.unlink(rootTmpLogoDir + req.file.filename);
+                    fs.unlink(rootTmpLogoDir + req.file.filename, err => {
+                        if (err) {
+                            console.log('Failed to delete temporary file');
+                        }
+                    });
                 }
                 resMessages.logError(err);
                 resMessages.resMessagesToReturn(500, err, res);
@@ -275,7 +303,23 @@ exports.updateDealership = (req, res, next) => {
 }
 
 updateDealershipHelper = (updateOperations, dealershipId, dealershipName, logoFile, res) => {
-    Dealership.update({ _id: dealershipId }, { $set: updateOperations })
+    var updateData = {};
+
+    if (updateOperations['AccountCredentials.Email'] != null) {
+        updateData['AccountCredentials.Email'] = updateOperations['AccountCredentials.Email'];
+    }
+    if (updateOperations['AccountCredentials.Password'] != null) {
+        updateData['AccountCredentials.Password'] = updateOperations['AccountCredentials.Password'];    
+    }
+    if (updateOperations['Phone'] != null) {
+        updateData['Phone'] = updateOperations['Phone'];
+    }
+    if (updateOperations['Address'] != null) {
+        updateData['Address'] = updateOperations['Address'];    
+    }
+    
+
+    Dealership.update({ _id: dealershipId }, { $set: updateData })
         .exec().then(result => {
             // if updating logo
             if (logoFile) {
