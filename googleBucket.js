@@ -46,14 +46,19 @@ module.exports = {
 		.upload(filename, {destination: dest})
 		.then(() => {
 			console.log(`${filename} uploaded to ${bucketName}.`);
+		}).catch(err => {
+			console.error('ERROR:', err);
+		}).finally(function() {
             fs.unlink(filename, err => {
                 if (err) {
                     console.log('Failed to delete temporary file');
                 }
             });
-		}).catch(err => {
-			console.error('ERROR:', err);
 		});
 		// [END storage_upload_file]
+	},
+
+	uploadFiles: function(files, dest) {
+
 	}
 };

@@ -8,6 +8,8 @@ const resMessages = require('../utils/resMessages');
 const validations = require('../utils/validations');
 const utilities = require('../utils/utility');
 
+const googleBucket = require('../../googleBucket');
+
 const rootTempVehicleDir = 'uploads/tmp/vehicles/';
 
 const omitFromFind = '-__v -Dealership._id';
@@ -163,35 +165,11 @@ exports.addNewVehicle = (req, res, next) => {
 
             // save data
             newVehicle.save().then(saveResult => {
+                const dealershipFolder = saveResult.Dealership.Name.split(' ').join('_');
 
-                // check if the 'vehicles' directory exists for that dealership, if not, make new directory
-                if (!fs.existsSync('uploads/dealerships/' + req.userData.dealershipName.split(' ').join('_') + '/vehicles/')) {
-                    fs.mkdirSync('uploads/dealerships/' + req.userData.dealershipName.split(' ').join('_') + '/vehicles/', (createVehicleDirErr) => {
-                        if (createVehicleDirErr) {
-                            resMessages.logError(createVehicleDirErr);
-                            return resMessages.resMessagesToReturn(500, createVehicleDirErr, res);
-                        }
-                    });
-                }
-
-                // create directory for the specific vehicle (where the images will be stored)
-                fs.mkdirSync('uploads/dealerships/' + req.userData.dealershipName.split(' ').join('_') + '/vehicles/' + saveResult._id, (createDirErr) => {
-                    if (createDirErr) {
-                        resMessages.logError(createDirErr);
-                        return resMessages.resMessagesToReturn(500, createDirErr, res);
-                    }
-                });
-
-                // move the vehicle images from the tmp directory to the dealership directory
                 for (var i = 0; i < req.files.length; i++) {
-                    fs.rename(req.files[i].path, 'uploads/dealerships/' + 
-                                req.userData.dealershipName.split(' ').join('_') + '/vehicles/' + 
-                                saveResult._id + '/' + req.files[i].filename, (renameErr) => {
-                        if (renameErr) {
-                            resMessages.logError(renameErr);
-                            return resMessages.resMessagesToReturn(500, renameErr, res);
-                        }
-                    });
+                    const vehicleDest = '/dealerships/' + dealershipFolder + '/' + saveResult._id + '/' + req.files[i].filename;
+                    googleBucket.uploadFile(rootTempVehicleDir + req.files[i].filename, vehicleDest);
                 }
 
                 resMessages.resMessagesToReturn(201, resMessages.VEHICLE_CREATED, res);
