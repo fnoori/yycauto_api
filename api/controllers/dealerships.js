@@ -66,10 +66,6 @@ exports.getDealershipByName = (req, res, next) => {
 }
 
 exports.signUpDealership = (req, res, next) => {
-
-    googleBucket.uploadFile(rootTmpLogoDir + req.file.filename);
-    return;
-
     Dealership.findById(req.userData.dealershipId)
         .select('AccountCredentials.AccessLevel')
         .exec().then(dealership => {
@@ -112,6 +108,7 @@ exports.signUpDealership = (req, res, next) => {
                                 'Name': creationOperations.Name,
                                 'Phone': creationOperations.Phone,
                                 'Address': creationOperations.Address,
+                                'Logo': 'logo.' + req.file.mimetype.split('/').pop(),
                                 'AccountCredentials': {
                                     'Email': creationOperations['AccountCredentials.Email'],
                                     'Password': hash,
@@ -122,28 +119,14 @@ exports.signUpDealership = (req, res, next) => {
                             newDealership.save().then(result => {
                                 const dealershipFolder = result.Name.split(' ').join('_');
 
-/*
-                                // must create dealership folder for dealerships photos
-                                fs.mkdirSync('uploads/dealerships/' + dealershipFolder, (err) => {
-                                    if (err) {
-                                        resMessages.logError(err);
-                                        resMessages.resMessagesToReturn(500, err, res);
-                                    }
-                                });
-
                                 // upload logo if provided
                                 if (req.file) {
-                                    fs.rename(req.file.path, 'uploads/dealerships/' + dealershipFolder + '/logo.' + req.file.mimetype.split('/').pop(), (err) => {
-                                        if (err) {
-                                            resMessages.logError(err);
-                                            resMessages.resMessagesToReturn(500, err, res);
-                                        }
-                                    });
+                                    const logoDest = '/dealerships/' + dealershipFolder + '/logo.' + req.file.mimetype.split('/').pop();
+                                    googleBucket.uploadFile(rootTmpLogoDir + req.file.filename, logoDest);
                                 }
-*/
+
                                 resMessages.resMessagesToReturn(201, resMessages.DEALERSHIP_CREATED, res);
                             }).catch(err => {
-                                utilities.emptyDir(rootTmpLogoDir);
                                 resMessages.logError(err);
                                 resMessages.resMessagesToReturn(500, err, res);
                             });
@@ -307,7 +290,6 @@ updateDealershipHelper = (updateOperations, dealershipId, dealershipName, logoFi
             resMessages.resMessagesToReturn(200, resMessages.DEALERSHIP_UPDATED, res);
 
         }).catch(err => {
-            utilities.emptyDir(rootTmpLogoDir);
             resMessages.logError(err);
             resMessages.resMessagesToReturn(500, err, res);
         });
@@ -345,13 +327,4 @@ exports.deleteDealershipById = (req, res, next) => {
             resMessages.logError(err);
             resMessages.resMessagesToReturn(500, err, res);
         });
-}
-
-// delete files from tmp directory since operation failed
-utilities.emptyDir = (dirname) => {
-    var tmpLogos = fs.readdirSync(dirname);
-
-    if (tmpLogos.length > 0) {
-        fs.unlink(dirname + tmpLogos[0]);
-    }
 }

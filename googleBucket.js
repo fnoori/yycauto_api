@@ -1,3 +1,5 @@
+const fs = require('fs');
+
 // Imports the Google Cloud client library
 const Storage = require('@google-cloud/storage');
 
@@ -37,19 +39,18 @@ module.exports = {
 		// [END storage_list_files]
 	},
 
-	uploadFile: function(filename) {
-		/**
-		* TODO(developer): Uncomment the following lines before running the sample.
-		*/
-		// const bucketName = 'Name of a bucket, e.g. my-bucket';
-		// const filename = 'Local file to upload, e.g. ./local/path/to/file.txt';
-
+	uploadFile: function(filename, dest) {
 		// Uploads a local file to the bucket
 		storage
 		.bucket(bucketName)
-		.upload(filename)
+		.upload(filename, {destination: dest})
 		.then(() => {
 			console.log(`${filename} uploaded to ${bucketName}.`);
+            fs.unlink(filename, err => {
+                if (err) {
+                    console.log('Failed to delete temporary file');
+                }
+            });
 		}).catch(err => {
 			console.error('ERROR:', err);
 		});
