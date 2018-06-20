@@ -66,6 +66,10 @@ exports.getDealershipByName = (req, res, next) => {
 }
 
 exports.signUpDealership = (req, res, next) => {
+
+    googleBucket.uploadFile(rootTmpLogoDir + req.file.filename);
+    return;
+
     Dealership.findById(req.userData.dealershipId)
         .select('AccountCredentials.AccessLevel')
         .exec().then(dealership => {
@@ -118,6 +122,7 @@ exports.signUpDealership = (req, res, next) => {
                             newDealership.save().then(result => {
                                 const dealershipFolder = result.Name.split(' ').join('_');
 
+/*
                                 // must create dealership folder for dealerships photos
                                 fs.mkdirSync('uploads/dealerships/' + dealershipFolder, (err) => {
                                     if (err) {
@@ -135,7 +140,7 @@ exports.signUpDealership = (req, res, next) => {
                                         }
                                     });
                                 }
-                                
+*/
                                 resMessages.resMessagesToReturn(201, resMessages.DEALERSHIP_CREATED, res);
                             }).catch(err => {
                                 utilities.emptyDir(rootTmpLogoDir);
