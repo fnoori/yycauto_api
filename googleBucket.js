@@ -58,7 +58,14 @@ module.exports = {
 		// [END storage_upload_file]
 	},
 
-	uploadFiles: function(files, dest) {
-
+	deleteFile: function(file) {
+		storage
+		.bucket(bucketName)
+		.file(file).delete()
+		.then(() => {
+			console.log(`${file} deleted successfully.`);
+		}).catch (err => {
+			console.log('ERROR', err);
+		});
 	}
 };

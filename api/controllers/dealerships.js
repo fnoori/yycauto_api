@@ -247,17 +247,22 @@ exports.updateDealership = (req, res, next) => {
         return resMessages.resMessagesToReturn(400, allErrors, res);
     }
 
-    // validate old password (if changing password)
-    if (updateOperations['OldPassword'] &&
-        updateOperations['AccountCredentials.Password']) {
 
-        Dealership.findById(req.userData.dealershipId)
-            .select('AccountCredentials.Password -_id')
-            .exec().then(dealership => {
-                if (dealership.length < 1) {
-                    return resMessages.resMessagesToReturn(401, resMessages.DEALERSHIP_NOT_FOUND_WITH_ID, res);
-                }
+    Dealership.findById(req.userData.dealershipId)
+        .select('AccountCredentials.Password -_id Name')
+        .exec().then(dealership => {
+            if (dealership.length < 1) {
+                return resMessages.resMessagesToReturn(401, resMessages.DEALERSHIP_NOT_FOUND_WITH_ID, res);
+            }
 
+            const dealershipFolder = dealership.Name.split(' ').join('_');
+            // upload logo if provided
+            if (req.file) {
+                updateOperations['Logo'] = 'logo.' + req.file.mimetype.split('/').pop();
+            }
+
+            if (updateOperations['OldPassword'] &&
+                updateOperations['AccountCredentials.Password']) {
                 // validate
                 bcrypt.compare(updateOperations.OldPassword, dealership.AccountCredentials.Password, (compareError, result) => {
                     if (compareError) {
@@ -270,39 +275,30 @@ exports.updateDealership = (req, res, next) => {
                                 resMessages.logError(err);
                                 return resMessages.resMessagesToReturn(500, err, res);
                             }
+                            
                             updateOperations['AccountCredentials.Password'] = hash;
-
-                            updateDealershipHelper(updateOperations, req.userData.dealershipId, req.userData.dealershipName, req.file, res);
                         });
                     } else {
                         return resMessages.resMessagesToReturn(401, resMessages.OLD_PASSWORD_INCORRECT, res);
                     }
                 });
+            }
 
-                const dealershipFolder = result.Name.split(' ').join('_');
-                // upload logo if provided
-                if (req.file) {
-                    const logoDest = '/dealerships/' + dealershipFolder + '/logo.' + req.file.mimetype.split('/').pop();
-                    googleBucket.uploadFile(rootTmpLogoDir + req.file.filename, logoDest);
-                }
-
-            }).catch(err => {
-                if (req.file) {
-                    fs.unlink(rootTmpLogoDir + req.file.filename, err => {
-                        if (err) {
-                            console.log('Failed to delete temporary file');
-                        }
-                    });
-                }
-                resMessages.logError(err);
-                resMessages.resMessagesToReturn(500, err, res);
-            });
-    } else {
-        updateDealershipHelper(updateOperations, req.userData.dealershipId, req.userData.dealershipName, req.file, res);
-    }
+            updateDealershipHelper(updateOperations, req.userData.dealershipId, req.userData.dealershipName, req.file, dealershipFolder, res);
+        }).catch(err => {
+            if (req.file) {
+                fs.unlink(rootTmpLogoDir + req.file.filename, err => {
+                    if (err) {
+                        console.log('Failed to delete temporary file');
+                    }
+                });
+            }
+            resMessages.logError(err);
+            resMessages.resMessagesToReturn(500, err, res);
+        });
 }
 
-updateDealershipHelper = (updateOperations, dealershipId, dealershipName, logoFile, res) => {
+updateDealershipHelper = (updateOperations, dealershipId, dealershipName, logoFile, dealershipFolder, res) => {
     var updateData = {};
 
     if (updateOperations['AccountCredentials.Email'] != null) {
@@ -317,19 +313,16 @@ updateDealershipHelper = (updateOperations, dealershipId, dealershipName, logoFi
     if (updateOperations['Address'] != null) {
         updateData['Address'] = updateOperations['Address'];    
     }
-    
+    if (updateOperations['Logo'] != null) {
+        updateData['Logo'] = updateOperations['Logo'];       
+    }
 
     Dealership.update({ _id: dealershipId }, { $set: updateData })
         .exec().then(result => {
             // if updating logo
             if (logoFile) {
-                fs.rename(logoFile.path, 'uploads/dealerships/' + dealershipName.split(' ').join('_') + '/logo.' + logoFile.mimetype.split('/').pop(), (err) => {
-                    if (err) {
-                        resMessages.logError(err);
-                        resMessages.resMessagesToReturn(500, err, res);
-                        return;
-                    }
-                });
+                const logoDest = '/dealerships/' + dealershipFolder + '/logo.' + logoFile.mimetype.split('/').pop();
+                googleBucket.uploadFile(rootTmpLogoDir + logoFile.filename, logoDest);
             }
             resMessages.resMessagesToReturn(200, resMessages.DEALERSHIP_UPDATED, res);
 
