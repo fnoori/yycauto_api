@@ -15,7 +15,7 @@ const storage = new Storage({
 const bucketName = 'yycauto';
 
 module.exports = {
-	listFiles: function() {
+	listFiles: function(directory) {
 
 		/**
 		* TODO(developer): Uncomment the following line before running the sample.
@@ -25,14 +25,17 @@ module.exports = {
 		// Lists files in the bucket
 		storage
 		.bucket(bucketName)
-		.getFiles()
+		.getFiles({prefix: directory})
 		.then(results => {
 			const files = results[0];
 
-			console.log('Files:');
-			files.forEach(file => {
-				console.log(file.name);
-			});
+			//console.log('Files:', files);
+
+			//files.forEach(file => {
+			//	console.log(file.name);
+			//});
+
+			return files;
 		}).catch(err => {
 			console.error('ERROR:', err);
 		});

@@ -209,6 +209,16 @@ exports.updateVehicle = (req, res, next) => {
     var allErrors = {};
     var updateOperations = req.body;
 
+    var filesGot = null;
+    Dealership.findById(req.params.dealershipId)
+    .then(result => {
+        filesGot = googleBucket.listFiles('dealerships/' + result.Name.split(' ').join('_') + '/' + req.params.vehicleId + '/');
+        console.log('vehicles.js', filesGot);
+    }).catch(err => {
+        console.log('Error', err);
+    });
+    return;
+
     // ensure dealership is updating to their own inventory
     if (req.userData.dealershipId != req.params.dealershipId) {
         if (req.files) {
@@ -272,6 +282,12 @@ exports.updateVehicle = (req, res, next) => {
     vehicleData['AdTier'] = updateOperations['AdTier'];
     vehicleData['VehicleFeatures'] = updateOperations['VehicleFeatures'];
 
+    var vehiclePhotos = [];
+    for (var i = 0; i < req.files.length; i++) {
+        vehiclePhotos.push(req.files[i].filename);
+    }
+    vehicleData['VehiclePhotos'] = vehiclePhotos;
+
     // since the validation is already done earlier, simply pass the update operations to $set
     Vehicle.update({_id: req.params.vehicleId}, {$set: vehicleData})
     .exec().then(result => {
@@ -312,12 +328,14 @@ exports.deleteVehicle = (req, res, next) => {
             return resMessages.resMessagesToReturn(500, resMessages.SERVER_DELETE_VEHICLE_ERROR, res);
         }
         
+        /*
         rimraf('uploads/dealerships/' + req.userData.dealershipName.split(' ').join('_') + '/vehicles/' + vehicleId, (rimrafErr) => {
             if (rimrafErr) {
                 resMessages.logError(rimrafErr);
                 return resMessages(500, rimrafErr, res);
             }
         });
+        */
 
         return resMessages.resMessagesToReturn(200, resMessages.VEHICLE_DELETED_SUCCESSFULLY, res);
     }).catch(removeErr => {
