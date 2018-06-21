@@ -258,9 +258,6 @@ exports.updateDealership = (req, res, next) => {
             const dealershipFolder = dealership.Name.split(' ').join('_');
             // upload logo if provided
             if (req.file) {
-                //googleBucket.deleteFile('dealerships/One_Dealership/logo.png');
-                //const dealershipFolder = result.Name.split(' ').join('_');
-
                 googleBucket.deleteFile('dealerships/' + dealership.Name.split(' ').join('_') + '/' + dealership.Logo);
                 updateOperations['Logo'] = 'logo.' + req.file.mimetype.split('/').pop();
             }

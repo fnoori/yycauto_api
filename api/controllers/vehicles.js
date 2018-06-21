@@ -165,6 +165,12 @@ exports.addNewVehicle = (req, res, next) => {
             vehicleData['AdTier'] = vehicleInfo['AdTier'];
             vehicleData['VehicleFeatures'] = vehicleInfo['VehicleFeatures'];
 
+            var vehiclePhotos = [];
+            for (var i = 0; i < req.files.length; i++) {
+                vehiclePhotos.push(req.files[i].filename);
+            }
+            vehicleData['VehiclePhotos'] = vehiclePhotos;
+
             const newVehicle = new Vehicle(vehicleData);
 
             // save data
@@ -178,7 +184,14 @@ exports.addNewVehicle = (req, res, next) => {
 
                 resMessages.resMessagesToReturn(201, resMessages.VEHICLE_CREATED, res);
             }).catch(saveError => {
-                utilities.emptyDir(rootTempVehicleDir);
+                for (var i = 0; i < req.files.length; i++) {
+                    fs.unlink(rootTempVehicleDir + req.files[i].filename, err => {
+                        if (err) {
+                            console.log('Failed to delete temporary file');
+                        }
+                    });
+                }
+
                 resMessages.logError(saveError);
                 resMessages.resMessagesToReturn(500, saveError, res);
             })
