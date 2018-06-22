@@ -8,7 +8,8 @@ const resMessages = require('../utils/resMessages');
 const validations = require('../utils/validations');
 const utilities = require('../utils/utility');
 
-const googleBucket = require('../../googleBucket');
+const googleBucketReqs = require('../../bucket/googleBucketReqs');
+const googleBucket = require('../../bucket/googleBucket');
 
 const rootTempVehicleDir = 'uploads/tmp/vehicles/';
 
@@ -212,8 +213,23 @@ exports.updateVehicle = (req, res, next) => {
     var filesGot = null;
     Dealership.findById(req.params.dealershipId)
     .then(result => {
-        filesGot = googleBucket.listFiles('dealerships/' + result.Name.split(' ').join('_') + '/' + req.params.vehicleId + '/');
-        console.log('vehicles.js', filesGot);
+        googleBucketReqs.storage
+        .bucket(googleBucketReqs.bucketName)
+        .getFiles({prefix: 'dealerships/' + result.Name.split(' ').join('_') + '/' + req.params.vehicleId + '/'})
+        .then(results => {
+            const files = results[0];
+
+            var vehicleImages = [];
+            var i = 0;
+            files.forEach(file => {
+                vehicleImages[i] = file.name;
+                i++;
+            });
+
+            console.log(vehicleImages);
+        }).catch(err => {
+            console.error('ERROR:', err);
+        });
     }).catch(err => {
         console.log('Error', err);
     });

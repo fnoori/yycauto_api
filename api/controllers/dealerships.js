@@ -10,7 +10,8 @@ const resMessages = require('../utils/resMessages');
 const validations = require('../utils/validations');
 const utilities = require('../utils/utility');
 
-const googleBucket = require('../../googleBucket');
+const googleBucketReqs = require('../../bucket/googleBucketReqs');
+const googleBucket = require('../../bucket/googleBucket');
 
 const rootTmpLogoDir = 'uploads/tmp/logos/';
 
