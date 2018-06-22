@@ -290,10 +290,9 @@ exports.updateVehicle = (req, res, next) => {
             for (var i = 0; i < req.files.length; i++) {
                 vehiclePhotos.push(req.files[i].filename);
             }
-            vehicleData['VehiclePhotos'] = vehiclePhotos;
 
             // since the validation is already done earlier, simply pass the update operations to $set
-            Vehicle.update({_id: req.params.vehicleId}, {$set: vehicleData})
+            Vehicle.update({_id: req.params.vehicleId}, {$set: vehicleData}, {$push: {VehiclePhotos: {$each: vehiclePhotos}}})
             .exec().then(result => {
                 if (result.n != 0) {
                     for (var i = 0; i < req.files.length; i++) {
@@ -320,6 +319,12 @@ exports.updateVehicle = (req, res, next) => {
 exports.deleteVehicle = (req, res, next) => {
     const dealershipId = req.params.dealershipId;
     const vehicleId = req.params.vehicleId;
+    const imageId = req.params.imageId;
+
+    const vehicleDest = '/dealerships/' + dealershipName + '/' + req.params.vehicleId + '/' + req.files[i].filename;
+    googleBucket.deleteFile();
+
+    return;
 
     // ensure dealership is deleting to their own inventory
     if (req.userData.dealershipId != dealershipId) {
