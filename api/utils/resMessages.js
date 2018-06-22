@@ -37,6 +37,7 @@ exports.MAX_IMAGES_REACHED_VEHICLE = 'Maximum of 7 files reached, please delete 
 
 // server error
 exports.SERVER_DELETE_VEHICLE_ERROR = 'A server error occurred when trying to delete this vehicle';
+exports.FAILED_TO_DELETE_TMP = 'Failed to delete temporary file(s)';
 
 exports.INVALID_PASSWORD = [
     'Password must be at least 8 characters long',
@@ -55,7 +56,7 @@ exports.logError = (req, res, next) => {
     });
     error.save().then(result => {
         console.log(result);
-    });    
+    });
 }
 
 exports.resMessagesToReturn = (code, message, res) => {

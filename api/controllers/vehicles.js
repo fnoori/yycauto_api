@@ -52,7 +52,7 @@ exports.getVehicleByDealershipID = (req, res, next) => {
     const dealershipID = req.params.dealershipId;
     const perPage = parseInt(req.params.perPage);
     const lazyLoad = parseInt(req.params.lazyLoad);
-    
+
     Vehicle.find({'Dealership._id': dealershipID})
     .select(omitFromFind)
     .skip(lazyLoad).limit(perPage).exec().then(doc => {
@@ -97,12 +97,12 @@ exports.addNewVehicle = (req, res, next) => {
             for (var i = 0; i < req.files.length; i++) {
                 fs.unlink(rootTempVehicleDir + req.files[i].filename, err => {
                     if (err) {
-                        console.log('Failed to delete temporary file');
+                        console.log(resMessages.FAILED_TO_DELETE_TMP);
                     }
                 });
             }
         }
-        
+
         return resMessages.resMessagesToReturn(403,
             resMessages.DEALERSHIP_ID_TOKEN_NOT_MATCH, res);
     }
@@ -123,7 +123,7 @@ exports.addNewVehicle = (req, res, next) => {
         return resMessages.resMessagesToReturn(400, allErrors, res);
     }
 
-    const vehicleInfo = req.body; 
+    const vehicleInfo = req.body;
 
     // first check if the dealership exists
     Dealership.findById(req.userData.dealershipId)
@@ -210,120 +210,110 @@ exports.updateVehicle = (req, res, next) => {
     var allErrors = {};
     var updateOperations = req.body;
 
-    var filesGot = null;
-    Dealership.findById(req.params.dealershipId)
-    .then(result => {
-        googleBucketReqs.storage
-        .bucket(googleBucketReqs.bucketName)
-        .getFiles({prefix: 'dealerships/' + result.Name.split(' ').join('_') + '/' + req.params.vehicleId + '/'})
-        .then(results => {
-            const files = results[0];
-
-            var vehicleImages = [];
-            var i = 0;
-            files.forEach(file => {
-                vehicleImages[i] = file.name;
-                i++;
-            });
-
-            console.log(vehicleImages);
-        }).catch(err => {
-            console.error('ERROR:', err);
-        });
-    }).catch(err => {
-        console.log('Error', err);
-    });
-    return;
-
     // ensure dealership is updating to their own inventory
     if (req.userData.dealershipId != req.params.dealershipId) {
         if (req.files) {
-            for (var i = 0; i < req.files.length; i++) {
-                fs.unlink(rootTempVehicleDir + req.files[i].filename);
-            }
+            utilities.emptyDir(rootTempVehicleDir);
         }
-        
+
         return resMessages.resMessagesToReturn(403,
             resMessages.DEALERSHIP_ID_TOKEN_NOT_MATCH, res);
     }
 
-    allErrors = validations.validateVehicleData(updateOperations);
+    // Get dealership name from id
+    Dealership.findById(req.params.dealershipId)
+    .then(result => {
+        const dealershipName = result.Name.split(' ').join('_');
+        const prefix = 'dealerships/' + result.Name.split(' ').join('_') + '/' + req.params.vehicleId + '/';
 
-    // check if there is already a maximum number files for this vehicle
-    if (req.files) {
-        var result = fs.readdirSync('uploads/dealerships/' + req.userData.dealershipName.split(' ').join('_') + 
-        '/vehicles/' + req.params.vehicleId);
-
-        console.log('result.length + req.files.length: ' + (result.length + req.files.length));
-
-        if (result.length >= 7 || (result.length + req.files.length) > 7 ) {
-            allErrors['Max Files'] = resMessages.MAX_IMAGES_REACHED_VEHICLE;
-        }
-    }
-
-    if (Object.keys(allErrors).length > 0) {
-        if (req.files) {
-            for (var i = 0; i < req.files.length; i++) {
-                fs.unlink(rootTempVehicleDir + req.files[i].filename);
+        /*
+            Get list of files from Google bucket
+            Could not export this to the GoogleBucket file, since it's a Promise,
+            and we cannot return a value from a Promise
+        */
+        googleBucketReqs.storage
+        .bucket(googleBucketReqs.bucketName)
+        .getFiles({prefix: prefix})
+        .then(results => {
+            var vehicleImages = [];
+            for (var i = 0; i < results[0].length; i++) {
+                vehicleImages[i] = results[0][i].name;
             }
-        }
 
-        return resMessages.resMessagesToReturn(400, allErrors, res);
-    }
+            allErrors = validations.validateVehicleData(updateOperations);
 
-    var vehicleData = {};
-    vehicleData['BasicInfo.Make'] = updateOperations['BasicInfo.Make'];
-    vehicleData['BasicInfo.Model'] = updateOperations['BasicInfo.Model'];
-    vehicleData['BasicInfo.Trim'] = updateOperations['BasicInfo.Trim'];
-    vehicleData['BasicInfo.Type'] = updateOperations['BasicInfo.Type'];
-    vehicleData['BasicInfo.Year'] = updateOperations['BasicInfo.Year'];
-    vehicleData['BasicInfo.Exterior Colour'] = updateOperations['BasicInfo.Exterior Colour'];
-    vehicleData['BasicInfo.Interior Colour'] = updateOperations['BasicInfo.Interior Colour'];
-    vehicleData['BasicInfo.Price'] = updateOperations['BasicInfo.Price'];
-    vehicleData['BasicInfo.Kilometres'] = updateOperations['BasicInfo.Kilometres'];
-    vehicleData['BasicInfo.Fuel Type'] = updateOperations['BasicInfo.Fuel Type'];
-    vehicleData['BasicInfo.Doors'] = updateOperations['BasicInfo.Doors'];
-    vehicleData['BasicInfo.Seats'] = updateOperations['BasicInfo.Seats'];
-    vehicleData['BasicInfo.Description'] = updateOperations['BasicInfo.Description'];
-    vehicleData['MechanicalSpecs.CarProof'] = updateOperations['MechanicalSpecs.CarProof'];
-    vehicleData['MechanicalSpecs.Transmission'] = updateOperations['MechanicalSpecs.Transmission'];
-    vehicleData['MechanicalSpecs.Engine Size (L)'] = updateOperations['MechanicalSpecs.Engine Size (L)'];
-    vehicleData['MechanicalSpecs.Cylinders'] = updateOperations['MechanicalSpecs.Cylinders'];
-    vehicleData['MechanicalSpecs.Horsepower @ RPM'] = updateOperations['MechanicalSpecs.Horsepower @ RPM'];
-    vehicleData['MechanicalSpecs.Torque (lb - ft) @ RPM'] = updateOperations['MechanicalSpecs.Torque (lb - ft) @ RPM'];
-    vehicleData['MechanicalSpecs.Recommended Fuel'] = updateOperations['MechanicalSpecs.Recommended Fuel'];
-    vehicleData['FuelEconomy.City (L/100Km)'] = updateOperations['FuelEconomy.City (L/100Km)'];
-    vehicleData['FuelEconomy.Highway (L/100Km)'] = updateOperations['FuelEconomy.Highway (L/100Km)'];
-    vehicleData['FuelEconomy.Combined (L/100Km)'] = updateOperations['FuelEconomy.Combined (L/100Km)'];
-    vehicleData['AdTier'] = updateOperations['AdTier'];
-    vehicleData['VehicleFeatures'] = updateOperations['VehicleFeatures'];
+            // check if there is already a maximum number files for this vehicle
+            if (req.files) {
+                if (vehicleImages.length >= 7 || (vehicleImages.length + req.files.length) > 7 ) {
+                    allErrors['Max Files'] = resMessages.MAX_IMAGES_REACHED_VEHICLE;
+                }
+            }
 
-    var vehiclePhotos = [];
-    for (var i = 0; i < req.files.length; i++) {
-        vehiclePhotos.push(req.files[i].filename);
-    }
-    vehicleData['VehiclePhotos'] = vehiclePhotos;
-
-    // since the validation is already done earlier, simply pass the update operations to $set
-    Vehicle.update({_id: req.params.vehicleId}, {$set: vehicleData})
-    .exec().then(result => {
-        if (req.files) {
-            for (var i = 0; i < req.files.length; i++) {
-                fs.rename(req.files[i].path, 'uploads/dealerships/' + 
-                            req.userData.dealershipName.split(' ').join('_') + '/vehicles/' + 
-                            req.params.vehicleId + '/' + req.files[i].filename, (renameErr) => {
-                    if (renameErr) {
-                        resMessages.logError(renameErr);
-                        return resMessages.resMessagesToReturn(500, renameErr, res);
+            if (Object.keys(allErrors).length > 0) {
+                if (req.files) {
+                    for (var i = 0; i < req.files.length; i++) {
+                        utilities.emptyDir(rootTempVehicleDir);
                     }
-                });
+                }
+
+                return resMessages.resMessagesToReturn(400, allErrors, res);
             }
-        }
-        resMessages.resMessagesToReturn(200, resMessages.VEHICLE_UPDATED, res);
+
+            var vehicleData = {};
+            vehicleData['BasicInfo.Make'] = updateOperations['BasicInfo.Make'];
+            vehicleData['BasicInfo.Model'] = updateOperations['BasicInfo.Model'];
+            vehicleData['BasicInfo.Trim'] = updateOperations['BasicInfo.Trim'];
+            vehicleData['BasicInfo.Type'] = updateOperations['BasicInfo.Type'];
+            vehicleData['BasicInfo.Year'] = updateOperations['BasicInfo.Year'];
+            vehicleData['BasicInfo.Exterior Colour'] = updateOperations['BasicInfo.Exterior Colour'];
+            vehicleData['BasicInfo.Interior Colour'] = updateOperations['BasicInfo.Interior Colour'];
+            vehicleData['BasicInfo.Price'] = updateOperations['BasicInfo.Price'];
+            vehicleData['BasicInfo.Kilometres'] = updateOperations['BasicInfo.Kilometres'];
+            vehicleData['BasicInfo.Fuel Type'] = updateOperations['BasicInfo.Fuel Type'];
+            vehicleData['BasicInfo.Doors'] = updateOperations['BasicInfo.Doors'];
+            vehicleData['BasicInfo.Seats'] = updateOperations['BasicInfo.Seats'];
+            vehicleData['BasicInfo.Description'] = updateOperations['BasicInfo.Description'];
+            vehicleData['MechanicalSpecs.CarProof'] = updateOperations['MechanicalSpecs.CarProof'];
+            vehicleData['MechanicalSpecs.Transmission'] = updateOperations['MechanicalSpecs.Transmission'];
+            vehicleData['MechanicalSpecs.Engine Size (L)'] = updateOperations['MechanicalSpecs.Engine Size (L)'];
+            vehicleData['MechanicalSpecs.Cylinders'] = updateOperations['MechanicalSpecs.Cylinders'];
+            vehicleData['MechanicalSpecs.Horsepower @ RPM'] = updateOperations['MechanicalSpecs.Horsepower @ RPM'];
+            vehicleData['MechanicalSpecs.Torque (lb - ft) @ RPM'] = updateOperations['MechanicalSpecs.Torque (lb - ft) @ RPM'];
+            vehicleData['MechanicalSpecs.Recommended Fuel'] = updateOperations['MechanicalSpecs.Recommended Fuel'];
+            vehicleData['FuelEconomy.City (L/100Km)'] = updateOperations['FuelEconomy.City (L/100Km)'];
+            vehicleData['FuelEconomy.Highway (L/100Km)'] = updateOperations['FuelEconomy.Highway (L/100Km)'];
+            vehicleData['FuelEconomy.Combined (L/100Km)'] = updateOperations['FuelEconomy.Combined (L/100Km)'];
+            vehicleData['AdTier'] = updateOperations['AdTier'];
+            vehicleData['VehicleFeatures'] = updateOperations['VehicleFeatures'];
+
+            var vehiclePhotos = [];
+            for (var i = 0; i < req.files.length; i++) {
+                vehiclePhotos.push(req.files[i].filename);
+            }
+            vehicleData['VehiclePhotos'] = vehiclePhotos;
+
+            // since the validation is already done earlier, simply pass the update operations to $set
+            Vehicle.update({_id: req.params.vehicleId}, {$set: vehicleData})
+            .exec().then(result => {
+                if (result.n != 0) {
+                    for (var i = 0; i < req.files.length; i++) {
+                        const vehicleDest = '/dealerships/' + dealershipName + '/' + req.params.vehicleId + '/' + req.files[i].filename;
+                        googleBucket.uploadFile(rootTempVehicleDir + req.files[i].filename, vehicleDest);
+                    }
+                    resMessages.resMessagesToReturn(200, resMessages.VEHICLE_UPDATED, res);
+                } else {
+                    resMessages.resMessagesToReturn(200, resMessages.VEHICLE_NOT_FOUND_WITH_ID, res);
+                }
+            }).catch(err => {
+                utilities.emptyDir(rootTempVehicleDir);
+                resMessages.logError(err);
+                resMessages.resMessagesToReturn(500, err, res);
+            });
+        }).catch(bucketErr => {
+            console.error('Google Bucket Error:', bucketErr);
+        });
     }).catch(err => {
-        utilities.emptyDir(rootTempVehicleDir);
-        resMessages.logError(err);
-        resMessages.resMessagesToReturn(500, err, res);
+        console.log('MongoDB findById Error', err);
     });
 }
 
@@ -343,7 +333,7 @@ exports.deleteVehicle = (req, res, next) => {
         if (result.n === 0) {
             return resMessages.resMessagesToReturn(500, resMessages.SERVER_DELETE_VEHICLE_ERROR, res);
         }
-        
+
         /*
         rimraf('uploads/dealerships/' + req.userData.dealershipName.split(' ').join('_') + '/vehicles/' + vehicleId, (rimrafErr) => {
             if (rimrafErr) {
