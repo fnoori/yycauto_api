@@ -24,7 +24,7 @@ exports.validateDealershipUpdate = (updateOperations) => {
             allErrors.password = resMessages.INVALID_PASSWORD;
         }
     }
-    if (updateOperations.Phone && 
+    if (updateOperations.Phone &&
         updateOperations.Phone.length <= 0) {
         allErrors.phone = resMessages.UPDATE_PHONE_INVALID;
     }

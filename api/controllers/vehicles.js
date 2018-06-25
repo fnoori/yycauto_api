@@ -255,7 +255,6 @@ exports.updateVehicle = (req, res, next) => {
                         utilities.emptyDir(rootTempVehicleDir);
                     }
                 }
-
                 return resMessages.resMessagesToReturn(400, allErrors, res);
             }
 
@@ -292,7 +291,7 @@ exports.updateVehicle = (req, res, next) => {
             }
 
             // since the validation is already done earlier, simply pass the update operations to $set
-            Vehicle.update({_id: req.params.vehicleId}, {$set: vehicleData}, {$push: {VehiclePhotos: {$each: vehiclePhotos}}})
+            Vehicle.update({_id: req.params.vehicleId}, {$set: vehicleData, $push: {VehiclePhotos: {$each: vehiclePhotos}}})
             .exec().then(result => {
                 if (result.n != 0) {
                     for (var i = 0; i < req.files.length; i++) {
