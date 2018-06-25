@@ -318,6 +318,7 @@ exports.updateVehicle = (req, res, next) => {
 exports.deleteVehicle = (req, res, next) => {
     const dealershipId = req.params.dealershipId;
     const vehicleId = req.params.vehicleId;
+    const imageId = req.params.imageId;
 
     // ensure dealership is deleting to their own inventory
     if (req.userData.dealershipId != dealershipId) {
@@ -346,38 +347,5 @@ exports.deleteVehicle = (req, res, next) => {
     }).catch(removeErr => {
         resMessages.logError(removeErr);
         resMessages.resMessagesToReturn(500, removeErr, res);
-    });
-}
-
-exports.deleteVehiclePhotos = (req, res, next) => {
-    const dealershipId = req.params.dealershipId;
-    const vehicleId = req.params.vehicleId;
-    const images = JSON.parse(req.query.imageArray);
-
-    // ensure dealership is deleting to their own inventory
-    if (req.userData.dealershipId != dealershipId) {
-        return resMessages.resMessagesToReturn(403,
-            resMessages.DEALERSHIP_ID_TOKEN_NOT_MATCH, res);
-    }
-
-    // Get dealership name from id
-    Dealership.findById(req.params.dealershipId)
-    .then(result => {
-        for (var i = 0; i < images.length; i++) {
-            const filename = 'dealerships/' + result.Name.split(' ').join('_') + '/' + req.params.vehicleId + '/' + images[i];
-            googleBucket.deletePictures(filename);
-        }
-
-        Vehicle.update({_id: req.params.vehicleId}, {$pull: {VehiclePhotos: {$in: images}}})
-        .exec().then(result => {
-        }).catch(updateErr => {
-            resMessages.logError(updateErr);
-            resMessages.resMessagesToReturn(500, updateErr, res);
-        });
-
-        return resMessages.resMessagesToReturn(200, resMessages.VEHICLE_PICTURES_DELETED_SUCCESSFULLY, res);
-    }).catch(deleteErr => {
-        resMessages.logError(deleteErr);
-        resMessages.resMessagesToReturn(500, deleteErr, res);
     });
 }
