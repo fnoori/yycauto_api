@@ -300,7 +300,7 @@ exports.updateVehicle = (req, res, next) => {
                     }
                     resMessages.resMessagesToReturn(200, resMessages.VEHICLE_UPDATED, res);
                 } else {
-                    resMessages.resMessagesToReturn(200, resMessages.VEHICLE_NOT_FOUND_WITH_ID, res);
+                    resMessages.resMessagesToReturn(400, resMessages.VEHICLE_NOT_FOUND_WITH_ID, res);
                 }
             }).catch(err => {
                 utilities.emptyDir(rootTempVehicleDir);
@@ -365,7 +365,16 @@ exports.deleteVehiclePhotos = (req, res, next) => {
     .then(result => {
         for (var i = 0; i < images.length; i++) {
             const filename = 'dealerships/' + result.Name.split(' ').join('_') + '/' + req.params.vehicleId + '/' + images[i];
-            googleBucket.deletePictures(filename);
+
+            googleBucketReqs.storage
+    		.bucket(googleBucketReqs.bucketName)
+    		.file(filename).delete()
+    		.then(() => {
+    			console.log(`${file} deleted successfully.`);
+    		}).catch (bucketErr => {
+    			console.log('Google Bucket Error', bucketErr);
+                resMessages.resMessagesToReturn(404, bucketErr, res);
+    		});
         }
 
         Vehicle.update({_id: req.params.vehicleId}, {$pull: {VehiclePhotos: {$in: images}}})
