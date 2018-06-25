@@ -30,16 +30,5 @@ module.exports = {
 		}).catch (err => {
 			console.log('ERROR', err);
 		});
-	},
-
-	deletePictures: function(file) {
-		googleBucketReqs.storage
-		.bucket(googleBucketReqs.bucketName)
-		.file(file).delete()
-		.then(() => {
-			console.log(`${file} deleted successfully.`);
-		}).catch (err => {
-			console.log('ERROR', err);
-		});
 	}
 };
