@@ -97,7 +97,7 @@ exports.addNewVehicle = (req, res, next) => {
             for (var i = 0; i < req.files.length; i++) {
                 fs.unlink(rootTempVehicleDir + req.files[i].filename, err => {
                     if (err) {
-                        console.log(resMessages.FAILED_TO_DELETE_TMP);
+                        return resMessages.resMessagesToReturn(500, err, res);
                     }
                 });
             }
@@ -109,6 +109,9 @@ exports.addNewVehicle = (req, res, next) => {
 
     if (req.files.length <= 0) {
         return resMessages.resMessagesToReturn(400, resMessages.MUST_INCLUDE_VEHICLE_PHOTOS, res);
+    }
+    if (req.files.length > 7) {
+        return resMessages.resMessagesToReturn(400, resMessages.MAXIMUM_IMAGES, res);
     }
 
     allErrors = validations.validateVehicleData(creationOperatinos);
@@ -180,7 +183,20 @@ exports.addNewVehicle = (req, res, next) => {
 
                 for (var i = 0; i < req.files.length; i++) {
                     const vehicleDest = '/dealerships/' + dealershipFolder + '/' + saveResult._id + '/' + req.files[i].filename;
-                    googleBucket.uploadFile(rootTempVehicleDir + req.files[i].filename, vehicleDest);
+
+                    googleBucketReqs.storage
+            		.bucket(googleBucketReqs.bucketName)
+            		.upload(rootTempVehicleDir + req.files[i].filename, {destination: vehicleDest})
+            		.then(() => {
+            		}).catch(bucketError => {
+                        resMessages.resMessagesToReturn(500, resMessages.GOOGLE_BUCKET_UPLOAD_ERROR, bucketError);
+            		}).finally(function() {
+                        fs.unlink(rootTempVehicleDir + req.files[i].filename, err => {
+                            if (err) {
+                                return resMessages.resMessagesToReturn(500, err, res);
+                            }
+                        });
+            		});
                 }
 
                 resMessages.resMessagesToReturn(201, resMessages.VEHICLE_CREATED, res);
@@ -188,7 +204,7 @@ exports.addNewVehicle = (req, res, next) => {
                 for (var i = 0; i < req.files.length; i++) {
                     fs.unlink(rootTempVehicleDir + req.files[i].filename, err => {
                         if (err) {
-                            console.log('Failed to delete temporary file');
+                            return resMessages.resMessagesToReturn(500, err, res);
                         }
                     });
                 }
@@ -243,7 +259,7 @@ exports.updateVehicle = (req, res, next) => {
             allErrors = validations.validateVehicleData(updateOperations);
 
             // check if there is already a maximum number files for this vehicle
-            if (req.files) {
+            if (req.files.length > 0) {
                 if (vehicleImages.length >= 7 || (vehicleImages.length + req.files.length) > 7 ) {
                     allErrors['Max Files'] = resMessages.MAX_IMAGES_REACHED_VEHICLE;
                 }
@@ -294,14 +310,29 @@ exports.updateVehicle = (req, res, next) => {
             Vehicle.update({_id: req.params.vehicleId}, {$set: vehicleData, $push: {VehiclePhotos: {$each: vehiclePhotos}}})
             .exec().then(result => {
                 if (result.n != 0) {
-                    for (var i = 0; i < req.files.length; i++) {
-                        const vehicleDest = '/dealerships/' + dealershipName + '/' + req.params.vehicleId + '/' + req.files[i].filename;
-                        googleBucket.uploadFile(rootTempVehicleDir + req.files[i].filename, vehicleDest);
+                    if (req.files.length > 0) {
+                        for (var i = 0; i < req.files.length; i++) {
+                            const vehicleDest = '/dealerships/' + dealershipName + '/' + req.params.vehicleId + '/' + req.files[i].filename;
+
+                            googleBucketReqs.storage
+                            .bucket(googleBucketReqs.bucketName)
+                            .upload(rootTempVehicleDir + req.files[i].filename, {destination: vehicleDest})
+                            .then(() => {
+                            }).catch(bucketError => {
+                                resMessages.resMessagesToReturn(500, GOOGLE_BUCKET_UPLOAD_ERROR, bucketError);
+                            }).finally(function() {
+                                fs.unlink(rootTempVehicleDir + req.files[i].filename, err => {
+                                    if (err) {
+                                        return resMessages.resMessagesToReturn(500, err, res);
+                                    }
+                                });
+                            });
+                        }
                     }
-                    resMessages.resMessagesToReturn(200, resMessages.VEHICLE_UPDATED, res);
                 } else {
                     resMessages.resMessagesToReturn(400, resMessages.VEHICLE_NOT_FOUND_WITH_ID, res);
                 }
+                resMessages.resMessagesToReturn(200, resMessages.VEHICLE_UPDATED, res);
             }).catch(err => {
                 utilities.emptyDir(rootTempVehicleDir);
                 resMessages.logError(err);
@@ -336,7 +367,16 @@ exports.deleteVehicle = (req, res, next) => {
         Dealership.findById(req.params.dealershipId)
         .then(result => {
             const prefix = 'dealerships/' + result.Name.split(' ').join('_') + '/' + req.params.vehicleId + '/';
-            googleBucket.deleteVehicleDirectory(prefix);
+
+            googleBucketReqs.storage
+    		.bucket(googleBucketReqs.bucketName)
+    		.deleteFiles({prefix: prefix})
+    		.then(() => {
+    			console.log(`${prefix} deleted successfully.`);
+    		}).catch (bucketErr => {
+    			console.log('Google Bucket Error', bucketErr);
+    		});
+
         }).catch(deleteErr => {
             resMessages.logError(deleteErr);
             resMessages.resMessagesToReturn(500, removeErr, res);
@@ -370,21 +410,20 @@ exports.deleteVehiclePhotos = (req, res, next) => {
     		.bucket(googleBucketReqs.bucketName)
     		.file(filename).delete()
     		.then(() => {
-    			console.log(`${file} deleted successfully.`);
+    			//console.log(`${file} deleted successfully.`);
+                Vehicle.update({_id: req.params.vehicleId}, {$pull: {VehiclePhotos: {$in: images}}})
+                .exec().then(result => {
+                }).catch(updateErr => {
+                    resMessages.logError(updateErr);
+                    resMessages.resMessagesToReturn(500, updateErr, res);
+                });
+
+                resMessages.resMessagesToReturn(200, resMessages.PHOTO_DELETED_SUCCESSFULLY, res);
     		}).catch (bucketErr => {
     			console.log('Google Bucket Error', bucketErr);
-                resMessages.resMessagesToReturn(404, bucketErr, res);
+                resMessages.resMessagesToReturn(400, bucketErr, res);
     		});
         }
-
-        Vehicle.update({_id: req.params.vehicleId}, {$pull: {VehiclePhotos: {$in: images}}})
-        .exec().then(result => {
-        }).catch(updateErr => {
-            resMessages.logError(updateErr);
-            resMessages.resMessagesToReturn(500, updateErr, res);
-        });
-
-        return resMessages.resMessagesToReturn(200, resMessages.VEHICLE_PICTURES_DELETED_SUCCESSFULLY, res);
     }).catch(deleteErr => {
         resMessages.logError(deleteErr);
         resMessages.resMessagesToReturn(500, deleteErr, res);

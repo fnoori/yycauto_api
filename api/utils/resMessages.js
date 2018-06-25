@@ -34,6 +34,9 @@ exports.PROVIDE_PHONE_NUMBER = 'Must provide phone number';
 exports.PROVIDE_ADDRESS = 'Must provide address';
 exports.CANNOT_DELETE_DEALERSHIP = 'Incorrect permission to delete dealership account';
 exports.MAX_IMAGES_REACHED_VEHICLE = 'Maximum of 7 files reached, please delete one and try uploading again';
+exports.MAXIMUM_IMAGES = 'Maximum of 7 files allowed';
+exports.PHOTO_DELETED_SUCCESSFULLY = 'Photo(s) deleted successfully';
+exports.GOOGLE_BUCKET_UPLOAD_ERROR = 'Google bucket upload error';
 
 // server error
 exports.SERVER_DELETE_VEHICLE_ERROR = 'A server error occurred when trying to delete this vehicle';

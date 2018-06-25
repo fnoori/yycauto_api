@@ -19,27 +19,5 @@ module.exports = {
             });
 		});
 		// [END storage_upload_file]
-	},
-
-	deleteVehicleDirectory: function(directory) {
-		googleBucketReqs.storage
-		.bucket(googleBucketReqs.bucketName)
-		.deleteFiles({prefix: directory})
-		.then(() => {
-			console.log(`${directory} deleted successfully.`);
-		}).catch (err => {
-			console.log('ERROR', err);
-		});
-	},
-
-	deletePictures: function(file) {
-		googleBucketReqs.storage
-		.bucket(googleBucketReqs.bucketName)
-		.file(file).delete()
-		.then(() => {
-			console.log(`${file} deleted successfully.`);
-		}).catch (err => {
-			console.log('ERROR', err);
-		});
 	}
 };
