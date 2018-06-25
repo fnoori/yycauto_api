@@ -21,12 +21,12 @@ module.exports = {
 		// [END storage_upload_file]
 	},
 
-	deleteFile: function(file) {
+	deleteVehicleDirectory: function(directory) {
 		googleBucketReqs.storage
 		.bucket(googleBucketReqs.bucketName)
-		.file(file).delete()
+		.deleteFiles({prefix: directory})
 		.then(() => {
-			console.log(`${file} deleted successfully.`);
+			console.log(`${directory} deleted successfully.`);
 		}).catch (err => {
 			console.log('ERROR', err);
 		});

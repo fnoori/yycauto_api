@@ -320,11 +320,6 @@ exports.deleteVehicle = (req, res, next) => {
     const vehicleId = req.params.vehicleId;
     const imageId = req.params.imageId;
 
-    const vehicleDest = '/dealerships/' + dealershipName + '/' + req.params.vehicleId + '/' + req.files[i].filename;
-    googleBucket.deleteFile();
-
-    return;
-
     // ensure dealership is deleting to their own inventory
     if (req.userData.dealershipId != dealershipId) {
         return resMessages.resMessagesToReturn(403,
@@ -338,14 +333,15 @@ exports.deleteVehicle = (req, res, next) => {
             return resMessages.resMessagesToReturn(500, resMessages.SERVER_DELETE_VEHICLE_ERROR, res);
         }
 
-        /*
-        rimraf('uploads/dealerships/' + req.userData.dealershipName.split(' ').join('_') + '/vehicles/' + vehicleId, (rimrafErr) => {
-            if (rimrafErr) {
-                resMessages.logError(rimrafErr);
-                return resMessages(500, rimrafErr, res);
-            }
+        // Get dealership name from id
+        Dealership.findById(req.params.dealershipId)
+        .then(result => {
+            const prefix = 'dealerships/' + result.Name.split(' ').join('_') + '/' + req.params.vehicleId + '/';
+            googleBucket.deleteVehicleDirectory(prefix);
+        }).catch(deleteErr => {
+            resMessages.logError(deleteErr);
+            resMessages.resMessagesToReturn(500, removeErr, res);
         });
-        */
 
         return resMessages.resMessagesToReturn(200, resMessages.VEHICLE_DELETED_SUCCESSFULLY, res);
     }).catch(removeErr => {
