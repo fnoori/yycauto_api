@@ -93,7 +93,7 @@ exports.addNewVehicle = (req, res, next) => {
             utilities.emptyDir(rootTempVehicleDir);
         }
 
-        return resMessages.resMessagesToReturn(403, resMessages.DEALERSHIP_ID_TOKEN_NOT_MATCH, res);
+        resMessages.resMessagesToReturn(403, resMessages.DEALERSHIP_ID_TOKEN_NOT_MATCH, res);
     }
 
     if (req.files.length <= 0) {
@@ -236,7 +236,6 @@ exports.updateVehicle = (req, res, next) => {
 
             // check if there is already a maximum number files for this vehicle
             if (req.files.length > 0) {
-                console.log(vehicleImages.length + req.files.length);
                 if (vehicleImages.length >= 7 || (vehicleImages.length + req.files.length) > 7 ) {
                     allErrors['Max Files'] = resMessages.MAX_IMAGES_REACHED_VEHICLE;
                 }
