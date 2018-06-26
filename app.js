@@ -10,7 +10,7 @@ const dealershipRoutes = require('./api/routes/dealerships');
 
 // Google admin
 const admin = require('firebase-admin');
-const serviceAccount = require('yyc-automotives-190021-firebase-adminsdk-oq1y8-4db681f769.json');
+const serviceAccount = require('YYCAutomotives-7de8639e0a53.json');
 
 admin.initializeApp({
 	credential: admin.credential.cert(serviceAccount),
