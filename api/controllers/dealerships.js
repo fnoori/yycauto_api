@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
 const Dealership = require('../models/dealership');
+const Vehicle = require('../models/vehicle');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const multer = require('multer');
@@ -231,7 +232,7 @@ exports.updateDealership = (req, res, next) => {
                 }
             });
         }
-        
+
         return resMessages.resMessagesToReturn(403,
             resMessages.DEALERSHIP_ID_TOKEN_NOT_MATCH, res);
     }
@@ -277,7 +278,7 @@ exports.updateDealership = (req, res, next) => {
                                 resMessages.logError(err);
                                 return resMessages.resMessagesToReturn(500, err, res);
                             }
-                            
+
                             updateOperations['AccountCredentials.Password'] = hash;
                         });
                     } else {
@@ -307,16 +308,16 @@ updateDealershipHelper = (updateOperations, dealershipId, dealershipName, logoFi
         updateData['AccountCredentials.Email'] = updateOperations['AccountCredentials.Email'];
     }
     if (updateOperations['AccountCredentials.Password'] != null) {
-        updateData['AccountCredentials.Password'] = updateOperations['AccountCredentials.Password'];    
+        updateData['AccountCredentials.Password'] = updateOperations['AccountCredentials.Password'];
     }
     if (updateOperations['Phone'] != null) {
         updateData['Phone'] = updateOperations['Phone'];
     }
     if (updateOperations['Address'] != null) {
-        updateData['Address'] = updateOperations['Address'];    
+        updateData['Address'] = updateOperations['Address'];
     }
     if (updateOperations['Logo'] != null) {
-        updateData['Logo'] = updateOperations['Logo'];       
+        updateData['Logo'] = updateOperations['Logo'];
     }
 
     Dealership.update({ _id: dealershipId }, { $set: updateData })
@@ -341,27 +342,41 @@ exports.deleteDealershipById = (req, res, next) => {
     Dealership.findById(req.userData.dealershipId)
         .select('AccountCredentials.AccessLevel')
         .exec().then(dealership => {
+
             // check access level of currently logged in user
             if (dealership.AccountCredentials.AccessLevel != 1 &&
-                req.userData.dealershipId != req.params.dealershipId) {
+                req.userData.dealershipId != dealershipId) {
                 return resMessages.resMessagesToReturn(403, resMessages.CANNOT_DELETE_DEALERSHIP, res);
             }
 
-            rimraf('uploads/dealerships/' + dealershipName.split(' ').join('_'), (rimrafErr) => {
-                if (rimrafErr) {
-                    resMessages.logError(rimrafErr);
-                    return resMessages(500, rimrafErr, res);
-                }
-            });
+            const prefix = 'dealerships/' + dealershipName.split(' ').join('_') + '/';
 
-            Dealership.remove({_id: dealershipId})
-            .exec().then(result => {
-                return resMessages.resMessagesToReturn(200, resMessages.DEALERSHIP_DELETED, res);
-            }).catch(removeError => {
-                resMessages.logError(removeError);
-                resMessages.resMessagesToReturn(500, removeError, res);
-            });
+            googleBucketReqs.storage
+            .bucket(googleBucketReqs.bucketName)
+            .deleteFiles({prefix: prefix})
+            .then(() => {
+                console.log(`${prefix} deleted successfully.`);
 
+                Dealership.remove({_id: dealershipId})
+                .exec().then(result => {
+
+                    // Delete all the dealerships vehicles too
+                    Vehicle.remove({'Dealership._id': dealershipId})
+                    .exec().then(dealershipVehiclesRemoved => {
+                        console.log('Successfully deleted dealership vehicles');
+                    }).catch(dealershipVehicleRemovedErr => {
+                        resMessages.logError(removeError);
+                        resMessages.resMessagesToReturn(500, removeError, res);
+                    });
+
+                }).catch(removeError => {
+                    resMessages.logError(removeError);
+                    resMessages.resMessagesToReturn(500, removeError, res);
+                });
+            }).catch (bucketErr => {
+                console.log('Google Bucket Error', bucketErr);
+            });
+            resMessages.resMessagesToReturn(200, resMessages.DEALERSHIP_DELETED, res);
         }).catch(err => {
             resMessages.logError(err);
             resMessages.resMessagesToReturn(500, err, res);
