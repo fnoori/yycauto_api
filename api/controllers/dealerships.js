@@ -110,7 +110,7 @@ exports.signUpDealership = (req, res, next) => {
                     });
                     resMessages.nonCriticalError(resMessages.DEALERHSHIP_ALREADY_EXISTS, res);
                 } else {
-                    bcrypt.hash(creationOperations['AccountCredentials.Passwordd'], 10, (hashErr, hash) => {
+                    bcrypt.hash(creationOperations['AccountCredentials.Password'], 10, (hashErr, hash) => {
                         if (hashErr) {
                             resMessages.logError(hashErr);
                             resMessages.returnError(500, hashErr, 'bcrypt.hash()', res);
@@ -210,7 +210,7 @@ exports.loginDealership = (req, res, next) => {
                             expiresIn: '1h'
                         });
 
-                    res.status(200).json({
+                    return res.status(200).json({
                         message: resMessages.AUTHENTICATION_SUCCESS,
                         token: token
                     });
@@ -266,7 +266,14 @@ exports.updateDealership = (req, res, next) => {
             const dealershipFolder = dealership.Name.split(' ').join('_');
             // upload logo if provided
             if (req.file) {
-                googleBucket.deleteFile('dealerships/' + dealership.Name.split(' ').join('_') + '/' + dealership.Logo);
+                googleBucketReqs.storage
+        		.bucket(googleBucketReqs.bucketName)
+        		.file('dealerships/' + dealership.Name.split(' ').join('_') + '/' + dealership.Logo).delete()
+        		.then(() => {}).catch(bucketDeleteFileErr => {
+                    resMessages.logError(bucketDeleteFileErr);
+                    resMessages.returnError(500, bucketDeleteFileErr, 'bucket.delete()', res);
+        		});
+
                 updateOperations['Logo'] = 'logo.' + req.file.mimetype.split('/').pop();
             }
 
