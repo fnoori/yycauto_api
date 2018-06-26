@@ -90,14 +90,7 @@ exports.addNewVehicle = (req, res, next) => {
     // ensure dealership is adding to their own inventory
     if (req.userData.dealershipId != req.params.dealershipId) {
         if (req.files) {
-            for (var i = 0; i < req.files.length; i++) {
-                fs.unlink(rootTempVehicleDir + req.files[i].filename, fsUnlinkErr => {
-                    if (fsUnlinkErr) {
-                        resMessages.logError(fsUnlinkErr);
-                        resMessages.returnError(500, fsUnlinkErr, 'fs.unlink()', res);
-                    }
-                });
-            }
+            utilities.emptyDir(rootTempVehicleDir);
         }
 
         resMessages.resMessagesToReturn(403, resMessages.DEALERSHIP_ID_TOKEN_NOT_MATCH, res);
@@ -114,14 +107,7 @@ exports.addNewVehicle = (req, res, next) => {
 
     if (Object.keys(allErrors).length > 0) {
         if (req.files) {
-            for (var i = 0; i < req.files.length; i++) {
-                fs.unlink(rootTempVehicleDir + req.files[i].filename, fsUnlinkErr => {
-                    if (fsUnlinkErr) {
-                        resMessages.logError(fsUnlinkErr);
-                        resMessages.returnError(500, fsUnlinkErr, 'fs.unlink()', res);
-                    }
-                });
-            }
+            utilities.emptyDir(rootTempVehicleDir);
         }
 
         resMessages.resMessagesToReturn(400, allErrors, res);
@@ -193,25 +179,13 @@ exports.addNewVehicle = (req, res, next) => {
                         resMessages.logError(bucketUploadErr);
                         resMessages.returnError(500, bucketUploadErr, 'bucket.upload()', res);
             		}).finally(function() {
-                        fs.unlink(rootTempVehicleDir + req.files[i].filename, err => {
-                            if (err) {
-                                return resMessages.resMessagesToReturn(500, err, res);
-                            }
-                        });
+                        utilities.emptyDir(rootTempVehicleDir);
             		});
                 }
 
                 resMessages.resMessagesToReturn(201, resMessages.VEHICLE_CREATED, res);
             }).catch(newVehicleSaveErr => {
-                for (var i = 0; i < req.files.length; i++) {
-                    fs.unlink(rootTempVehicleDir + req.files[i].filename, fsUnlinkErr => {
-                        if (fsUnlinkErr) {
-                            resMessages.logError(fsUnlinkErr);
-                            resMessages.returnError(500, fsUnlinkErr, 'fs.unlink()', res);
-                        }
-                    });
-                }
-
+                utilities.emptyDir(rootTempVehicleDir);
                 resMessages.logError(newVehicleSaveErr);
                 resMessages.returnError(500, newVehicleSaveErr, 'save()', res);
             })
@@ -324,12 +298,7 @@ exports.updateVehicle = (req, res, next) => {
                                 resMessages.logError(bucketUploadErr);
                                 resMessages.returnError(500, bucketUploadErr, 'bucket.upload()', res);
                             }).finally(function() {
-                                fs.unlink(rootTempVehicleDir + req.files[i].filename, fsUnlinkErr => {
-                                    if (fsUnlinkErr) {
-                                        resMessages.logError(fsUnlinkErr);
-                                        resMessages.returnError(500, fsUnlinkErr, 'fs.unlink()', res);
-                                    }
-                                });
+                                utilities.emptyDir(rootTempVehicleDir);
                             });
                         }
                     }
