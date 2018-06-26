@@ -27,7 +27,8 @@ exports.getAllDealerships = (req, res, next) => {
         .skip(lazyLoad).limit(perPage).exec().then(docs => {
             res.status(200).json(docs);
         }).catch(err => {
-            resMessages.resMessagesToReturn(500, err, res);
+            resMessages.logError(err);
+            resMessages.returnError(500, err, 'find()', res);
         });
 }
 
@@ -45,7 +46,7 @@ exports.getDealershipByID = (req, res, next) => {
             }
         }).catch(err => {
             resMessages.logError(err);
-            resMessages.resMessagesToReturn(500, err, res);
+            resMessages.returnError(500, err, 'findById()', res);
         });
 }
 
@@ -62,7 +63,7 @@ exports.getDealershipByName = (req, res, next) => {
             }
         }).catch(err => {
             resMessages.logError(err);
-            resMessages.resMessagesToReturn(500, err, res);
+            resMessages.returnError(500, err, 'find()', res);
         });
 }
 
@@ -82,9 +83,10 @@ exports.signUpDealership = (req, res, next) => {
 
             if (Object.keys(allErrors).length > 0) {
                 if (req.file) {
-                    fs.unlink(rootTmpLogoDir + req.file.filename, err => {
-                        if (err) {
-                            console.log('Failed to delete temporary file');
+                    fs.unlink(rootTmpLogoDir + req.file.filename, fsUnlinkErr => {
+                        if (fsUnlinkErr) {
+                            resMessages.logError(fsUnlinkErr);
+                            resMessages.returnError(500, fsUnlinkErr, 'fs.unlink()', res);
                         }
                     });
                 }
@@ -100,17 +102,18 @@ exports.signUpDealership = (req, res, next) => {
                 // dealership exists
                 if (dealership.length >= 1) {
                     // delete the uploaded logo, since it's a duplicate dealership
-                    fs.unlink(rootTmpLogoDir + req.file.filename, err => {
-                        if (err) {
-                            console.log('Failed to delete temporary file');
+                    fs.unlink(rootTmpLogoDir + req.file.filename, fsUnlinkErr => {
+                        if (fsUnlinkErr) {
+                            resMessages.logError(fsUnlinkErr);
+                            resMessages.returnError(500, fsUnlinkErr, 'fs.unlink()', res);
                         }
                     });
-                    return resMessages.resMessagesToReturn(409, resMessages.DEALERHSHIP_ALREADY_EXISTS, res);
+                    resMessages.nonCriticalError(resMessages.DEALERHSHIP_ALREADY_EXISTS, res);
                 } else {
-                    bcrypt.hash(creationOperations['AccountCredentials.Password'], 10, (err, hash) => {
-                        if (err) {
-                            resMessages.logError(err);
-                            return resMessages.resMessagesToReturn(500, err, res);
+                    bcrypt.hash(creationOperations['AccountCredentials.Passwordd'], 10, (hashErr, hash) => {
+                        if (hashErr) {
+                            resMessages.logError(hashErr);
+                            resMessages.returnError(500, hashErr, 'bcrypt.hash()', res);
                         } else {
                             const newDealership = new Dealership({
                                 _id: new mongoose.Types.ObjectId(),
@@ -142,10 +145,13 @@ exports.signUpDealership = (req, res, next) => {
                         }
                     });
                 }
+            }).catch(dealershipFind => {
+                resMessages.logError(err);
+                resMessages.returnError(500, err, 'find()', res);
             });
         }).catch(err => {
             resMessages.logError(err);
-            resMessages.resMessagesToReturn(500, err, res);
+            resMessages.returnError(500, err, 'findById()', res);
         });
 }
 

@@ -28,16 +28,16 @@ const upload = multer({
     fileFilter: fileFilter
 });
 
-router.get('/:lazyLoad/:perPage', DealershipsController.getAllDealerships);
-router.get('/byId/:dealershipId', checkAuth, DealershipsController.getDealershipByID);
-router.get('/byName/:dealershipName', DealershipsController.getDealershipByName);
-
 router.post('/signUp', checkAuth, upload.single('logo'), DealershipsController.signUpDealership);
 router.post('/admin/signup', DealershipsController.signUpAdmin);
 router.post('/login', DealershipsController.loginDealership);
 
+router.get('/byId/:dealershipId', checkAuth, DealershipsController.getDealershipByID);
+router.get('/byName/:dealershipName', DealershipsController.getDealershipByName);
 router.patch('/update/:dealershipId', checkAuth, upload.single('logo'), DealershipsController.updateDealership);
 
 router.delete('/delete/:dealershipId/:dealershipName', checkAuth, DealershipsController.deleteDealershipById);
+
+router.get('/:lazyLoad/:perPage', DealershipsController.getAllDealerships);
 
 module.exports = router;

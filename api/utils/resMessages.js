@@ -48,22 +48,36 @@ exports.INVALID_PASSWORD = [
     'Contain at least one number'
 ];
 
-exports.logError = (req, res, next) => {
+exports.logError = (errorMsg) => {
     var dateTime = new Date();
 
-    console.log(req);
     const error = new Error({
         _id: new mongoose.Types.ObjectId(),
         'Date': dateTime,
-        'Error Message': req
+        'Error Message': errorMsg.message,
+        'Error Stack': errorMsg.stack
     });
-    error.save().then(result => {
-        console.log(result);
-    });
+    error.save().then(result => {});
 }
 
 exports.resMessagesToReturn = (code, message, res) => {
     return res.status(code).json({
+        message: message
+    });
+}
+
+exports.returnError = (code, message, functionErr, res) => {
+    const errorMsg = `\'${functionErr}\' Error ---- `;
+    const errorStack = `\'${functionErr}\' Error ---- `;
+
+    return res.status(500).json({
+        message: errorMsg + message.message,
+        stack: errorStack + message.stack
+    });
+}
+
+exports.nonCriticalError = (message, res) => {
+    return res.json({
         message: message
     });
 }
