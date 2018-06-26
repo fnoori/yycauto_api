@@ -23,10 +23,9 @@ exports.getAllVehicles = (req, res, next) => {
     .select(omitFromFind)
     .exec().then(docs => {
         res.status(200).json(docs);
-    })
-    .catch(err => {
-        resMessages.logError(err);
-        resMessages.resMessagesToReturn(500, err, res);
+    }).catch(vehicleFindErr => {
+        resMessages.logError(vehicleFindErr);
+        resMessages.returnError(500, vehicleFindErr, 'find()', res);
     });
 }
 
@@ -35,15 +34,13 @@ exports.getVehicleByID = (req, res, next) => {
 
     Vehicle.findById(ID).exec().then(doc => {
         if (doc) {
-            res.status(200).json({
-                vehicle: doc
-            });
+            res.status(200).json({vehicle: doc});
         } else {
             resMessages.resMessagesToReturn(404, resMessages.VEHICLE_NOT_FOUND_WITH_ID, res);
         }
-    }).catch(err =>  {
-        resMessages.logError(err);
-        resMessages.resMessagesToReturn(500, err, res);
+    }).catch(vehicleFindByIdErr =>  {
+        resMessages.logError(vehicleFindByIdErr);
+        resMessages.returnError(500, vehicleFindByIdErr, 'findById()', res);
     });
 }
 
@@ -60,9 +57,9 @@ exports.getVehicleByDealershipID = (req, res, next) => {
         } else {
             resMessages.resMessagesToReturn(404, resMessages.DEALERSHIP_NOT_FOUND_WITH_ID, res);
         }
-    }).catch(err => {
-        resMessages.logError(err);
-        resMessages.resMessagesToReturn(500, err, res);
+    }).catch(vehicleFindErr => {
+        resMessages.logError(vehicleFindErr);
+        resMessages.returnError(500, vehicleFindErr, 'find()', res);
     });
 }
 
@@ -80,9 +77,9 @@ exports.getVehicleByDealershipName = (req, res, next) => {
         } else {
             resMessages.resMessagesToReturn(404, resMessages.DEALERSHIP_NOT_FOUND_WITH_ID, res);
         }
-    }).catch(err => {
-        resMessages.logError(err);
-        resMessages.resMessagesToReturn(500, err, res);
+    }).catch(vehicleFindErr => {
+        resMessages.logError(vehicleFindErr);
+        resMessages.returnError(500, vehicleFindErr, 'find()', res);
     });
 }
 
@@ -94,23 +91,23 @@ exports.addNewVehicle = (req, res, next) => {
     if (req.userData.dealershipId != req.params.dealershipId) {
         if (req.files) {
             for (var i = 0; i < req.files.length; i++) {
-                fs.unlink(rootTempVehicleDir + req.files[i].filename, err => {
-                    if (err) {
-                        return resMessages.resMessagesToReturn(500, err, res);
+                fs.unlink(rootTempVehicleDir + req.files[i].filename, fsUnlinkErr => {
+                    if (fsUnlinkErr) {
+                        resMessages.logError(fsUnlinkErr);
+                        resMessages.returnError(500, fsUnlinkErr, 'fs.unlink()', res);
                     }
                 });
             }
         }
 
-        return resMessages.resMessagesToReturn(403,
-            resMessages.DEALERSHIP_ID_TOKEN_NOT_MATCH, res);
+        resMessages.resMessagesToReturn(403, resMessages.DEALERSHIP_ID_TOKEN_NOT_MATCH, res);
     }
 
     if (req.files.length <= 0) {
-        return resMessages.resMessagesToReturn(400, resMessages.MUST_INCLUDE_VEHICLE_PHOTOS, res);
+        resMessages.resMessagesToReturn(400, resMessages.MUST_INCLUDE_VEHICLE_PHOTOS, res);
     }
     if (req.files.length > 7) {
-        return resMessages.resMessagesToReturn(400, resMessages.MAXIMUM_IMAGES, res);
+        resMessages.resMessagesToReturn(400, resMessages.MAXIMUM_IMAGES, res);
     }
 
     allErrors = validations.validateVehicleData(creationOperatinos);
@@ -118,11 +115,16 @@ exports.addNewVehicle = (req, res, next) => {
     if (Object.keys(allErrors).length > 0) {
         if (req.files) {
             for (var i = 0; i < req.files.length; i++) {
-                fs.unlink(rootTempVehicleDir + req.files[i].filename);
+                fs.unlink(rootTempVehicleDir + req.files[i].filename, fsUnlinkErr => {
+                    if (fsUnlinkErr) {
+                        resMessages.logError(fsUnlinkErr);
+                        resMessages.returnError(500, fsUnlinkErr, 'fs.unlink()', res);
+                    }
+                });
             }
         }
 
-        return resMessages.resMessagesToReturn(400, allErrors, res);
+        resMessages.resMessagesToReturn(400, allErrors, res);
     }
 
     const vehicleInfo = req.body;
@@ -187,8 +189,9 @@ exports.addNewVehicle = (req, res, next) => {
             		.bucket(googleBucketReqs.bucketName)
             		.upload(rootTempVehicleDir + req.files[i].filename, {destination: vehicleDest})
             		.then(() => {
-            		}).catch(bucketError => {
-                        resMessages.resMessagesToReturn(500, resMessages.GOOGLE_BUCKET_UPLOAD_ERROR, bucketError);
+            		}).catch(bucketUploadErr => {
+                        resMessages.logError(bucketUploadErr);
+                        resMessages.returnError(500, bucketUploadErr, 'bucket.upload()', res);
             		}).finally(function() {
                         fs.unlink(rootTempVehicleDir + req.files[i].filename, err => {
                             if (err) {
@@ -199,25 +202,26 @@ exports.addNewVehicle = (req, res, next) => {
                 }
 
                 resMessages.resMessagesToReturn(201, resMessages.VEHICLE_CREATED, res);
-            }).catch(saveError => {
+            }).catch(newVehicleSaveErr => {
                 for (var i = 0; i < req.files.length; i++) {
-                    fs.unlink(rootTempVehicleDir + req.files[i].filename, err => {
-                        if (err) {
-                            return resMessages.resMessagesToReturn(500, err, res);
+                    fs.unlink(rootTempVehicleDir + req.files[i].filename, fsUnlinkErr => {
+                        if (fsUnlinkErr) {
+                            resMessages.logError(fsUnlinkErr);
+                            resMessages.returnError(500, fsUnlinkErr, 'fs.unlink()', res);
                         }
                     });
                 }
 
-                resMessages.logError(saveError);
-                resMessages.resMessagesToReturn(500, saveError, res);
+                resMessages.logError(newVehicleSaveErr);
+                resMessages.returnError(500, newVehicleSaveErr, 'save()', res);
             })
 
         } else {
             resMessages.resMessagesToReturn(404, resMessages.DEALERSHIP_NOT_FOUND_WITH_ID, res);
         }
-    }).catch(err => {
-        resMessages.logError(err);
-        resMessages.resMessagesToReturn(500, err, res);
+    }).catch(dealershipFindByIdErr => {
+        resMessages.logError(dealershipFindByIdErr);
+        resMessages.returnError(500, dealershipFindByIdErr, 'findById()', res);
     });
 }
 
@@ -231,8 +235,7 @@ exports.updateVehicle = (req, res, next) => {
             utilities.emptyDir(rootTempVehicleDir);
         }
 
-        return resMessages.resMessagesToReturn(403,
-            resMessages.DEALERSHIP_ID_TOKEN_NOT_MATCH, res);
+        return resMessages.resMessagesToReturn(403, resMessages.DEALERSHIP_ID_TOKEN_NOT_MATCH, res);
     }
 
     // Get dealership name from id
@@ -317,12 +320,14 @@ exports.updateVehicle = (req, res, next) => {
                             .bucket(googleBucketReqs.bucketName)
                             .upload(rootTempVehicleDir + req.files[i].filename, {destination: vehicleDest})
                             .then(() => {
-                            }).catch(bucketError => {
-                                resMessages.resMessagesToReturn(500, GOOGLE_BUCKET_UPLOAD_ERROR, bucketError);
+                            }).catch(bucketUploadErr => {
+                                resMessages.logError(bucketUploadErr);
+                                resMessages.returnError(500, bucketUploadErr, 'bucket.upload()', res);
                             }).finally(function() {
-                                fs.unlink(rootTempVehicleDir + req.files[i].filename, err => {
-                                    if (err) {
-                                        return resMessages.resMessagesToReturn(500, err, res);
+                                fs.unlink(rootTempVehicleDir + req.files[i].filename, fsUnlinkErr => {
+                                    if (fsUnlinkErr) {
+                                        resMessages.logError(fsUnlinkErr);
+                                        resMessages.returnError(500, fsUnlinkErr, 'fs.unlink()', res);
                                     }
                                 });
                             });
@@ -332,16 +337,18 @@ exports.updateVehicle = (req, res, next) => {
                     resMessages.resMessagesToReturn(400, resMessages.VEHICLE_NOT_FOUND_WITH_ID, res);
                 }
                 resMessages.resMessagesToReturn(200, resMessages.VEHICLE_UPDATED, res);
-            }).catch(err => {
+            }).catch(vehicleUpdateErr => {
                 utilities.emptyDir(rootTempVehicleDir);
-                resMessages.logError(err);
-                resMessages.resMessagesToReturn(500, err, res);
+                resMessages.logError(vehicleUpdateErr);
+                resMessages.returnError(500, vehicleUpdateErr, 'fs.unlink()', res);
             });
-        }).catch(bucketErr => {
-            console.error('Google Bucket Error:', bucketErr);
+        }).catch(bucketGetFilesErr => {
+            resMessages.logError(bucketGetFilesErr);
+            resMessages.returnError(500, bucketGetFilesErr, 'bucket.getFiles()', res);
         });
-    }).catch(err => {
-        console.log('MongoDB findById Error', err);
+    }).catch(dealershipFindByIdErr => {
+        resMessages.logError(dealershipFindByIdErr);
+        resMessages.returnError(500, dealershipFindByIdErr, 'findById()', res);
     });
 }
 
@@ -351,15 +358,13 @@ exports.deleteVehicle = (req, res, next) => {
 
     // ensure dealership is deleting to their own inventory
     if (req.userData.dealershipId != dealershipId) {
-        return resMessages.resMessagesToReturn(403,
-            resMessages.DEALERSHIP_ID_TOKEN_NOT_MATCH, res);
+        resMessages.resMessagesToReturn(403, resMessages.DEALERSHIP_ID_TOKEN_NOT_MATCH, res);
     }
 
     Vehicle.remove({'_id': vehicleId, 'Dealership._id': dealershipId})
     .exec().then(result => {
-        console.log(result);
         if (result.n === 0) {
-            return resMessages.resMessagesToReturn(500, resMessages.SERVER_DELETE_VEHICLE_ERROR, res);
+            resMessages.resMessagesToReturn(400, resMessages.VEHICLE_TO_DELETE_NOT_FOUND, res);
         }
 
         // Get dealership name from id
@@ -370,21 +375,20 @@ exports.deleteVehicle = (req, res, next) => {
             googleBucketReqs.storage
     		.bucket(googleBucketReqs.bucketName)
     		.deleteFiles({prefix: prefix})
-    		.then(() => {
-    			console.log(`${prefix} deleted successfully.`);
-    		}).catch (bucketErr => {
-    			console.log('Google Bucket Error', bucketErr);
+    		.then(() => {}).catch (bucketDeleteFilesErr => {
+                resMessages.logError(bucketDeleteFilesErr);
+                resMessages.returnError(500, bucketDeleteFilesErr, 'bucket.deleteFiles()', res);
     		});
 
-        }).catch(deleteErr => {
-            resMessages.logError(deleteErr);
-            resMessages.resMessagesToReturn(500, removeErr, res);
+        }).catch(dealershipFindByIdErr => {
+            resMessages.logError(dealershipFindByIdErr);
+            resMessages.returnError(500, dealershipFindByIdErr, 'find()', res);
         });
 
-        return resMessages.resMessagesToReturn(200, resMessages.VEHICLE_DELETED_SUCCESSFULLY, res);
-    }).catch(removeErr => {
-        resMessages.logError(removeErr);
-        resMessages.resMessagesToReturn(500, removeErr, res);
+        resMessages.resMessagesToReturn(200, resMessages.VEHICLE_DELETED_SUCCESSFULLY, res);
+    }).catch(vehicleRemoveErr => {
+        resMessages.logError(vehicleRemoveErr);
+        resMessages.returnError(500, vehicleRemoveErr, 'remove()', res);
     });
 }
 
@@ -395,8 +399,7 @@ exports.deleteVehiclePhotos = (req, res, next) => {
 
     // ensure dealership is deleting to their own inventory
     if (req.userData.dealershipId != dealershipId) {
-        return resMessages.resMessagesToReturn(403,
-            resMessages.DEALERSHIP_ID_TOKEN_NOT_MATCH, res);
+        resMessages.resMessagesToReturn(403, resMessages.DEALERSHIP_ID_TOKEN_NOT_MATCH, res);
     }
 
     // Get dealership name from id
@@ -409,22 +412,21 @@ exports.deleteVehiclePhotos = (req, res, next) => {
     		.bucket(googleBucketReqs.bucketName)
     		.file(filename).delete()
     		.then(() => {
-    			//console.log(`${file} deleted successfully.`);
                 Vehicle.update({_id: req.params.vehicleId}, {$pull: {VehiclePhotos: {$in: images}}})
                 .exec().then(result => {
-                }).catch(updateErr => {
-                    resMessages.logError(updateErr);
-                    resMessages.resMessagesToReturn(500, updateErr, res);
+                }).catch(vehicleUpdateErr => {
+                    resMessages.logError(vehicleUpdateErr);
+                    resMessages.returnError(500, vehicleUpdateErr, 'update()', res);
                 });
 
                 resMessages.resMessagesToReturn(200, resMessages.PHOTO_DELETED_SUCCESSFULLY, res);
-    		}).catch (bucketErr => {
-    			console.log('Google Bucket Error', bucketErr);
-                resMessages.resMessagesToReturn(400, bucketErr, res);
+    		}).catch (bucketDeleteFileErr => {
+                resMessages.logError(bucketDeleteFileErr);
+                resMessages.returnError(500, bucketDeleteFileErr, 'bucket.delete()', res);
     		});
         }
-    }).catch(deleteErr => {
-        resMessages.logError(deleteErr);
-        resMessages.resMessagesToReturn(500, deleteErr, res);
+    }).catch(dealershipFindByIdErr => {
+        resMessages.logError(dealershipFindByIdErr);
+        resMessages.returnError(500, dealershipFindByIdErr, 'find()', res);
     });
 }

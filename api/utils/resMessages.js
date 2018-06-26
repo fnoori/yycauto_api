@@ -21,6 +21,7 @@ exports.VEHICLE_NOT_FOUND_WITH_ID = 'No vehicle found with matching ID';
 exports.MUST_INCLUDE_VEHICLE_PHOTOS = 'Must include photos of vehicle';
 exports.VEHICLE_CREATED = 'Vehicle created';
 exports.VEHICLE_DELETED_SUCCESSFULLY = 'Vehicle deleted sucessfully';
+exports.VEHICLE_TO_DELETE_NOT_FOUND = 'Failed to find vehicle with that ID and associated with a dealership with that ID';
 
 // misc
 exports.DEALERHSHIP_ALREADY_EXISTS = 'Account already exists for this dealership';
