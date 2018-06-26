@@ -8,15 +8,6 @@ const mongoose = require('mongoose');
 const vehicleRoutes = require('./api/routes/vehicles');
 const dealershipRoutes = require('./api/routes/dealerships');
 
-// Google admin
-const admin = require('firebase-admin');
-const serviceAccount = require('YYCAutomotives-7de8639e0a53.json');
-
-admin.initializeApp({
-	credential: admin.credential.cert(serviceAccount),
-	databaseURL: 'https://yyc-automotives-190021.firebaseio.com'
-});
-
 mongoose.connect(process.env.MONGODB_URI)
 .then().catch(err => {
 	console.log('Mongo Connection Error', err);
