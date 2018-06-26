@@ -5,7 +5,6 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const multer = require('multer');
 const fs = require('fs');
-const rimraf = require('rimraf');
 
 const resMessages = require('../utils/resMessages');
 const validations = require('../utils/validations');

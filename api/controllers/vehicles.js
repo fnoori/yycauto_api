@@ -2,7 +2,6 @@ const mongoose = require('mongoose');
 const Vehicle = require('../models/vehicle');
 const Dealership = require('../models/dealership');
 const fs = require('fs');
-const rimraf = require('rimraf');
 
 const resMessages = require('../utils/resMessages');
 const validations = require('../utils/validations');
