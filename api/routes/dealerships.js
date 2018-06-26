@@ -32,7 +32,7 @@ router.post('/signUp', checkAuth, upload.single('logo'), DealershipsController.s
 router.post('/admin/signup', DealershipsController.signUpAdmin);
 router.post('/login', DealershipsController.loginDealership);
 
-router.get('/byId/:dealershipId', checkAuth, DealershipsController.getDealershipByID);
+router.get('/byId/:dealershipId', DealershipsController.getDealershipByID);
 router.get('/byName/:dealershipName', DealershipsController.getDealershipByName);
 router.patch('/update/:dealershipId', checkAuth, upload.single('logo'), DealershipsController.updateDealership);
 
