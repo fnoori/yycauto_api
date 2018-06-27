@@ -28,7 +28,7 @@ const upload = multer({
     fileFilter: fileFilter
 });
 
-router.post('/signUp', checkAuth, upload.single('logo'), DealershipsController.signUpDealership);
+router.post('/createDealershipAccount', checkAuth, upload.single('logo'), DealershipsController.createDealershipAccount);
 router.post('/admin/signup', DealershipsController.signUpAdmin);
 router.post('/login', DealershipsController.loginDealership);
 
