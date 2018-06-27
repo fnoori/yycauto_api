@@ -282,9 +282,6 @@ exports.updateDealership = (req, res, next) => {
 
                 // validate
                 bcrypt.compare(updateOperations.OldPassword, dealership.AccountCredentials.Password, (err, result) => {
-                    if (err) {
-                        return resMessages.resMessagesToReturn(401, resMessages.OLD_PASSWORD_INCORRECT, res);
-                    }
                     if (result) {
                         // update
                         bcrypt.hash(updateOperations['AccountCredentials.Password'], 10, (bcryptHashErr, hash) => {
@@ -300,10 +297,10 @@ exports.updateDealership = (req, res, next) => {
                         return resMessages.resMessagesToReturn(401, resMessages.OLD_PASSWORD_INCORRECT, res);
                     }
                 });
+            } else {
+                // No password change, we still need to call the update helper for any other changes
+                updateDealershipHelper(updateOperations, req.params.dealershipId, req.file, dealershipFolder, res);
             }
-
-            // No password change, we still need to call the update helper for any other changes
-            updateDealershipHelper(updateOperations, req.params.dealershipId, req.file, dealershipFolder, res);
         }).catch(dealershipFindByIdErr => {
             if (req.file) {
                 fs.unlink(rootTmpLogoDir + req.file.filename, fsUnlinkErr => {
