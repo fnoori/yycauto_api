@@ -5,8 +5,6 @@ const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
 
 // routes
-const vehicleRoutes = require('./api/routes/vehicles');
-const dealershipRoutes = require('./api/routes/dealerships');
 
 mongoose.connect(process.env.MONGODB_URI)
 .then().catch(err => {
@@ -38,8 +36,6 @@ app.use((req, res, next) => {
 });
 
 // handle routes
-app.use('/vehicles', vehicleRoutes);
-app.use('/dealerships', dealershipRoutes);
 
 // error handling
 app.use((req, res, next) => {
