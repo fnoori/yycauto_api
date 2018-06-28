@@ -8,6 +8,18 @@ const mongoose = require('mongoose');
 const vehicleRoutes = require('./api/routes/vehicles');
 const dealershipRoutes = require('./api/routes/dealerships');
 
+// for passport
+const passport = require('passport');
+const session = require('express-session');
+
+app.use(session({ 
+	secret: 'keyboard cat',
+	resave: true,
+    saveUninitialized: true
+}));
+app.use(passport.initialize());
+app.use(passport.session());
+
 mongoose.connect(process.env.MONGODB_URI)
 .then().catch(err => {
 	console.log('Mongo Connection Error', err);
