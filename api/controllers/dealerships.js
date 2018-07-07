@@ -42,7 +42,7 @@ exports.getDealershipByID = (req, res, next) => {
                     dealership: doc
                 });
             } else {
-                return resMessages.resMessagesToReturn(404, resMessages.DEALERSHIP_NOT_FOUND_WITH_ID, res);
+                resMessages.resMessagesToReturn(404, resMessages.DEALERSHIP_NOT_FOUND_WITH_ID, res);
             }
         }).catch(dealershipFindById => {
             resMessages.logError(dealershipFindById);
@@ -59,7 +59,7 @@ exports.getDealershipByName = (req, res, next) => {
             if (doc) {
                 res.status(200).json({dealership: doc});
             } else {
-                return resMessages.resMessagesToReturn(404, resMessages.DEALERSHIP_NOT_FOUND_WITH_NAME, res);
+                resMessages.resMessagesToReturn(404, resMessages.DEALERSHIP_NOT_FOUND_WITH_NAME, res);
             }
         }).catch(dealershipFind => {
             resMessages.logError(dealershipFind);
@@ -67,13 +67,13 @@ exports.getDealershipByName = (req, res, next) => {
         });
 }
 
-exports.createDealershipAccount = (req, res, next) => {
+exports.signUpDealership = (req, res, next) => {
     Dealership.findById(req.userData.dealershipId)
         .select('AccountCredentials.AccessLevel')
         .exec().then(dealership => {
             // check access level of currently logged in user
             if (dealership.AccountCredentials.AccessLevel != 1) {
-                return resMessages.resMessagesToReturn(403, resMessages.ADMIN_ONLY_CREATE_DEALERSHIP, res);
+                resMessages.resMessagesToReturn(403, resMessages.ADMIN_ONLY_CREATE_DEALERSHIP, res);
             }
 
             var creationOperations = req.body;
@@ -90,7 +90,7 @@ exports.createDealershipAccount = (req, res, next) => {
                         }
                     });
                 }
-                return resMessages.resMessagesToReturn(400, allErrors, res);
+                resMessages.resMessagesToReturn(400, allErrors, res);
             }
 
             Dealership.find({
@@ -137,7 +137,7 @@ exports.createDealershipAccount = (req, res, next) => {
                                     googleBucket.uploadFile(rootTmpLogoDir + req.file.filename, logoDest);
                                 }
 
-                                return resMessages.resMessagesToReturn(201, resMessages.DEALERSHIP_CREATED, res);
+                                resMessages.resMessagesToReturn(201, resMessages.DEALERSHIP_CREATED, res);
                             }).catch(saveErr => {
                                 resMessages.logError(saveErr);
                                 resMessages.returnError(500, saveErr, 'save()', res);
@@ -176,7 +176,7 @@ exports.signUpAdmin = (req, res, next) => {
             });
 
             newAdmin.save().then(result => {
-                return resMessages.resMessagesToReturn(201, resMessages.ADMIN_CREATED, res);
+                resMessages.resMessagesToReturn(201, resMessages.ADMIN_CREATED, res);
             }).catch(newAdminSaveErr => {
                 resMessages.logError(newAdminSaveErr);
                 resMessages.returnError(500, newAdminSaveErr, 'save()', res);
@@ -192,12 +192,12 @@ exports.loginDealership = (req, res, next) => {
     Dealership.find({ 'AccountCredentials.Email': email })
         .exec().then(dealership => {
             if (dealership.length < 1) {
-                return resMessages.resMessagesToReturn(401, resMessages.AUTHENTICATION_FAIL, res);
+                resMessages.resMessagesToReturn(401, resMessages.AUTHENTICATION_FAIL, res);
             }
 
             bcrypt.compare(password, dealership[0].AccountCredentials.Password, (err, result) => {
                 if (err) {
-                    return resMessages.resMessagesToReturn(401, resMessages.AUTHENTICATION_FAIL, res);
+                    resMessages.resMessagesToReturn(401, resMessages.AUTHENTICATION_FAIL, res);
                 }
 
                 if (result) {
@@ -216,7 +216,7 @@ exports.loginDealership = (req, res, next) => {
                     });
                 }
 
-                return resMessages.resMessagesToReturn(401, resMessages.AUTHENTICATION_FAIL, res);
+                resMessages.resMessagesToReturn(401, resMessages.AUTHENTICATION_FAIL, res);
             });
         }).catch(dealershipFindErr => {
             resMessages.logError(dealershipFindErr);
@@ -239,7 +239,7 @@ exports.updateDealership = (req, res, next) => {
             });
         }
 
-        return resMessages.resMessagesToReturn(403, resMessages.DEALERSHIP_ID_TOKEN_NOT_MATCH, res);
+        resMessages.resMessagesToReturn(403, resMessages.DEALERSHIP_ID_TOKEN_NOT_MATCH, res);
     }
 
     allErrors = validations.validateDealershipUpdate(updateOperations);
@@ -252,15 +252,15 @@ exports.updateDealership = (req, res, next) => {
                 }
             });
         }
-        return resMessages.resMessagesToReturn(400, allErrors, res);
+        resMessages.resMessagesToReturn(400, allErrors, res);
     }
 
 
-    Dealership.findById(req.params.dealershipId)
+    Dealership.findById(req.userData.dealershipId)
         .select('AccountCredentials.Password -_id Name Logo')
         .exec().then(dealership => {
             if (dealership.length < 1) {
-                return resMessages.resMessagesToReturn(401, resMessages.DEALERSHIP_NOT_FOUND_WITH_ID, res);
+                resMessages.resMessagesToReturn(401, resMessages.DEALERSHIP_NOT_FOUND_WITH_ID, res);
             }
 
             const dealershipFolder = dealership.Name.split(' ').join('_');
@@ -279,9 +279,11 @@ exports.updateDealership = (req, res, next) => {
 
             if (updateOperations['OldPassword'] &&
                 updateOperations['AccountCredentials.Password']) {
-
                 // validate
-                bcrypt.compare(updateOperations.OldPassword, dealership.AccountCredentials.Password, (err, result) => {
+                bcrypt.compare(updateOperations.OldPassword, dealership.AccountCredentials.Password, (compareError, result) => {
+                    if (compareError) {
+                        resMessages.resMessagesToReturn(401, resMessages.OLD_PASSWORD_INCORRECT, res);
+                    }
                     if (result) {
                         // update
                         bcrypt.hash(updateOperations['AccountCredentials.Password'], 10, (bcryptHashErr, hash) => {
@@ -291,16 +293,14 @@ exports.updateDealership = (req, res, next) => {
                             }
 
                             updateOperations['AccountCredentials.Password'] = hash;
-                            updateDealershipHelper(updateOperations, req.params.dealershipId, req.file, dealershipFolder, res);
                         });
                     } else {
-                        return resMessages.resMessagesToReturn(401, resMessages.OLD_PASSWORD_INCORRECT, res);
+                        resMessages.resMessagesToReturn(401, resMessages.OLD_PASSWORD_INCORRECT, res);
                     }
                 });
-            } else {
-                // No password change, we still need to call the update helper for any other changes
-                updateDealershipHelper(updateOperations, req.params.dealershipId, req.file, dealershipFolder, res);
             }
+
+            updateDealershipHelper(updateOperations, req.userData.dealershipId, req.userData.dealershipName, req.file, dealershipFolder, res);
         }).catch(dealershipFindByIdErr => {
             if (req.file) {
                 fs.unlink(rootTmpLogoDir + req.file.filename, fsUnlinkErr => {
@@ -315,7 +315,7 @@ exports.updateDealership = (req, res, next) => {
         });
 }
 
-updateDealershipHelper = (updateOperations, dealershipId, logoFile, dealershipFolder, res) => {
+updateDealershipHelper = (updateOperations, dealershipId, dealershipName, logoFile, dealershipFolder, res) => {
     var updateData = {};
 
     if (updateOperations['AccountCredentials.Email'] != null) {
@@ -341,7 +341,7 @@ updateDealershipHelper = (updateOperations, dealershipId, logoFile, dealershipFo
                 const logoDest = '/dealerships/' + dealershipFolder + '/logo.' + logoFile.mimetype.split('/').pop();
                 googleBucket.uploadFile(rootTmpLogoDir + logoFile.filename, logoDest);
             }
-            return resMessages.resMessagesToReturn(200, resMessages.DEALERSHIP_UPDATED, res);
+            resMessages.resMessagesToReturn(200, resMessages.DEALERSHIP_UPDATED, res);
 
         }).catch(dealershipUpdateErr => {
             resMessages.logError(dealershipUpdateErr);
@@ -360,7 +360,7 @@ exports.deleteDealershipById = (req, res, next) => {
             // check access level of currently logged in user
             if (dealership.AccountCredentials.AccessLevel != 1 &&
                 req.userData.dealershipId != dealershipId) {
-                return resMessages.resMessagesToReturn(403, resMessages.CANNOT_DELETE_DEALERSHIP, res);
+                resMessages.resMessagesToReturn(403, resMessages.CANNOT_DELETE_DEALERSHIP, res);
             }
 
             const prefix = 'dealerships/' + dealershipName.split(' ').join('_') + '/';
@@ -387,7 +387,7 @@ exports.deleteDealershipById = (req, res, next) => {
                 resMessages.logError(bucketDeleteFilesErr);
                 resMessages.returnError(500, bucketDeleteFilesErr, 'update()', res);
             });
-            return resMessages.resMessagesToReturn(200, resMessages.DEALERSHIP_DELETED, res);
+            resMessages.resMessagesToReturn(200, resMessages.DEALERSHIP_DELETED, res);
         }).catch(dealershipFindByIdErr => {
             resMessages.logError(dealershipFindByIdErr);
             resMessages.returnError(500, dealershipFindByIdErr, 'update()', res);
