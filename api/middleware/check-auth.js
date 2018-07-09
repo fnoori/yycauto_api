@@ -1,5 +1,55 @@
-const jwt = require('jsonwebtoken');
+const jwt = require('express-jwt');
+const jwtAuthz = require('express-jwt-authz');
+const jwksRsa = require('jwks-rsa');
 
+// Authentication middleware. When used, the
+// Access Token must exist and be verified against
+// the Auth0 JSON Web Key Set
+module.exports = jwt({
+  // Dynamically provide a signing key
+  // based on the kid in the header and 
+  // the signing keys provided by the JWKS endpoint.
+  secret: jwksRsa.expressJwtSecret({
+    cache: true,
+    rateLimit: true,
+    jwksRequestsPerMinute: 5,
+    jwksUri: `https://yyc-automotives.auth0.com/.well-known/jwks.json`
+  }),
+
+  // Validate the audience and the issuer.
+  audience: 'https://yyc-automotives-auth0-api',
+  issuer: `https://yyc-automotives.auth0.com/`,
+  algorithms: ['RS256']
+})
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/*const jwt = require('jsonwebtoken');
 module.exports = (req, res, next) => {
 	try {
 		const token = req.headers.authorization.split(' ')[1];
@@ -12,4 +62,4 @@ module.exports = (req, res, next) => {
 			message: 'Authentication failed'
 		});
 	}
-};
+};*/

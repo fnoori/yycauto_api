@@ -3,6 +3,7 @@ const app = express();
 const morgan = require('morgan');
 const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
+const cors = require('cors')
 
 // routes
 const vehicleRoutes = require('./api/routes/vehicles');
@@ -24,6 +25,8 @@ app.use(bodyParser.urlencoded({extended: false}));
 app.use(bodyParser.json());
 
 // configure CORS
+app.use(cors());
+/*
 app.use((req, res, next) => {
 	res.header('Access-Control-Allow-Origin', '*');
 	res.header('Access-Control-Allow-Header',
@@ -36,6 +39,7 @@ app.use((req, res, next) => {
 
 	next();
 });
+*/
 
 // handle routes
 app.use('/vehicles', vehicleRoutes);
