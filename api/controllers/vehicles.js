@@ -2,6 +2,7 @@ const mongoose = require('mongoose');
 const Vehicle = require('../models/vehicle');
 const Dealership = require('../models/dealership');
 const fs = require('fs');
+const IdTokenVerifier = require('idtoken-verifier');
 
 const resMessages = require('../utils/resMessages');
 const validations = require('../utils/validations');
@@ -17,6 +18,16 @@ const omitFromFind = '-__v -Dealership._id';
 exports.getAllVehicles = (req, res, next) => {
     const lazyLoad = parseInt(req.params.lazyLoad);
     const perPage = parseInt(req.params.perPage);
+
+    var verifier = new IdTokenVerifier({
+      audience: 'https://yyc-automotives-auth0-api',
+      issuer: `https://yyc-automotives.auth0.com/`
+    });
+  
+    var decoded = verifier.decode(req.headers.id_token);
+
+    //console.log(decoded)
+    console.log(`dealershipId: ${decoded.payload['https://my-domain.my-company.com/app_metadata'].dealershipId}`)
 
     Vehicle.find()
     .skip(lazyLoad).limit(perPage)
