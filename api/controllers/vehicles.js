@@ -20,6 +20,7 @@ exports.getAllVehicles = (req, res, next) => {
 
     Vehicle.find()
     .skip(lazyLoad).limit(perPage)
+    .populate('Dealership')
     .select(omitFromFind)
     .exec().then(docs => {
         res.status(200).json(docs);

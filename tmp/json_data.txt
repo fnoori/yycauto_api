@@ -36,12 +36,7 @@
         "some route",
         "some other route"
     ],
-    "Dealership": {
-        _id: ObjectId("5af8900834e7ea070efa4eec"),
-        "Name" : "One Dealership",
-        "Phone" : "1234567890",
-        "Address" : "123 ABC Street NW",
-    }
+    "Dealership": ObjectId("5af8900834e7ea070efa4eec")
     "AdTier": "1"
 }
 
