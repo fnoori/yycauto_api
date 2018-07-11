@@ -13,12 +13,12 @@ module.exports = jwt({
     cache: true,
     rateLimit: true,
     jwksRequestsPerMinute: 5,
-    jwksUri: `https://yyc-automotives.auth0.com/.well-known/jwks.json`
+    jwksUri: process.env.JWKSURI
   }),
 
   // Validate the audience and the issuer.
-  audience: 'https://yyc-automotives-auth0-api',
-  issuer: `https://yyc-automotives.auth0.com/`,
+  audience: process.env.AUDIENCE,
+  issuer: process.env.ISSUER,
   algorithms: ['RS256']
 })
 
