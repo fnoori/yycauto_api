@@ -34,7 +34,10 @@ exports.getAllVehicles = (req, res, next) => {
 exports.getVehicleByID = (req, res, next) => {
   const ID = req.params.vehicleId;
 
-  Vehicle.findById(ID).exec().then(doc => {
+  Vehicle.findById(ID)
+  .populate('Dealership')
+  .exec()
+  .then(doc => {
     if (doc) {
       res.status(200).json({ vehicle: doc });
     } else {
