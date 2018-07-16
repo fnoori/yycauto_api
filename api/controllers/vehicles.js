@@ -156,6 +156,8 @@ exports.addNewVehicle = (req, res, next) => {
         vehicleData['FuelEconomy.Combined (L/100Km)'] = vehicleInfo['FuelEconomy.Combined (L/100Km)'];
         vehicleData['AdTier'] = vehicleInfo['AdTier'];
         vehicleData['VehicleFeatures'] = vehicleInfo['VehicleFeatures'];
+        vehicleData['Date.Created'] = new Date();
+        vehicleData['Date.Updated'] = new Date();
 
         vehicleData['Dealership'] = req.user[process.env.DEALERSHIP_ID_METADATA].dealershipId;
 
@@ -293,6 +295,7 @@ exports.updateVehicle = (req, res, next) => {
           vehicleData['FuelEconomy.Combined (L/100Km)'] = updateOperations['FuelEconomy.Combined (L/100Km)'];
           vehicleData['AdTier'] = updateOperations['AdTier'];
           vehicleData['VehicleFeatures'] = updateOperations['VehicleFeatures'];
+          vehicleData['Date.Updated'] = new Date();
 
           var vehiclePhotos = [];
           for (var i = 0; i < req.files.length; i++) {
