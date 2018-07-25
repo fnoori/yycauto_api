@@ -4,6 +4,9 @@ const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
 const cors = require('cors');
 
+const vehicleRoute = require('./api/route/vehicle');
+const dealershipRoute = require('./api/route/dealership');
+
 mongoose.connect(process.env.MONGODB_URI, { useNewUrlParser: true })
 .then().catch(err => {
 	console.log('Mongo Connection Error', err);
@@ -17,6 +20,10 @@ app.use(bodyParser.urlencoded({extended: false}));
 app.use(bodyParser.json());
 
 app.use(cors());
+
+// handle routes
+app.use('/vehicles', vehicleRoute);
+app.use('/dealerships', dealershipRoute);
 
 // error handling
 app.use((req, res, next) => {
