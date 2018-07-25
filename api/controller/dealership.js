@@ -4,7 +4,7 @@ const Dealership = require('../model/dealership');
 
 const rootTempVehicleDir = 'uploads/tmp/vehicles/';
 
-const omitFromFind = '-AccountCredentials.Password -__v -_id -AccountCredentials.AccessLevel';
+const omitFromFind = '-password -__v -_id -permission';
 
 exports.getAllDealerships = (req, res, next) => {
   const perPage = parseInt(req.params.perPage);
@@ -12,7 +12,7 @@ exports.getAllDealerships = (req, res, next) => {
 
   Dealership.find()
     .select(omitFromFind)
-    .where('permission').nin([1])
+    .where('permission').nin(['1'])
     .skip(lazyLoad).limit(perPage).exec().then(docs => {
       res.status(200).send(docs);
     }).catch(dealershipFindErr => {
