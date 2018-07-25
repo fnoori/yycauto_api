@@ -4,6 +4,6 @@ const multer = require('multer');
 
 const DealershipController = require('../controller/dealership');
 
-//router.get('/:lazy_load/:per_page', DealershipController.getAllVehicles);
+router.get('/:lazy_load/:per_page', DealershipController.getAllDealerships);
 
 module.exports = router;

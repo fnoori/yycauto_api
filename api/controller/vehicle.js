@@ -15,9 +15,10 @@ exports.getAllVehicles = (req, res, next) => {
     .populate('Dealership')
     .select(omitFromFind)
     .exec().then(docs => {
-      res.status(200).json(docs);
+      res.status(200).send(docs);
     }).catch(vehicleFindErr => {
-      resMessages.logError(vehicleFindErr);
-      resMessages.returnError(500, vehicleFindErr, 'find()', res);
+      return res.status(500).send({
+        'Error': vehicleFindErr.message
+      });
     });
 }
