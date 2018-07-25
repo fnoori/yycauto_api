@@ -1,12 +1,21 @@
-var express = require('express');
-var app = express();
-var db = require('./db');
+const express = require('express');
+const app = express();
+const morgan = require('morgan');
 const bodyParser = require('body-parser');
-var cors = require('cors');
+const mongoose = require('mongoose');
+const cors = require('cors')
 
-app.use(cors());
+// routes
+const vehicleRoutes = require('./api/routes/vehicles');
+const dealershipRoutes = require('./api/routes/dealerships');
 
-var VehicleController = require('./vehicle/VehicleController');
+mongoose.connect(process.env.MONGODB_URI)
+.then().catch(err => {
+	console.log('Mongo Connection Error', err);
+});
+
+// setup morgan error detailing
+app.use(morgan('dev'));
 
 // set file upload path
 app.use('/uploads', express.static('uploads'));
@@ -15,8 +24,26 @@ app.use('/uploads', express.static('uploads'));
 app.use(bodyParser.urlencoded({extended: false}));
 app.use(bodyParser.json());
 
-// routes
-app.use('/vehicles', VehicleController);
+// configure CORS
+app.use(cors());
+/*
+app.use((req, res, next) => {
+	res.header('Access-Control-Allow-Origin', '*');
+	res.header('Access-Control-Allow-Header',
+				'Origin, X-Requested-With, Content-Type, Accept, Athorization');
+
+	if (req.method === 'OPTIONS') {
+		res.header('Access-Control-Allow-Methods', 'PUT, POST, PATCH, DELETE, GET');
+		return res.status(200).json({});
+	}
+
+	next();
+});
+*/
+
+// handle routes
+app.use('/vehicles', vehicleRoutes);
+app.use('/dealerships', dealershipRoutes);
 
 // error handling
 app.use((req, res, next) => {
