@@ -1,19 +1,21 @@
 const mongoose = require('mongoose');
 const Vehicle = require('../models/vehicle');
 const Dealership = require('../models/dealership');
-const fs = require('fs');
-const IdTokenVerifier = require('idtoken-verifier');
 
 const resMessages = require('../utils/resMessages');
 const validations = require('../utils/validations');
 const utilities = require('../utils/utility');
 
 const googleBucketReqs = require('../../bucket/googleBucketReqs');
-const googleBucket = require('../../bucket/googleBucket');
 
 const rootTempVehicleDir = 'uploads/tmp/vehicles/';
-
 const omitFromFind = '-__v -Dealership._id';
+
+var AuthenticationClient = require('auth0').AuthenticationClient;
+var auth0 = new AuthenticationClient({
+  domain:       'yyc-automotives.auth0.com',
+  clientID:     'oDirEaWUdc43-Dao3IfGgBVTme_IpYDT'
+});
 
 exports.getAllVehicles = (req, res, next) => {
   const lazyLoad = parseInt(req.params.lazyLoad);
