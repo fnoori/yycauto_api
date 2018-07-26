@@ -1,0 +1,1 @@
+exports.UNAUTHORIZED_ACTION = 'You are unauthorized to perform this action.';
