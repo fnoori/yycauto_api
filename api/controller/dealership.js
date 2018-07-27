@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
 const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
 
 const Vehicle = require('../model/vehicle');
 const Dealership = require('../model/dealership');
@@ -26,9 +27,6 @@ exports.getAllDealerships = (req, res, next) => {
 };
 
 exports.createDealership = (req, res, next) => {
-  console.log(req.body);
-  return;
-
   if (req.params.key !== process.env.ADMIN_KEY) {
     return res.status(403).send({'403 -- ERROR': messages.UNAUTHORIZED_ACTION});
   }
@@ -36,7 +34,7 @@ exports.createDealership = (req, res, next) => {
   Dealership.find({
     $or: [
       { email: req.params.email },
-      { name: req.params.name}
+      { name: req.params.name }
     ]
   }).then(dealershipFindRes => {
     if (dealershipFindRes.length >= 1) {
@@ -109,6 +107,50 @@ exports.createAdmin = (req, res, next) => {
   }).catch(bcryptHashErr => {
     return res.status(500).send({
       'bcrypt Error': bcryptHashErr.message
+    });
+  });
+};
+
+exports.login = (req, res, next) => {
+  const email = req.body.email;
+  const password = req.body.password;
+
+  if (email.length < 1 || password.length < 1) {
+    return res.status(401).send({'401 -- Error': messages.DEALERSHIP_AUTHENTICATION_FAILED});
+  }
+
+  Dealership.find({ email: email })
+  .then(dealership => {
+    if (dealership.length < 1) {
+      return res.status(401).send({'401 -- Error': messages.DEALERSHIP_AUTHENTICATION_FAILED});
+    }
+
+    bcrypt.compare(password, dealership.password, (error, result) => {
+      if (error) {
+        return res.status(401).send({'401 -- Error': messages.DEALERSHIP_AUTHENTICATION_FAILED});
+      }
+      
+      if (result) {
+        const token = jwt.sign({
+            dealershipId: dealership._id,
+            dealershipName: dealership.name
+          },
+          process.env.JWT_KEY,
+          {
+            expiresIn: '1h'
+          });
+
+          return res.status(200).send({
+            '200 -- Success': messages.DEALERSHIP_AUTHENTICATION_SUCCESSFUL,
+            'token': token
+          });
+      }
+      res.status(401).send({'401 -- Error': messages.DEALERSHIP_AUTHENTICATION_FAILED});
+    });
+
+  }).catch(dealershipFindErr => {
+    return res.status(500).send({
+      'dealershipFindErr Error': dealershipFindErr.message
     });
   });
 };
