@@ -30,50 +30,58 @@ exports.createDealership = (req, res, next) => {
   if (req.params.key !== process.env.ADMIN_KEY) {
     return res.status(403).send({'403 -- ERROR': messages.UNAUTHORIZED_ACTION});
   }
-
-  Dealership.find({
-    $or: [
-      { email: req.params.email },
-      { name: req.params.name }
-    ]
-  }).then(dealershipFindRes => {
-    if (dealershipFindRes.length >= 1) {
-      return res.status(409).send({'409 -- Error': messages.DEALERSHIP_ALREADY_EXISTS});
+  Dealership.findById(req.userData.dealershipId)
+  .then(checkPermission => {
+    if (Number(checkPermission.permission) !== 1) {
+      return res.status(403).send({'403 -- ERROR': messages.UNAUTHORIZED_ACTION});
     }
+
+    Dealership.find({
+      $or: [
+        { email: req.body.email },
+        { name: req.body.name }
+      ]
+    }).then(dealershipFindRes => {
+      if (dealershipFindRes.length >= 1) {
+        return res.status(409).send({'409 -- Error': messages.DEALERSHIP_ALREADY_EXISTS});
+      }
+    
+      bcryptjs.hash(req.body.password, 10).then(hash => {
   
-    bcryptjs.hash(req.body.password, 10).then(hash => {
-
-      const newDealreship = new Dealership({
-        _id: new mongoose.Types.ObjectId(),
-        name: req.body.name,
-        email: req.body.email,
-        password: hash,
-        phone: req.body.phone,
-        phone_other: req.body.phone_other,
-        address: req.body.address,
-        permission: '2',
-        date: {
-          created: Date.now(),
-          modified: Date.now()
-        }
-      });
-
-      newDealreship.save().then(() => {
-        res.status(200).send(messages.DEALERSHIP_CREATED);
-      }).catch(newDealershipSaveErr => {
+        const newDealreship = new Dealership({
+          _id: new mongoose.Types.ObjectId(),
+          name: req.body.name,
+          email: req.body.email,
+          password: hash,
+          phone: req.body.phone,
+          phone_other: req.body.phone_other,
+          address: req.body.address,
+          permission: '2',
+          date: {
+            created: Date.now(),
+            modified: Date.now()
+          }
+        });
+  
+        newDealreship.save().then(() => {
+          res.status(200).send(messages.DEALERSHIP_CREATED);
+        }).catch(newDealershipSaveErr => {
+          return res.status(500).send({
+            'newDealershipSaveErr': newDealershipSaveErr.message
+          });
+        });
+      }).catch(bcryptHashErr => {
         return res.status(500).send({
-          'newDealershipSaveErr': newDealershipSaveErr
+          'bcryptHashErr': bcryptHashErr.message
         });
       });
-    }).catch(bcryptHashErr => {
+    }).catch(findErr => {
       return res.status(500).send({
-        'bcryptHashErr': bcryptHashErr
+        'findErr': findErr.message
       });
     });
-  }).catch(findErr => {
-    return res.status(500).send({
-      'findErr': findErr
-    });
+  }).catch(checkPermissionError => {
+    return res.status(500).send({'500 -- ERROR': checkPermissionError.message});
   });
 };
 
