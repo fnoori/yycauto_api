@@ -119,6 +119,14 @@ exports.createAdmin = (req, res, next) => {
   });
 };
 
+exports.updateDealership = (req, res, next) => {
+  if (req.userData.dealershipId !== req.params.dealership_id) {
+    return res.status(403).send({'403 -- ERROR': messages.UNAUTHORIZED_ACTION});
+  }
+
+  res.status(200).send(`Welcome ${req.userData.dealershipName}`);
+}
+
 exports.login = (req, res, next) => {
   const email = req.body.email;
   const password = req.body.password;
