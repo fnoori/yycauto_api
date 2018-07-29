@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-const bcrypt = require('bcrypt');
+const bcryptjs = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 
 const Vehicle = require('../model/vehicle');
@@ -41,7 +41,7 @@ exports.createDealership = (req, res, next) => {
       return res.status(409).send({'409 -- Error': messages.DEALERSHIP_ALREADY_EXISTS});
     }
   
-    bcrypt.hash(req.body.password, 10).then(hash => {
+    bcryptjs.hash(req.body.password, 10).then(hash => {
 
       const newDealreship = new Dealership({
         _id: new mongoose.Types.ObjectId(),
@@ -82,7 +82,7 @@ exports.createAdmin = (req, res, next) => {
     return res.status(403).send({'403 -- ERROR': messages.UNAUTHORIZED_ACTION});
   }
 
-  bcrypt.hash(req.body.password, 10).then(hash => {
+  bcryptjs.hash(req.body.password, 10).then(hash => {
     const admin = new Dealership({
       _id: new mongoose.Types.ObjectId(),
       name: 'admin',
@@ -106,7 +106,7 @@ exports.createAdmin = (req, res, next) => {
     });
   }).catch(bcryptHashErr => {
     return res.status(500).send({
-      'bcrypt Error': bcryptHashErr.message
+      'bcryptjs Error': bcryptHashErr.message
     });
   });
 };
@@ -119,21 +119,21 @@ exports.login = (req, res, next) => {
     return res.status(401).send({'401 -- Error': messages.DEALERSHIP_AUTHENTICATION_FAILED});
   }
 
-  Dealership.find({ email: email })
-  .then(dealership => {
+  Dealership.find({ 'email': email })
+  .exec().then(dealership => {
     if (dealership.length < 1) {
       return res.status(401).send({'401 -- Error': messages.DEALERSHIP_AUTHENTICATION_FAILED});
     }
 
-    bcrypt.compare(password, dealership.password, (error, result) => {
+    bcryptjs.compare(password, dealership[0].password, (error, result) => {
       if (error) {
         return res.status(401).send({'401 -- Error': messages.DEALERSHIP_AUTHENTICATION_FAILED});
       }
       
       if (result) {
         const token = jwt.sign({
-            dealershipId: dealership._id,
-            dealershipName: dealership.name
+            dealershipId: dealership[0]._id,
+            dealershipName: dealership[0].name
           },
           process.env.JWT_KEY,
           {
