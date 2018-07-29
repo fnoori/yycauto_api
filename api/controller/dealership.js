@@ -28,66 +28,66 @@ exports.getAllDealerships = (req, res, next) => {
 
 exports.createDealership = (req, res, next) => {
   if (req.params.key !== process.env.ADMIN_KEY) {
-    return res.status(403).send({'403 -- ERROR': messages.UNAUTHORIZED_ACTION});
+    return res.status(403).send({ '403 -- ERROR': messages.UNAUTHORIZED_ACTION });
   }
   Dealership.findById(req.userData.dealershipId)
-  .then(checkPermission => {
-    if (Number(checkPermission.permission) !== 1) {
-      return res.status(403).send({'403 -- ERROR': messages.UNAUTHORIZED_ACTION});
-    }
-
-    Dealership.find({
-      $or: [
-        { email: req.body.email },
-        { name: req.body.name }
-      ]
-    }).then(dealershipFindRes => {
-      if (dealershipFindRes.length >= 1) {
-        return res.status(409).send({'409 -- Error': messages.DEALERSHIP_ALREADY_EXISTS});
+    .then(checkPermission => {
+      if (Number(checkPermission.permission) !== 1) {
+        return res.status(403).send({ '403 -- ERROR': messages.UNAUTHORIZED_ACTION });
       }
-    
-      bcryptjs.hash(req.body.password, 10).then(hash => {
-  
-        const newDealreship = new Dealership({
-          _id: new mongoose.Types.ObjectId(),
-          name: req.body.name,
-          email: req.body.email,
-          password: hash,
-          phone: req.body.phone,
-          phone_other: req.body.phone_other,
-          address: req.body.address,
-          permission: '2',
-          date: {
-            created: Date.now(),
-            modified: Date.now()
-          }
-        });
-  
-        newDealreship.save().then(() => {
-          res.status(200).send(messages.DEALERSHIP_CREATED);
-        }).catch(newDealershipSaveErr => {
+
+      Dealership.find({
+        $or: [
+          { email: req.body.email },
+          { name: req.body.name }
+        ]
+      }).then(dealershipFindRes => {
+        if (dealershipFindRes.length >= 1) {
+          return res.status(409).send({ '409 -- Error': messages.DEALERSHIP_ALREADY_EXISTS });
+        }
+
+        bcryptjs.hash(req.body.password, 10).then(hash => {
+
+          const newDealreship = new Dealership({
+            _id: new mongoose.Types.ObjectId(),
+            name: req.body.name,
+            email: req.body.email,
+            password: hash,
+            phone: req.body.phone,
+            phone_other: req.body.phone_other,
+            address: req.body.address,
+            permission: '2',
+            date: {
+              created: Date.now(),
+              modified: Date.now()
+            }
+          });
+
+          newDealreship.save().then(() => {
+            res.status(200).send(messages.DEALERSHIP_CREATED);
+          }).catch(newDealershipSaveErr => {
+            return res.status(500).send({
+              'newDealershipSaveErr': newDealershipSaveErr.message
+            });
+          });
+        }).catch(bcryptHashErr => {
           return res.status(500).send({
-            'newDealershipSaveErr': newDealershipSaveErr.message
+            'bcryptHashErr': bcryptHashErr.message
           });
         });
-      }).catch(bcryptHashErr => {
+      }).catch(findErr => {
         return res.status(500).send({
-          'bcryptHashErr': bcryptHashErr.message
+          'findErr': findErr.message
         });
       });
-    }).catch(findErr => {
-      return res.status(500).send({
-        'findErr': findErr.message
-      });
+    }).catch(checkPermissionError => {
+      return res.status(500).send({ '500 -- ERROR': checkPermissionError.message });
     });
-  }).catch(checkPermissionError => {
-    return res.status(500).send({'500 -- ERROR': checkPermissionError.message});
-  });
 };
 
 exports.createAdmin = (req, res, next) => {
   if (req.params.key !== process.env.ADMIN_KEY) {
-    return res.status(403).send({'403 -- ERROR': messages.UNAUTHORIZED_ACTION});
+    return res.status(403).send({ '403 -- ERROR': messages.UNAUTHORIZED_ACTION });
   }
 
   bcryptjs.hash(req.body.password, 10).then(hash => {
@@ -120,11 +120,58 @@ exports.createAdmin = (req, res, next) => {
 };
 
 exports.updateDealership = (req, res, next) => {
-  if (req.userData.dealershipId !== req.params.dealership_id) {
-    return res.status(403).send({'403 -- ERROR': messages.UNAUTHORIZED_ACTION});
-  }
+  Dealership.findById(req.userData.dealershipId)
+    .then(checkPermission => {
 
-  res.status(200).send(`Welcome ${req.userData.dealershipName}`);
+      // check if correct dealership is updated or if admin is updating
+      if (req.userData.dealershipId !== req.params.dealership_id &&
+        (Number(checkPermission.permission) !== 1)) {
+        return res.status(403).send({ '403 -- ERROR': messages.UNAUTHORIZED_ACTION });
+      }
+
+      var updateDealership = {};
+
+      Dealership.findById(req.params.dealership_id)
+        .then(dealershipToUpdate => {
+
+          // update email
+          if (req.body.email) {
+            if (req.body.email.new !== req.body.email.new_confirm) {
+              return res.send('New email and confirmation do not match');
+            }
+            if (req.body.email.old === req.body.email.new) {
+              return res.send('New email must be different from old email');
+            }
+
+            return res.send('Good new email');
+          }
+
+          
+          if (req.body.password) {
+            const compareResult = bcryptjs.compareSync(req.body.password.old, dealershipToUpdate.password);
+            
+            if (!compareResult) {
+              return res.status(401).send({'401 -- ERROR': messages.DEALERSHIP_INCORRECT_OLD_PASSWORD});
+            }
+
+            if (req.body.password.new !== req.body.password.new_confirm) {
+              return res.status(400).send({'400 -- ERROR': messages.DEALERSHIP_PASSWORD_CONFIRMATION_INCORRECT});
+            }
+            if (req.body.password.old === req.body.password.new) {
+              return res.status(400).send({'400 -- ERROR': messages.DEALERSHIP_OLD_PASSWORD_SAME_AS_NEW})
+            }
+
+            // old password is correct
+            return res.send('Old password is correct !');
+          }
+
+          res.status(200).send(`Welcome ${req.userData.dealershipName}`);
+        }).catch(dealershipToUpdateErr => {
+          return res.status(500).send({ 'dealershipToUpdateErr': dealershipToUpdateErr.message });
+        });
+    }).catch(checkPermissionError => {
+      return res.status(500).send({ 'checkPermissionError': checkPermissionError.message });
+    });
 }
 
 exports.login = (req, res, next) => {
@@ -132,41 +179,41 @@ exports.login = (req, res, next) => {
   const password = req.body.password;
 
   if (email.length < 1 || password.length < 1) {
-    return res.status(401).send({'401 -- Error': messages.DEALERSHIP_AUTHENTICATION_FAILED});
+    return res.status(401).send({ '401 -- Error': messages.DEALERSHIP_AUTHENTICATION_FAILED });
   }
 
   Dealership.find({ 'email': email })
-  .exec().then(dealership => {
-    if (dealership.length < 1) {
-      return res.status(401).send({'401 -- Error': messages.DEALERSHIP_AUTHENTICATION_FAILED});
-    }
-
-    bcryptjs.compare(password, dealership[0].password, (error, result) => {
-      if (error) {
-        return res.status(401).send({'401 -- Error': messages.DEALERSHIP_AUTHENTICATION_FAILED});
+    .exec().then(dealership => {
+      if (dealership.length < 1) {
+        return res.status(401).send({ '401 -- Error': messages.DEALERSHIP_AUTHENTICATION_FAILED });
       }
-      
-      if (result) {
-        const token = jwt.sign({
+
+      bcryptjs.compare(password, dealership[0].password, (error, result) => {
+        if (error) {
+          return res.status(401).send({ '401 -- Error': messages.DEALERSHIP_AUTHENTICATION_FAILED });
+        }
+
+        if (result) {
+          const token = jwt.sign({
             dealershipId: dealership[0]._id,
             dealershipName: dealership[0].name
           },
-          process.env.JWT_KEY,
-          {
-            expiresIn: '1h'
-          });
+            process.env.JWT_KEY,
+            {
+              expiresIn: '1h'
+            });
 
           return res.status(200).send({
             '200 -- Success': messages.DEALERSHIP_AUTHENTICATION_SUCCESSFUL,
             'token': token
           });
-      }
-      res.status(401).send({'401 -- Error': messages.DEALERSHIP_AUTHENTICATION_FAILED});
-    });
+        }
+        res.status(401).send({ '401 -- Error': messages.DEALERSHIP_AUTHENTICATION_FAILED });
+      });
 
-  }).catch(dealershipFindErr => {
-    return res.status(500).send({
-      'dealershipFindErr Error': dealershipFindErr.message
+    }).catch(dealershipFindErr => {
+      return res.status(500).send({
+        'dealershipFindErr Error': dealershipFindErr.message
+      });
     });
-  });
 };

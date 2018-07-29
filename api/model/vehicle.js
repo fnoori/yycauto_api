@@ -10,7 +10,10 @@ const vehicleSchema = mongoose.Schema({
     year: { type: String, required: true },
     exterior_colour: { type: String, required: true },
     interior_colour: { type: String, required: false },
-    price: { type: String, required: true },
+    price: { 
+      initial: { type: String, required: true},
+      updated: { type: String, required: true }
+    },
     kilometres: { type: String, required: true },
     fuel_type: { type: String, required: true },
     doors: { type: String, required: false },
