@@ -7,6 +7,7 @@ const Dealership = require('../model/dealership');
 
 const rootTempVehicleDir = 'uploads/tmp/vehicles/';
 const messages = require('../utils/messages');
+const utils = require('../utils/utils');
 
 const omitFromFind = '-password -__v -_id -permission';
 
@@ -143,10 +144,9 @@ exports.updateDealership = (req, res, next) => {
               return res.send('New email must be different from old email');
             }
 
-            return res.send('Good new email');
+            updateDealership.email = req.body.email.new;
           }
 
-          
           if (req.body.password) {
             const compareResult = bcryptjs.compareSync(req.body.password.old, dealershipToUpdate.password);
             
@@ -161,11 +161,23 @@ exports.updateDealership = (req, res, next) => {
               return res.status(400).send({'400 -- ERROR': messages.DEALERSHIP_OLD_PASSWORD_SAME_AS_NEW})
             }
 
-            // old password is correct
-            return res.send('Old password is correct !');
+            const hashResult = bcryptjs.hashSync(req.body.password.new, 10);
+            if (hashResult.length > 1) {
+              updateDealership.password = hashResult;
+            } else {
+              return res.status(500).send({'bcryptHashSync': 'Failed to hash new password'});
+            }
           }
 
-          res.status(200).send(`Welcome ${req.userData.dealershipName}`);
+          updateDealership.phone = req.body.phone;
+          updateDealership.address = req.body.address;
+
+          Dealership.update({ _id: req.params.dealership_id }, { $set: updateDealership })
+          .then(dealershipUpdate => {
+            res.status(200).send(`Successfully updated ${dealershipToUpdate.name}`);
+          }).catch(updateDealershipErr => {
+            return res.status(500).send({'updateDealershipErr': updateDealershipErr.message });
+          });
         }).catch(dealershipToUpdateErr => {
           return res.status(500).send({ 'dealershipToUpdateErr': dealershipToUpdateErr.message });
         });
