@@ -59,10 +59,8 @@ exports.createDealership = (req, res, next) => {
             phone_other: req.body.phone_other,
             address: req.body.address,
             permission: '2',
-            date: {
-              created: Date.now(),
-              modified: Date.now()
-            }
+            created: Date.now(),
+            modified: Date.now()
           });
 
           newDealreship.save().then(() => {
@@ -101,10 +99,8 @@ exports.createAdmin = (req, res, next) => {
       phone: 'admin',
       address: 'admin',
       permission: '1',
-      date: {
-        created: Date.now(),
-        modified: Date.now()
-      }
+      created: Date.now(),
+      modified: Date.now()
     });
 
     admin.save().then(() => {
@@ -166,17 +162,19 @@ exports.updateDealership = (req, res, next) => {
             if (hashResult.length > 1) {
               updateDealership.password = hashResult;
             } else {
-              return res.status(500).send({'bcryptHashSync': 'Failed to hash new password'});
+              return res.status(500).send({'bcryptHashSync': messages.DEALERSHIP_UPDATE_HASH_ERROR});
             }
           }
 
           if (req.body.phone) {
             updateDealership.phone = req.body.phone;
           }
-          if (req.body.email) {
+          if (req.body.address) {
             updateDealership.address = req.body.address;
           }
           
+          updateDealership.modified = Date.now();
+
           Dealership.update({ _id: req.params.dealership_id }, { $set: updateDealership })
           .then(dealershipUpdate => {
             res.status(200).send(`Successfully updated ${dealershipToUpdate.name}`);

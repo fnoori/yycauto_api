@@ -6,12 +6,10 @@ const dealershipSchema = mongoose.Schema({
   email: { type: String, required: true },
   password: { type: String, required: true },
   phone: { type: String, required: true },
-  address: { type: String, required: false },
+  address: { type: String, required: true },
   permission: { type: String, required: true },
-  date: {
-    created: { type: Date, required: true },
-    modified: { type: Date, required: true }
-  }
+  created: { type: Date, required: true },
+  modified: { type: Date, required: true }
 });
 
 module.exports = mongoose.model('Dealership', dealershipSchema);
