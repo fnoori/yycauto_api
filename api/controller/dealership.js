@@ -31,6 +31,7 @@ exports.createDealership = (req, res, next) => {
   if (req.params.key !== process.env.ADMIN_KEY) {
     return res.status(403).send({ '403 -- ERROR': messages.UNAUTHORIZED_ACTION });
   }
+  
   Dealership.findById(req.userData.dealershipId)
     .then(checkPermission => {
       if (Number(checkPermission.permission) !== 1) {
@@ -169,9 +170,13 @@ exports.updateDealership = (req, res, next) => {
             }
           }
 
-          updateDealership.phone = req.body.phone;
-          updateDealership.address = req.body.address;
-
+          if (req.body.phone) {
+            updateDealership.phone = req.body.phone;
+          }
+          if (req.body.email) {
+            updateDealership.address = req.body.address;
+          }
+          
           Dealership.update({ _id: req.params.dealership_id }, { $set: updateDealership })
           .then(dealershipUpdate => {
             res.status(200).send(`Successfully updated ${dealershipToUpdate.name}`);

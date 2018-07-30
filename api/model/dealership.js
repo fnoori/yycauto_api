@@ -6,7 +6,6 @@ const dealershipSchema = mongoose.Schema({
   email: { type: String, required: true },
   password: { type: String, required: true },
   phone: { type: String, required: true },
-  phone_other: { type: Array, required: false },
   address: { type: String, required: false },
   permission: { type: String, required: true },
   date: {
