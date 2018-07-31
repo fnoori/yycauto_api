@@ -1,7 +1,12 @@
-exports.updateDealershipCheck = (data) => {
-  const checked = {};
+const fs = require('fs');
+const tmpDir = 'uploads/tmp/';
 
-  checked.phone = data.phone;
-  checked.address = data.address;
-  
-};
+exports.clearTmpDir = () => {
+  var dirContents = fs.readdirSync(tmpDir);
+
+  if (dirContents != undefined && dirContents.length > 0) {
+    for (var i = 0; i < dirContents.length; i++) {
+      fs.unlinkSync(tmpDir + dirContents[i]);
+    }
+  }  
+}

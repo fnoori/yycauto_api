@@ -4,6 +4,7 @@ const Dealership = require('../model/dealership');
 
 const rootTempVehicleDir = 'uploads/tmp/vehicles/';
 const messages = require('../utils/messages');
+const utils = require('../utils/utils');
 
 const omitFromFind = '-__v -dealership._id';
 
@@ -25,6 +26,18 @@ exports.getAllVehicles = (req, res, next) => {
 };
 
 exports.addNewVehicle = (req, res, next) => {
+  var files = [];
+
+  for (var i = 0; i < req.files.length; i++) {
+    files[i] = req.files[i].filename + '.' + req.files[i].mimetype.split('/')[1];
+  }
+
+  console.log(files);
+
+  utils.clearTmpDir();
+
+  return res.status(200).send('Success');
+
   Dealership.findById(req.userData.dealershipId)
     .then(checkPermission => {
 
@@ -64,7 +77,7 @@ exports.addNewVehicle = (req, res, next) => {
 
       vehicle['dealership'] = req.params.dealership_id;
 
-      //newVehicle['vehicle_photos'];
+      vehicle['vehicle_photos'] = req.body.vehicle_photos;
       vehicle['vehicle_features'] = req.body.vehicle_features;
 
       vehicle['ad_tier'] = '1';
