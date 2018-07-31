@@ -56,7 +56,6 @@ exports.createDealership = (req, res, next) => {
             email: req.body.email,
             password: hash,
             phone: req.body.phone,
-            phone_other: req.body.phone_other,
             address: req.body.address,
             permission: '2',
             created: Date.now(),
@@ -104,7 +103,7 @@ exports.createAdmin = (req, res, next) => {
     });
 
     admin.save().then(() => {
-      res.status(200).send('Admin account created successfully');
+      res.status(200).send(messages.ADMIN_CREATED);
     }).catch(adminSaveErr => {
       return res.status(500).send({
         'adminSave Error': adminSaveErr.message
@@ -135,10 +134,10 @@ exports.updateDealership = (req, res, next) => {
           // update email
           if (req.body.email) {
             if (req.body.email.new !== req.body.email.new_confirm) {
-              return res.send('New email and confirmation do not match');
+              return res.send(messages.DEALERSHIP_CONFIRMATION_NO_MATCH);
             }
             if (req.body.email.old === req.body.email.new) {
-              return res.send('New email must be different from old email');
+              return res.send(messages.DEALERSHIP_DIFFERENT_NEW_EMAIL);
             }
 
             updateDealership.email = req.body.email.new;
@@ -176,7 +175,7 @@ exports.updateDealership = (req, res, next) => {
           updateDealership.modified = Date.now();
 
           Dealership.update({ _id: req.params.dealership_id }, { $set: updateDealership })
-          .then(dealershipUpdate => {
+          .then(() => {
             res.status(200).send(`Successfully updated ${dealershipToUpdate.name}`);
           }).catch(updateDealershipErr => {
             return res.status(500).send({'updateDealershipErr': updateDealershipErr.message });
