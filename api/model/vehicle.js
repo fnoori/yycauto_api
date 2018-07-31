@@ -39,13 +39,11 @@ const vehicleSchema = mongoose.Schema({
     ref: 'Dealership',
     required: true
   },
-  vehicle_photos: { type: Array, required: true },
-  vehicle_feature: { type: Array, required: false },
+  //vehicle_photos: { type: Array, required: true },
+  vehicle_features: { type: Array, required: false },
   ad_tier: { type: String, required: true },
-  date: {
-    created: { type: Date, required: true },
-    updated: { type: Date, required: true }
-  }
+  created: { type: Date, required: true },
+  updated: { type: Date, required: true }
 });
 
 module.exports = mongoose.model('Vehicle', vehicleSchema);
