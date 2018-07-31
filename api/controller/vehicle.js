@@ -31,10 +31,8 @@ exports.addNewVehicle = (req, res, next) => {
   for (var i = 0; i < req.files.length; i++) {
     files[i] = req.files[i].filename + '.' + req.files[i].mimetype.split('/')[1];
   }
-
-  console.log(files);
-
-  utils.clearTmpDir();
+  
+  utils.deleteFilesFromTmpDir(files);
 
   return res.status(200).send('Success');
 
