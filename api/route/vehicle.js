@@ -31,5 +31,6 @@ const upload = multer({
 router.get('/get_all/:lazy_load/:per_page', VehicleController.getAllVehicles);
 
 router.post('/add_new_vehicle/:dealership_id', checkAuth, upload.array('photos', 7), VehicleController.addNewVehicle);
+router.post('/update_vehicle/:dealership_id/:vehicle_id', checkAuth, upload.array('photos', 7), VehicleController.updateVehicle);
 
 module.exports = router;

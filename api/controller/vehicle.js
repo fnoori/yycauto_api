@@ -27,11 +27,10 @@ exports.getAllVehicles = (req, res, next) => {
 
 exports.addNewVehicle = (req, res, next) => {
   var files = [];
-
   for (var i = 0; i < req.files.length; i++) {
     files[i] = req.files[i].filename + '.' + req.files[i].mimetype.split('/')[1];
   }
-  
+
   utils.deleteFilesFromTmpDir(files);
 
   return res.status(200).send('Success');
@@ -41,7 +40,7 @@ exports.addNewVehicle = (req, res, next) => {
 
       if (req.userData.dealershipId !== req.params.dealership_id &&
         (Number(checkPermission.permission) !== 1)) {
-          return (res.status(403).send({'403 -- ERROR': messages.UNAUTHORIZED_ACTION}));
+        return (res.status(403).send({ '403 -- ERROR': messages.UNAUTHORIZED_ACTION }));
       }
 
       var vehicle = {};
@@ -60,7 +59,7 @@ exports.addNewVehicle = (req, res, next) => {
       vehicle['basic_info.doors'] = req.body.doors;
       vehicle['basic_info.seats'] = req.body.seats;
       vehicle['basic_info.description'] = req.body.description;
-      
+
       vehicle['mechanical_specs.car_proof'] = req.body.car_proof;
       vehicle['mechanical_specs.transmission'] = req.body.transmission;
       vehicle['mechanical_specs.engine_size'] = req.body.engine_size;
@@ -84,12 +83,25 @@ exports.addNewVehicle = (req, res, next) => {
 
       const newVehicle = new Vehicle(vehicle);
       newVehicle.save().then(vehicleSave => {
-        
+
         res.status(200).send(`Vehicle with _id ${vehicleSave._id} saved successfully`);
 
       }).catch(newVehicleSaveErr => {
-        return res.status(500).send({'newVehicleSaveErr': newVehicleSaveErr.message});
+        return res.status(500).send({ 'newVehicleSaveErr': newVehicleSaveErr.message });
       });
+    }).catch(checkPermissionErr => {
+      return res.status(500).send({ 'checkPermissionErr': checkPermissionErr.message });
+    });
+};
+
+exports.updateVehicle = (req, res, next) => {
+  Dealership.findById(req.userData.dealershipId)
+    .then(checkPermission => {
+      if (req.userData.dealershipId !== req.params.dealership_id &&
+        (Number(checkPermission.permission) !== 1)) {
+        return (res.status(403).send({ '403 -- ERROR': messages.UNAUTHORIZED_ACTION }));
+      }
+
     }).catch(checkPermissionErr => {
       return res.status(500).send({ 'checkPermissionErr': checkPermissionErr.message });
     });
