@@ -6,13 +6,17 @@ exports.clearTmpDir = () => {
 
   if (dirContents !== undefined && dirContents.length > 0) {
     for (var i = 0; i < dirContents.length; i++) {
-      fs.unlinkSync(tmpDir + dirContents[i]);
+      fs.unlink(tmpDir + dirContents[i])
+      .then(() => {
+      }).catch(unlinkErr => {
+        return Error(unlinkErr);
+      });
     }
-  }  
+  }
 }
 
 exports.deleteFilesFromTmpDir = (filenames) => {
   filenames.forEach(file => {
-    fs.unlinkSync(tmpDir + file.split('.')[0]);
+    fs.unlinkSync(tmpDir + file);
   });
 }

@@ -1,0 +1,12 @@
+{
+  "type": "service_account",
+  "project_id": "yyc-automotives-212019",
+  "private_key_id": "17b9504588f079276a5dab41ea6750a6473b1499",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvAIBADANBgkqhkiG9w0BAQEFAASCBKYwggSiAgEAAoIBAQDGMjM71js3w2Q7\nf8gVdg5AOggg6pArTNBlPFXd3p3gPwooMLMotmVyuLLyeZW42HmEuR/q/XRxkfRR\nv0CPRL5Mw+ZkWs/oRr1Y/XhEriiJpGmDORBHYb/kY7P8dDZHtiOy4ht3+k4zTzhP\njnOth8SacS7RWcm20+m0b23yaJkXbDNt9/yVdUwnOx3QakfbvvfbwVp86Cz08HS6\n7JRHQwVWgg3g9wd8jCec1KmiX6TgMfrSRnHcEQ4arH9WWnD3+y6UueN4p3fdD1U9\nBEODX4GlqSKwcItPjiqEX5B9UkaBVzh+HTwSRM7YWGSp2Gasvl5c1FOtg1zx3Ud3\nBgR0pk7RAgMBAAECggEAE3UmNn+nvKfAFV9MI189sux/k8uzb6zQ4L91ppyOX0+R\nDbUKQbr2ZrbfSpLJMiZ+d5s9GPLdFbFAjS37hpU3IY4x9jQ8KQ+Y0z2/Ku72J90u\nRqW5hWiBUEjBiM1X7t5gztUH4VV/i+YBHz5a+PRVRtxJvl/UP9C6Ju6xmpTOQtA+\nB+BSvaUVV1hCkwYHdfxC2T4AntftTq5LzvlSuhWN6iJlRHkDlhMHI6J4F+S8VjAW\nbOtrWXVtRKc7F/twULQZCFVMfVmaLdnHzR6T9tSpxZpI3Eu8t11djb8BcKVNRTlu\nHtteODJ1atspEztnnm6rLRFrPinfS2Pn9j0eeX1V4QKBgQD+DNQNj2lpGG5qgqiZ\nTcd6aQgkTURr2/4PTpKlmAsx3zrGKipDFf5Ige8qyzxqHyoN0Nov0IfdcZkWZjU9\nhXWJjszPBleoLozZeeCnOf8h7G5+ATjYT8ATOptI+JimCgnl9uE9ZTMUaQnK7qsQ\nnGwMzUAsEw1cqSTzRuin9JzQlQKBgQDHt6BykOps3lpZ4y26fZW8adtGtFpMabvJ\nZrxhnhkHmfY29+IDEG1bD1+T6fblVLWeV9mWH474ZWpRfnziHR6F5CwSgsfVHVzH\nFgsjHS+mDyuVs2lQrXB4ud5pwCPJRKm81QBtn8C75PqR1l+YW6t18Clt4v2zrjZ8\nDOYG2c7KTQKBgHT+qWU5Rz0L8EWCuGwpQpUf64z0PG9Dl6Oq9qPl+jnUaLe70Uyl\nwz3XALJ/d+oTQgWsyd49NWSInQyQszIK1Q8tQSqR7CpajajVlNzOO61+uX+zxl7v\nkzAHzF11hq7obpiF8kKY6UYb/VOESClVL/lRSJ1DhOLITmjundRDNThlAoGAAlya\niiBKlWT/voZgOQ9ZIPRDgo+JbdPmQ5hya9kZxKw+bCH8Szr7gBMrdy1SHR4mU6wI\nR60x3KAeZL5RLb9YaA7tsn5XbJ6/RR9unEixEo6lXkzT1v9mEBdqmOeLxMqKE1CV\ng7Za6h3oFKdrU/rpiSiA5OrFQ0WxIUBpy/TxbBUCgYBrJ/XfQovyDpl0BLtcynIX\nF7lzEbuN6N8Q9JbzWmChzPxqNYWvY5Wiyqe2tXZ6xOE5B+8+AbJ7q3TYH1LVvZ6V\nwblwnRkjdRSDeX9h5agKfq0+iHDeaoLlI8m6kqfvZZNQ98it8yGpLGX56UaNm7sx\ntIGRGwPkeFa3VrieCzbQUg==\n-----END PRIVATE KEY-----\n",
+  "client_email": "yyc-automotives@yyc-automotives-212019.iam.gserviceaccount.com",
+  "client_id": "110068158628564457875",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://accounts.google.com/o/oauth2/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/yyc-automotives%40yyc-automotives-212019.iam.gserviceaccount.com"
+}
