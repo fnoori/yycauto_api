@@ -86,6 +86,7 @@ exports.addNewVehicle = (req, res, next) => {
 
       const newVehicle = new Vehicle(vehicle);
       newVehicle.save().then(vehicleSave => {
+
         newVehicle.populate('dealership', (err) => {
           if (err) {
             console.log(err);
@@ -96,21 +97,21 @@ exports.addNewVehicle = (req, res, next) => {
           const dealershipFolder = '/dealerships/' + vehicleSave.dealership.name.split(' ').join('_') + '/';
           for (var i = 0; i < req.files.length; i++) {
             vehicleDestination = dealershipFolder + vehicleSave._id + '/' + req.files[i].filename + '.' + req.files[i].mimetype.split('/')[1];
-            
+
             bucketStorage.storage
               .bucket(bucketStorage.bucketName)
               .upload(tmpDir + req.files[i].filename + '.' + req.files[i].mimetype.split('/')[1],
                 { destination: vehicleDestination })
               .then(() => {
-                console.log(`file uploaded successfully`)
+                //console.log(`file uploaded successfully`)
               }).catch(bucketUploadErr => {
                 return res.status(500).send({ 'bucketUploadErr': bucketUploadErr.message });
               });
           }
-       
-          res.status(200).send(`Vehicle with  saved successfully`);
-          
         });
+
+        res.status(200).send(`Vehicle with  saved successfully`);
+        
       }).catch(newVehicleSaveErr => {
         return res.status(500).send({ 'newVehicleSaveErr': newVehicleSaveErr.message });
       });
