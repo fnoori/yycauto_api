@@ -17,6 +17,6 @@ exports.clearTmpDir = () => {
 
 exports.deleteFilesFromTmpDir = (filenames) => {
   filenames.forEach(file => {
-    fs.unlinkSync(tmpDir + file);
+    fs.unlinkSync(file);
   });
 }

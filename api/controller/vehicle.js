@@ -2,6 +2,7 @@ const mongoose = require('mongoose');
 const Vehicle = require('../model/vehicle');
 const Dealership = require('../model/dealership');
 const fs = require('fs');
+const util = require('util');
 
 const rootTempVehicleDir = 'uploads/tmp/vehicles/';
 const messages = require('../utils/messages');
@@ -29,9 +30,12 @@ exports.getAllVehicles = (req, res, next) => {
 };
 
 exports.addNewVehicle = (req, res, next) => {
+  var files = [];
+
   // rename incoming files with their proper extensions
   for (var i = 0; i < req.files.length; i++) {
     fs.renameSync(req.files[i].path, req.files[i].path + '.' + req.files[i].mimetype.split('/')[1]);
+    files[i] = req.files[i].path + '.' + req.files[i].mimetype.split('/')[1];
   }
 
   Dealership.findById(req.userData.dealershipId)
@@ -97,25 +101,15 @@ exports.addNewVehicle = (req, res, next) => {
               .bucket(bucketStorage.bucketName)
               .upload(tmpDir + req.files[i].filename + '.' + req.files[i].mimetype.split('/')[1],
                 { destination: vehicleDestination })
-              .then((uploadResult) => {
-                if (uploadResult) {
-                  console.log(uploadResult[0].name);
-                  return new Promise(resolve => {
-                    console.log('resolved');
-                    fs.unlink(tmpDir + req.files[i].filename + '.' + req.files[i].mimetype.split('/')[1], (err) => {
-                      if (err) {
-                        //console.log('can\'t delete file');
-                      }
-                    });
-                  });
-                }
+              .then(() => {
+                console.log(`file uploaded successfully`)
               }).catch(bucketUploadErr => {
                 return res.status(500).send({ 'bucketUploadErr': bucketUploadErr.message });
               });
           }
-
-          //utils.deleteFilesFromTmpDir(files);
-          //res.status(200).send(`Vehicle with id ${vehicleSave._id} saved successfully`);
+       
+          res.status(200).send(`Vehicle with  saved successfully`);
+          
         });
       }).catch(newVehicleSaveErr => {
         return res.status(500).send({ 'newVehicleSaveErr': newVehicleSaveErr.message });
