@@ -75,7 +75,6 @@ exports.addNewVehicle = (req, res, next) => {
 
       vehicle['dealership'] = req.params.dealership_id;
 
-      vehicle['vehicle_photos'] = req.body.vehicle_photos;
       vehicle['vehicle_features'] = req.body.vehicle_features;
 
       vehicle['ad_tier'] = '1';

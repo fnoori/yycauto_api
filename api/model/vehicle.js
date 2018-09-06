@@ -39,7 +39,6 @@ const vehicleSchema = mongoose.Schema({
     ref: 'Dealership',
     required: true
   },
-  vehicle_photos: { type: Array, required: true },
   vehicle_features: { type: Array, required: false },
   ad_tier: { type: String, required: true },
   created: { type: Date, required: true },
