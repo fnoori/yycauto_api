@@ -101,25 +101,25 @@ exports.addNewVehicle = (req, res, next) => {
             bucketStorage.storage
               .bucket(bucketStorage.bucketName)
               .upload(tmpDir + req.files[i].filename + '.' + req.files[i].mimetype.split('/')[1],
-                { destination: vehicleDestination }).
-              then(uploadResult => {
-                if (uploadResult) {
-                  console.log(uploadResult[0].name);
-                  //fs.unlinkSync(tmpDir + req.files[i].filename + '.' + req.files[i].mimetype.split('/')[1]);
-                }
-              }).catch(bucketUploadErr => {
-                return res.status(500).send({ 'bucketUploadErr': bucketUploadErr.message });
-              });
+                { destination: vehicleDestination }, (uploadErr, file) => {
+                  if (uploadErr) {
+                    console.log('Upload Error');
+                  }
+
+                  fs.unlink(tmpDir + file.name.substring(file.name.lastIndexOf('/') + 1), (unlinkErr) => {
+                    if (unlinkErr) {
+                      console.log('Error deleting tmp files');
+                    }
+                  });
+                });
           }
         });
-        //res.status(200).send(`Vehicle with ID: ${vehicleSave._id} saved successfully`);
+        res.status(200).send(`Vehicle with ID: ${vehicleSave._id} saved successfully`);
       }).catch(newVehicleSaveErr => {
         return res.status(500).send({ 'newVehicleSaveErr': newVehicleSaveErr.message });
       });
     }).catch(checkPermissionErr => {
       return res.status(500).send({ 'checkPermissionErr': checkPermissionErr.message });
-    }).then(() => {
-      utils.deleteFilesFromTmpDir(files);
     });
 };
 
