@@ -30,12 +30,10 @@ exports.getAllVehicles = (req, res, next) => {
 };
 
 exports.addNewVehicle = (req, res, next) => {
-  var files = [];
-
+  
   // rename incoming files with their proper extensions
   for (var i = 0; i < req.files.length; i++) {
     fs.renameSync(req.files[i].path, req.files[i].path + '.' + req.files[i].mimetype.split('/')[1]);
-    files[i] = req.files[i].path + '.' + req.files[i].mimetype.split('/')[1];
   }
 
   Dealership.findById(req.userData.dealershipId)
