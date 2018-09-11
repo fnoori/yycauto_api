@@ -30,10 +30,12 @@ exports.getAllVehicles = (req, res, next) => {
 };
 
 exports.addNewVehicle = (req, res, next) => {
-  
+  var uploadedFiles = [];
+
   // rename incoming files with their proper extensions
   for (var i = 0; i < req.files.length; i++) {
     fs.renameSync(req.files[i].path, req.files[i].path + '.' + req.files[i].mimetype.split('/')[1]);
+    uploadedFiles[i] = req.files[i].path + '.' + req.files[i].mimetype.split('/')[1];
   }
 
   Dealership.findById(req.userData.dealershipId)
@@ -44,6 +46,14 @@ exports.addNewVehicle = (req, res, next) => {
         return (res.status(403).send({ '403 -- ERROR': messages.UNAUTHORIZED_ACTION }));
       }
 
+      if (utils.checkNewVehicleInputs(req.body)) {
+        for (var i = 0; i < uploadedFiles.length; i++) {
+          fs.unlinkSync(uploadedFiles[i]);
+        }
+
+        return res.status(400).send({ '400 -- ERROR -- Check the following fields': newVehicleErrors });
+      }
+    
       var vehicle = {};
       vehicle['_id'] = new mongoose.Types.ObjectId();
       vehicle['basic_info.make'] = req.body.make;
