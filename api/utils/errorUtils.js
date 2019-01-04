@@ -17,9 +17,9 @@ exports.storeError = (error_code, error_message) => {
   });
 }
 
-exports.error_500 = (message) => {
+exports.error_message = (message, error_code) => {
   return {
     message: message,
-    error_code: 500
+    error_code: error_code
   };
 }

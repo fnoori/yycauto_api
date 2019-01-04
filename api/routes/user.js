@@ -4,6 +4,6 @@ const router = express.Router();
 
 const userController = require('../controllers/user');
 
-router.get('/get_users', userController.get_all_dealerships);
+router.patch('/get_users', checkJWT, userController.update_dealership);
 
 module.exports = router;
