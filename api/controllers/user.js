@@ -19,6 +19,20 @@ exports.get_all_dealerships = (req, res, next) => {
   });
 }
 
+exports.get_dealership_by_id = (req, res, next) => {
+  if (!validator.isMongoId(req.body.id)) {
+    return res.status(400).json(errorUtils.error_message('Incorrect id format', 400));
+  }
+
+  UserModel.findById(req.body.id)
+  .then(user => {
+    res.status(201).json(user);
+  }).catch(findErr => {
+    errorUtils.storeError(500, findErr);
+    return res.status(500).json(errorUtils.error_message('mongoose.findById() failed', 500));
+  });
+}
+
 exports.update_dealership = (req, res, next) => {
   const preCheck_phone = mongoSanitize(req.body.phone);
   const preCheck_address = mongoSanitize(req.body.address);
