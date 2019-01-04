@@ -1,4 +1,6 @@
 const mongoose = require('mongoose');
+const validator = require('validator');
+
 const UserModel = require('../models/user');
 const ErrorModel = require('../models/error');
 const mongoSanitize = require('mongo-sanitize');
@@ -23,6 +25,10 @@ exports.update_dealership = (req, res, next) => {
   const preCheck_dealershipName = mongoSanitize(req.body.dealership_name);
   var updateData = {}
 
+  if (!validator.isMobilePhone(preCheck_phone)) {
+    return res.status(400).json(errorUtils.error_message('Incorrect phone number format', 400));
+  }
+
   // after sanitizing data for mongodb, check if there is data to update
   if (preCheck_phone !== undefined && preCheck_phone.length > 0) {
     updateData.phone = preCheck_phone;
@@ -44,9 +50,7 @@ exports.update_dealership = (req, res, next) => {
         UserModel.updateOne({ _id: user._id }, updateData)
         .exec()
         .then(update =>  {
-          res.status(201).json({
-            message: 'Successfully updated'
-          });
+          res.status(201).json({message: 'Successfully updated'});
         }).catch(updateErr => {
           errorUtils.storeError(500, updateErr);
           return res.status(500).json(errorUtils.error_message('mongoose.update() failed', 500));
