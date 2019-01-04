@@ -39,7 +39,7 @@ exports.update_dealership = (req, res, next) => {
   const preCheck_dealershipName = mongoSanitize(req.body.dealership_name);
   var updateData = {}
 
-  if (!validator.isMobilePhone(preCheck_phone)) {
+  if (preCheck_phone !== undefined && !validator.isMobilePhone(preCheck_phone)) {
     return res.status(400).json(errorUtils.error_message('Incorrect phone number format', 400));
   }
 
@@ -51,7 +51,7 @@ exports.update_dealership = (req, res, next) => {
     updateData.address = preCheck_address;
   }
   if (preCheck_dealershipName !== undefined && preCheck_dealershipName.length > 0) {
-    updateData.dealershipName = preCheck_email;
+    updateData.dealership_name = preCheck_dealershipName;
   }
 
   UserModel.findOne({ auth0_id: req.body.auth0_id })
