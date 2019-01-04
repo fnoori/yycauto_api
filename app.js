@@ -8,6 +8,7 @@ if (!process.env.AUTH0_DOMAIN || !process.env.AUTH0_AUDIENCE) {
 }
 
 const userRoutes = require('./api/routes/user');
+const vehicleRoutes = require('./api/routes/vehicle');
 
 mongoose.connect(process.env.MONGO_URI_LOCAL, { useNewUrlParser: true })
 .then().catch(err => {
@@ -19,6 +20,7 @@ app.use(bodyParser.urlencoded({extended: true}));
 app.use(bodyParser.json());
 
 app.use('/users', userRoutes);
+app.use('/vehicles', vehicleRoutes);
 
 // error handling
 app.use((req, res, next) => {
