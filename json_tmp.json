@@ -1,0 +1,37 @@
+{
+    "_id" : ObjectId("5c2e9633786376f47373b332"),
+    "email" : "a@a.com",
+    "phone" : "5949404957",
+    "address" : "123 abc street",
+    "dealership_name" : "one",
+    "dealership_hours" : {
+        "Monday" : {
+            "from" : "0900",
+            "to" : "1900"
+        },
+        "Tuesday" : {
+            "from" : "0900",
+            "to" : "1900"
+        },
+        "Wednesday" : {
+            "from" : "0900",
+            "to" : "1900"
+        },
+        "Thursday" : {
+            "from" : "0900",
+            "to" : "1900"
+        },
+        "Friday" : {
+            "from" : "0900",
+            "to" : "1900"
+        },
+        "Saturday" : {
+            "from" : "0900",
+            "to" : "1900"
+        },
+        "Sunday" : {
+            "from" : "0900",
+            "to" : "1900"
+        }
+    }
+}
