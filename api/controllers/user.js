@@ -1,3 +1,7 @@
+const MAX_HOUR_LENGTH = 4;
+const FROM = 0;
+const TO = 1;
+
 const mongoose = require('mongoose');
 const validator = require('validator');
 const _ = require('underscore');
@@ -112,28 +116,29 @@ exports.update_dealership_hours = (req, res, next) => {
   const thursday = _.isUndefined(mongoSanitize(req.body.thursdayHours)) ? '' : mongoSanitize(req.body.thursdayHours);
   const friday = _.isUndefined(mongoSanitize(req.body.fridayHours)) ? '' : mongoSanitize(req.body.fridayHours);
   const saturday = _.isUndefined(mongoSanitize(req.body.saturdayHours)) ? '' : mongoSanitize(req.body.saturdayHours);
-  const sundayFrom = sunday.split(' ')[0];
-  const sundayTo = sunday.split(' ')[1];
-  const mondayFrom = monday.split(' ')[0];
-  const mondayTo = monday.split(' ')[1];
-  const tuesdayFrom = tuesday.split(' ')[0];
-  const tuesdayTo = tuesday.split(' ')[1];
-  const wednesdayFrom = wednesday.split(' ')[0];
-  const wednesdayTo = wednesday.split(' ')[1];
-  const thursdayFrom = thursday.split(' ')[0];
-  const thursdayTo = thursday.split(' ')[1];
-  const fridayFrom = friday.split(' ')[0];
-  const fridayTo = friday.split(' ')[1];
-  const saturdayFrom = saturday.split(' ')[0];
-  const saturdayTo = saturday.split(' ')[1];
+  const sundayFrom = sunday.split(' ')[FROM];
+  const sundayTo = sunday.split(' ')[TO];
+  const mondayFrom = monday.split(' ')[FROM];
+  const mondayTo = monday.split(' ')[TO];
+  const tuesdayFrom = tuesday.split(' ')[FROM];
+  const tuesdayTo = tuesday.split(' ')[TO];
+  const wednesdayFrom = wednesday.split(' ')[FROM];
+  const wednesdayTo = wednesday.split(' ')[TO];
+  const thursdayFrom = thursday.split(' ')[FROM];
+  const thursdayTo = thursday.split(' ')[TO];
+  const fridayFrom = friday.split(' ')[FROM];
+  const fridayTo = friday.split(' ')[TO];
+  const saturdayFrom = saturday.split(' ')[FROM];
+  const saturdayTo = saturday.split(' ')[TO];
 
-  if (!utils.checkLength(sundayFrom, 4)    || !utils.checkLength(sundayTo, 4)   ||
-      !utils.checkLength(mondayFrom, 4)    || !utils.checkLength(mondayTo, 4)   ||
-      !utils.checkLength(tuesdayFrom, 4)   || !utils.checkLength(tuesdayTo, 4)  ||
-      !utils.checkLength(wednesdayFrom, 4) || !utils.checkLength(wednesdayTo, 4)||
-      !utils.checkLength(thursdayFrom, 4)  || !utils.checkLength(thursdayTo, 4) ||
-      !utils.checkLength(fridayFrom, 4)    || !utils.checkLength(fridayTo, 4)   ||
-      !utils.checkLength(saturdayFrom, 4)  || !utils.checkLength(saturdayTo, 4)) {
+  // check if any of the lenghts are too long
+  if (!utils.checkLength(sundayFrom, MAX_HOUR_LENGTH)    || !utils.checkLength(sundayTo, MAX_HOUR_LENGTH)   ||
+      !utils.checkLength(mondayFrom, MAX_HOUR_LENGTH)    || !utils.checkLength(mondayTo, MAX_HOUR_LENGTH)   ||
+      !utils.checkLength(tuesdayFrom, MAX_HOUR_LENGTH)   || !utils.checkLength(tuesdayTo, MAX_HOUR_LENGTH)  ||
+      !utils.checkLength(wednesdayFrom, MAX_HOUR_LENGTH) || !utils.checkLength(wednesdayTo, MAX_HOUR_LENGTH)||
+      !utils.checkLength(thursdayFrom, MAX_HOUR_LENGTH)  || !utils.checkLength(thursdayTo, MAX_HOUR_LENGTH) ||
+      !utils.checkLength(fridayFrom, MAX_HOUR_LENGTH)    || !utils.checkLength(fridayTo, MAX_HOUR_LENGTH)   ||
+      !utils.checkLength(saturdayFrom, MAX_HOUR_LENGTH)  || !utils.checkLength(saturdayTo, MAX_HOUR_LENGTH)) {
         return res.status(400).json(errorUtils.error_message('Incorrect length in hours', 400));
   }
 
@@ -166,7 +171,6 @@ exports.update_dealership_hours = (req, res, next) => {
     updateData['dealership_hours.Saturday.to'] = saturdayTo;
   }
 
-  // assign auth0_id and id
   auth0Id = req.body.auth0_id;
   userId = req.body.id;
 
