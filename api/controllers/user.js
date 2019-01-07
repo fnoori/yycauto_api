@@ -150,7 +150,7 @@ exports.update_dealership_hours = (req, res, next) => {
       updateData['dealership_hours.' + days[day].day + '.to'] = to;
     }
   }
-console.log(updateData);
+
   auth0Id = req.body.auth0_id;
   userId = req.body.id;
 
