@@ -12,10 +12,13 @@ exports.UNAUTHORIZED_ACCESS = 'unauthorized access';
 exports.USER_DOES_NOT_EXIST = 'User doesn\'t exist';
 exports.USE_24_HOUR_FORMAT = 'Must use 24 hour time format';
 exports.TIME_MUST_BE_NUMBERS = 'Times must be numbers';
+exports.ADDRESS_INCORRECT_LENGTH = 'Incorrect address length';
+exports.DEALERSHIP_NAME_INCORRECT_LENGTH = 'Incorrect dealership name length';
 
 
 exports.isLengthCorrect = (checkText, minLength, maxLength) => {
-  if ((checkText.trim().length <= minLength) || (checkText.length > maxLength)) {
+  console.log(`${checkText} length: ${checkText.trim().length}`);
+  if ((checkText.trim().length <= minLength) || (checkText.trim().length > maxLength)) {
     return false;
   } else {
     return true;

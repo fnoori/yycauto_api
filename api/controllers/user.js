@@ -1,4 +1,4 @@
-const HOUR_LENGTH = 4;
+const HOUR_LENGTH_MAX = 4;
 const MIN_LENGTH = 0;
 const FROM = 0;
 const TO = 1;
@@ -9,6 +9,9 @@ const WEDNESDAY = 'Wednesday';
 const THURSDAY = 'Thursday';
 const FRIDAY = 'Friday';
 const SATURDAY = 'Saturday';
+const PHONE_LENGTH_MAX = 20;
+const ADDRESS_LENGTH_MAX = 70;
+const DEALERSHIP_NAME_LENGTH_MAX = 50;
 
 const mongoose = require('mongoose');
 const validator = require('validator');
@@ -50,9 +53,6 @@ exports.get_dealership_by_id = (req, res, next) => {
 
 // users are only allowed to update: phone, address, and dealership name from this API
 exports.update_dealership = (req, res, next) => {
-  const preCheck_phone = mongoSanitize(req.body.phone);
-  const preCheck_address = mongoSanitize(req.body.address);
-  const preCheck_dealershipName = mongoSanitize(req.body.dealership_name);
   var auth0Id = '';
   var userId = '';
   var updateData = {};
@@ -60,19 +60,33 @@ exports.update_dealership = (req, res, next) => {
   if (!validator.isMongoId(req.body.id)) {
     return res.status(400).json(errorUtils.error_message(utils.MONGOOSE_INCORRECT_ID, 400));
   }
-  if (preCheck_phone !== undefined && !validator.isMobilePhone(preCheck_phone)) {
-    return res.status(400).json(errorUtils.error_message(utils.INCORRECT_PHONE_FORMAT, 400));
-  }
 
-  // after sanitizing data for mongodb, check if there is data to update
-  if (preCheck_phone !== undefined && preCheck_phone.length > 0) {
-    updateData.phone = preCheck_phone;
+  // extract data being updated, otherwise assign empty string
+  const phone = _.isUndefined(mongoSanitize(req.body.phone)) ? '' : mongoSanitize(req.body.phone);
+  const address = _.isUndefined(mongoSanitize(req.body.address)) ? '' : mongoSanitize(req.body.address);
+  const dealershipName = _.isUndefined(mongoSanitize(req.body.dealership_name)) ? '' : mongoSanitize(req.body.dealership_name);
+
+  // validate data and check which fields are being updated
+  if (phone.length > 0) {
+    if (!utils.isLengthCorrect(phone, MIN_LENGTH, PHONE_LENGTH_MAX) || !validator.isMobilePhone(phone)) {
+      return res.status(400).json(errorUtils.error_message(utils.INCORRECT_PHONE_FORMAT));
+    } else {
+      updateData.phone = phone;
+    }
   }
-  if (preCheck_address !== undefined && preCheck_address.length > 0) {
-    updateData.address = preCheck_address;
+  if (address.length > 0) {
+    if (!utils.isLengthCorrect(address, MIN_LENGTH, ADDRESS_LENGTH_MAX)) {
+      return res.status(400).json(errorUtils.error_message(utils.ADDRESS_INCORRECT_LENGTH));
+    } else {
+      updateData.address = address;
+    }
   }
-  if (preCheck_dealershipName !== undefined && preCheck_dealershipName.length > 0) {
-    updateData.dealership_name = preCheck_dealershipName;
+  if (dealershipName.length > 0) {
+    if (!utils.isLengthCorrect(dealershipName, MIN_LENGTH, DEALERSHIP_NAME_LENGTH_MAX)) {
+      return res.status(400).json(errorUtils.error_message(utils.DEALERSHIP_NAME_INCORRECT_LENGTH));
+    } else {
+      updateData.dealership_name = dealershipName;
+    }
   }
 
   // check to make sure at least one thing is being updated
@@ -122,6 +136,7 @@ exports.update_dealership_hours = (req, res, next) => {
     return res.status(400).json(errorUtils.error_message(utils.MONGOOSE_INCORRECT_ID, 400));
   }
 
+  // extract data being updated, otherwise assign empty string
   const sunday = _.isUndefined(mongoSanitize(req.body.sundayHours)) ? { day: SUNDAY } : { day: SUNDAY, hours: mongoSanitize(req.body.sundayHours)};
   const monday = _.isUndefined(mongoSanitize(req.body.mondayHours)) ? { day: MONDAY } : { day: MONDAY, hours: mongoSanitize(req.body.mondayHours) };
   const tuesday = _.isUndefined(mongoSanitize(req.body.tuesdayHours)) ? { day: TUESDAY } : { day: TUESDAY, hours: mongoSanitize(req.body.tuesdayHours) };
@@ -131,14 +146,14 @@ exports.update_dealership_hours = (req, res, next) => {
   const saturday = _.isUndefined(mongoSanitize(req.body.saturdayHours)) ? { day: SATURDAY } : { day: SATURDAY, hours: mongoSanitize(req.body.saturdayHours) };
   const days = [sunday, monday, tuesday, wednesday, thursday, friday, saturday];
 
+  // loop through days and check which ones are actually being updated
   for (day in days) {
-    // only if times are being changed for the day
     if (!_.isUndefined(days[day].hours)) {
       var from = days[day].hours.split('-')[0];
       var to = days[day].hours.split('-')[1];
 
-      if (!utils.isLengthExact(from, HOUR_LENGTH) ||
-          !utils.isLengthExact(to, HOUR_LENGTH)) {
+      if (!utils.isLengthExact(from, HOUR_LENGTH_MAX) ||
+          !utils.isLengthExact(to, HOUR_LENGTH_MAX)) {
             return res.status(400).json(errorUtils.error_message(utils.USE_24_HOUR_FORMAT, 400));
           }
       if (!validator.isInt(from) ||
@@ -159,6 +174,7 @@ exports.update_dealership_hours = (req, res, next) => {
   .exec()
   .then(user => {
     if (user) {
+      // after finding, check if the provided id matches the one from db
       if (userId === String(user._id)) {
 
         // user found, now update
