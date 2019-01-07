@@ -7,6 +7,7 @@ const ErrorModel = require('../models/error');
 const mongoSanitize = require('mongo-sanitize');
 
 const errorUtils = require('../utils/errorUtils');
+const utils = require('../utils/utils');
 const excludedParams = '-_id -__v -auth0_id';
 
 exports.get_all_dealerships = (req, res, next) => {
@@ -126,13 +127,13 @@ exports.update_dealership_hours = (req, res, next) => {
   const saturdayFrom = saturday.split(' ')[0];
   const saturdayTo = saturday.split(' ')[1];
 
-  if (sundayFrom.length > 4 || sundayTo.length > 4 ||
-      mondayFrom.length > 4 || mondayTo.length > 4 ||
-      tuesdayFrom.length > 4 || tuesdayTo.length > 4 ||
-      wednesdayFrom.length > 4 || wednesdayTo.length > 4 ||
-      thursdayFrom.length > 4 || thursdayTo.length > 4 ||
-      fridayFrom.length > 4 || fridayTo.length > 4 ||
-      saturdayFrom.length > 4 || saturdayTo.length > 4) {
+  if (!utils.checkLength(sundayFrom, 4)    || !utils.checkLength(sundayTo, 4)   ||
+      !utils.checkLength(mondayFrom, 4)    || !utils.checkLength(mondayTo, 4)   ||
+      !utils.checkLength(tuesdayFrom, 4)   || !utils.checkLength(tuesdayTo, 4)  ||
+      !utils.checkLength(wednesdayFrom, 4) || !utils.checkLength(wednesdayTo, 4)||
+      !utils.checkLength(thursdayFrom, 4)  || !utils.checkLength(thursdayTo, 4) ||
+      !utils.checkLength(fridayFrom, 4)    || !utils.checkLength(fridayTo, 4)   ||
+      !utils.checkLength(saturdayFrom, 4)  || !utils.checkLength(saturdayTo, 4)) {
         return res.status(400).json(errorUtils.error_message('Incorrect length in hours', 400));
   }
 
