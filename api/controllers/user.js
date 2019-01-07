@@ -1,6 +1,14 @@
-const MAX_HOUR_LENGTH = 4;
+const HOUR_LENGTH = 4;
+const MIN_LENGTH = 0;
 const FROM = 0;
 const TO = 1;
+const SUNDAY = 'Sunday';
+const MONDAY = 'Monday';
+const TUESDAY = 'Tuesday';
+const WEDNESDAY = 'Wednesday';
+const THURSDAY = 'Thursday';
+const FRIDAY = 'Friday';
+const SATURDAY = 'Saturday';
 
 const mongoose = require('mongoose');
 const validator = require('validator');
@@ -109,68 +117,40 @@ exports.update_dealership_hours = (req, res, next) => {
   var auth0Id = '';
   var id = '';
   var updateData = {};
-  const sunday = _.isUndefined(mongoSanitize(req.body.sundayHours)) ? '' : mongoSanitize(req.body.sundayHours);
-  const monday = _.isUndefined(mongoSanitize(req.body.mondayHours)) ? '' : mongoSanitize(req.body.mondayHours);
-  const tuesday = _.isUndefined(mongoSanitize(req.body.tuesdayHours)) ? '' : mongoSanitize(req.body.tuesdayHours);
-  const wednesday = _.isUndefined(mongoSanitize(req.body.wednesdayHours)) ? '' : mongoSanitize(req.body.wednesdayHours);
-  const thursday = _.isUndefined(mongoSanitize(req.body.thursdayHours)) ? '' : mongoSanitize(req.body.thursdayHours);
-  const friday = _.isUndefined(mongoSanitize(req.body.fridayHours)) ? '' : mongoSanitize(req.body.fridayHours);
-  const saturday = _.isUndefined(mongoSanitize(req.body.saturdayHours)) ? '' : mongoSanitize(req.body.saturdayHours);
-  const sundayFrom = sunday.split(' ')[FROM];
-  const sundayTo = sunday.split(' ')[TO];
-  const mondayFrom = monday.split(' ')[FROM];
-  const mondayTo = monday.split(' ')[TO];
-  const tuesdayFrom = tuesday.split(' ')[FROM];
-  const tuesdayTo = tuesday.split(' ')[TO];
-  const wednesdayFrom = wednesday.split(' ')[FROM];
-  const wednesdayTo = wednesday.split(' ')[TO];
-  const thursdayFrom = thursday.split(' ')[FROM];
-  const thursdayTo = thursday.split(' ')[TO];
-  const fridayFrom = friday.split(' ')[FROM];
-  const fridayTo = friday.split(' ')[TO];
-  const saturdayFrom = saturday.split(' ')[FROM];
-  const saturdayTo = saturday.split(' ')[TO];
 
-  // check if any of the lenghts are too long
-  if (!utils.checkLength(sundayFrom, MAX_HOUR_LENGTH)    || !utils.checkLength(sundayTo, MAX_HOUR_LENGTH)   ||
-      !utils.checkLength(mondayFrom, MAX_HOUR_LENGTH)    || !utils.checkLength(mondayTo, MAX_HOUR_LENGTH)   ||
-      !utils.checkLength(tuesdayFrom, MAX_HOUR_LENGTH)   || !utils.checkLength(tuesdayTo, MAX_HOUR_LENGTH)  ||
-      !utils.checkLength(wednesdayFrom, MAX_HOUR_LENGTH) || !utils.checkLength(wednesdayTo, MAX_HOUR_LENGTH)||
-      !utils.checkLength(thursdayFrom, MAX_HOUR_LENGTH)  || !utils.checkLength(thursdayTo, MAX_HOUR_LENGTH) ||
-      !utils.checkLength(fridayFrom, MAX_HOUR_LENGTH)    || !utils.checkLength(fridayTo, MAX_HOUR_LENGTH)   ||
-      !utils.checkLength(saturdayFrom, MAX_HOUR_LENGTH)  || !utils.checkLength(saturdayTo, MAX_HOUR_LENGTH)) {
-        return res.status(400).json(errorUtils.error_message('Incorrect length in hours', 400));
+  if (!validator.isMongoId(req.body.id)) {
+    return res.status(400).json(errorUtils.error_message('Incorrect id format', 400));
   }
 
-  if (sunday.length > 0) {
-    updateData['dealership_hours.Sunday.from'] = sundayFrom;
-    updateData['dealership_hours.Sunday.to'] = sundayTo;
-  }
-  if (monday.length > 0) {
-    updateData['dealership_hours.Monday.from'] = mondayFrom;
-    updateData['dealership_hours.Monday.to'] = mondayTo;
-  }
-  if (tuesday.length > 0) {
-    updateData['dealership_hours.Tuesday.from'] = tuesdayFrom;
-    updateData['dealership_hours.Tuesday.to'] = tuesdayTo;
-  }
-  if (wednesday.length > 0) {
-    updateData['dealership_hours.Wednesday.from'] = wednesdayFrom;
-    updateData['dealership_hours.Wednesday.to'] = wednesdayTo;
-  }
-  if (thursday.length > 0) {
-    updateData['dealership_hours.Thursday.from'] = thursdayFrom;
-    updateData['dealership_hours.Thursday.to'] = thursdayTo;
-  }
-  if (friday.length > 0) {
-    updateData['dealership_hours.Friday.from'] = fridayFrom;
-    updateData['dealership_hours.Friday.to'] = fridayTo;
-  }
-  if (saturday.length > 0) {
-    updateData['dealership_hours.Saturday.from'] = saturdayFrom;
-    updateData['dealership_hours.Saturday.to'] = saturdayTo;
-  }
+  const sunday = _.isUndefined(mongoSanitize(req.body.sundayHours)) ? { day: SUNDAY } : { day: SUNDAY, hours: mongoSanitize(req.body.sundayHours)};
+  const monday = _.isUndefined(mongoSanitize(req.body.mondayHours)) ? { day: MONDAY } : { day: MONDAY, hours: mongoSanitize(req.body.mondayHours) };
+  const tuesday = _.isUndefined(mongoSanitize(req.body.tuesdayHours)) ? { day: TUESDAY } : { day: TUESDAY, hours: mongoSanitize(req.body.tuesdayHours) };
+  const wednesday = _.isUndefined(mongoSanitize(req.body.wednesdayHours)) ? { day: WEDNESDAY } : { day: WEDNESDAY, hours: mongoSanitize(req.body.wednesdayHours) };
+  const thursday = _.isUndefined(mongoSanitize(req.body.thursdayHours)) ? { day: THURSDAY } : { day: THURSDAY, hours: mongoSanitize(req.body.thursdayHours) };
+  const friday = _.isUndefined(mongoSanitize(req.body.fridayHours)) ? { day: FRIDAY } : { day: FRIDAY, hours: mongoSanitize(req.body.fridayHours) };
+  const saturday = _.isUndefined(mongoSanitize(req.body.saturdayHours)) ? { day: SATURDAY } : { day: SATURDAY, hours: mongoSanitize(req.body.saturdayHours) };
+  const days = [sunday, monday, tuesday, wednesday, thursday, friday, saturday];
 
+  for (day in days) {
+    // only if times are being changed for the day
+    if (!_.isUndefined(days[day].hours)) {
+      var from = days[day].hours.split('-')[0];
+      var to = days[day].hours.split('-')[1];
+
+      if (!utils.isLengthExact(from, HOUR_LENGTH) ||
+          !utils.isLengthExact(to, HOUR_LENGTH)) {
+            return res.status(400).json(errorUtils.error_message('Must use 24 hour time format', 400));
+          }
+      if (!validator.isInt(from) ||
+          !validator.isInt(to)) {
+            return res.status(400).json(errorUtils.error_message('Times must be numbers', 400));
+          }
+
+      updateData['dealership_hours.' + days[day].day + '.from'] = from;
+      updateData['dealership_hours.' + days[day].day + '.to'] = to;
+    }
+  }
+console.log(updateData);
   auth0Id = req.body.auth0_id;
   userId = req.body.id;
 
