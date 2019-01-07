@@ -103,42 +103,66 @@ exports.update_dealership = (req, res, next) => {
 exports.update_dealership_hours = (req, res, next) => {
   var auth0Id = '';
   var id = '';
+  var updateData = {};
   const sunday = _.isUndefined(mongoSanitize(req.body.sundayHours)) ? '' : mongoSanitize(req.body.sundayHours);
   const monday = _.isUndefined(mongoSanitize(req.body.mondayHours)) ? '' : mongoSanitize(req.body.mondayHours);
-  const tuesday = _.isUndefined(mongoSanitize(req.body.teusdayHours)) ? '' : mongoSanitize(req.body.teusdayHours);
+  const tuesday = _.isUndefined(mongoSanitize(req.body.tuesdayHours)) ? '' : mongoSanitize(req.body.tuesdayHours);
   const wednesday = _.isUndefined(mongoSanitize(req.body.wednesdayHours)) ? '' : mongoSanitize(req.body.wednesdayHours);
   const thursday = _.isUndefined(mongoSanitize(req.body.thursdayHours)) ? '' : mongoSanitize(req.body.thursdayHours);
   const friday = _.isUndefined(mongoSanitize(req.body.fridayHours)) ? '' : mongoSanitize(req.body.fridayHours);
-  const saturday = _.isUndefined(mongoSanitize(req.body.saterdayHours)) ? '' : mongoSanitize(req.body.saterdayHours);
-  var updateData = {};
+  const saturday = _.isUndefined(mongoSanitize(req.body.saturdayHours)) ? '' : mongoSanitize(req.body.saturdayHours);
+  const sundayFrom = sunday.split(' ')[0];
+  const sundayTo = sunday.split(' ')[1];
+  const mondayFrom = monday.split(' ')[0];
+  const mondayTo = monday.split(' ')[1];
+  const tuesdayFrom = tuesday.split(' ')[0];
+  const tuesdayTo = tuesday.split(' ')[1];
+  const wednesdayFrom = wednesday.split(' ')[0];
+  const wednesdayTo = wednesday.split(' ')[1];
+  const thursdayFrom = thursday.split(' ')[0];
+  const thursdayTo = thursday.split(' ')[1];
+  const fridayFrom = friday.split(' ')[0];
+  const fridayTo = friday.split(' ')[1];
+  const saturdayFrom = saturday.split(' ')[0];
+  const saturdayTo = saturday.split(' ')[1];
+
+  if (sundayFrom.length > 4 || sundayTo.length > 4 ||
+      mondayFrom.length > 4 || mondayTo.length > 4 ||
+      tuesdayFrom.length > 4 || tuesdayTo.length > 4 ||
+      wednesdayFrom.length > 4 || wednesdayTo.length > 4 ||
+      thursdayFrom.length > 4 || thursdayTo.length > 4 ||
+      fridayFrom.length > 4 || fridayTo.length > 4 ||
+      saturdayFrom.length > 4 || saturdayTo.length > 4) {
+        return res.status(400).json(errorUtils.error_message('Incorrect length in hours', 400));
+  }
 
   if (sunday.length > 0) {
-    updateData['dealership_hours.Sunday.from'] = sunday.split(' ')[0];
-    updateData['dealership_hours.Sunday.to'] = sunday.split(' ')[1];
+    updateData['dealership_hours.Sunday.from'] = sundayFrom;
+    updateData['dealership_hours.Sunday.to'] = sundayTo;
   }
   if (monday.length > 0) {
-    updateData['dealership_hours.Monday.from'] = monday.split(' ')[0];
-    updateData['dealership_hours.Monday.to'] = monday.split(' ')[1];
+    updateData['dealership_hours.Monday.from'] = mondayFrom;
+    updateData['dealership_hours.Monday.to'] = mondayTo;
   }
   if (tuesday.length > 0) {
-    updateData['dealership_hours.Tuesday.from'] = tuesday.split(' ')[0];
-    updateData['dealership_hours.Tuesday.to'] = tuesday.split(' ')[1];
+    updateData['dealership_hours.Tuesday.from'] = tuesdayFrom;
+    updateData['dealership_hours.Tuesday.to'] = tuesdayTo;
   }
   if (wednesday.length > 0) {
-    updateData['dealership_hours.Wednesday.from'] = wednesday.split(' ')[0];
-    updateData['dealership_hours.Wednesday.to'] = wednesday.split(' ')[1];
+    updateData['dealership_hours.Wednesday.from'] = wednesdayFrom;
+    updateData['dealership_hours.Wednesday.to'] = wednesdayTo;
   }
   if (thursday.length > 0) {
-    updateData['dealership_hours.Thursday.from'] = thursday.split(' ')[0];
-    updateData['dealership_hours.Thursday.to'] = thursday.split(' ')[1];
+    updateData['dealership_hours.Thursday.from'] = thursdayFrom;
+    updateData['dealership_hours.Thursday.to'] = thursdayTo;
   }
   if (friday.length > 0) {
-    updateData['dealership_hours.Friday.from'] = friday.split(' ')[0];
-    updateData['dealership_hours.Friday.to'] = friday.split(' ')[1];
+    updateData['dealership_hours.Friday.from'] = fridayFrom;
+    updateData['dealership_hours.Friday.to'] = fridayTo;
   }
   if (saturday.length > 0) {
-    updateData['dealership_hours.Saturday.from'] = saturday.split(' ')[0];
-    updateData['dealership_hours.Saturday.to'] = saturday.split(' ')[1];
+    updateData['dealership_hours.Saturday.from'] = saturdayFrom;
+    updateData['dealership_hours.Saturday.to'] = saturdayTo;
   }
 
   // assign auth0_id and id
@@ -174,13 +198,6 @@ exports.update_dealership_hours = (req, res, next) => {
     errorUtils.storeError(500, findErr);
     return res.status(500).json(errorUtils.error_message('mongoose.findOne() failed', 500));
   });
-
-
-
-
-//var userType = userIsYoungerThan18 ? "Minor" : "Adult";
-
-
 }
 
 // the following method is created for testing purposes
