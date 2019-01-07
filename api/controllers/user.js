@@ -29,13 +29,13 @@ exports.get_all_dealerships = (req, res, next) => {
     res.status(201).json(users);
   }).catch(findErr => {
     errorUtils.storeError(500, findErr);
-    return res.status(500).json(errorUtils.error_message('mongoose.find() failed', 500));
+    return res.status(500).json(errorUtils.error_message(utils.MONGOOSE_FIND_FAIL, 500));
   });
 }
 
 exports.get_dealership_by_id = (req, res, next) => {
   if (!validator.isMongoId(req.body.id)) {
-    return res.status(400).json(errorUtils.error_message('Incorrect id format', 400));
+    return res.status(400).json(errorUtils.error_message(utils.MONGOOSE_INCORRECT_ID, 400));
   }
 
   UserModel.findById(req.body.id)
@@ -44,7 +44,7 @@ exports.get_dealership_by_id = (req, res, next) => {
     res.status(201).json(user);
   }).catch(findErr => {
     errorUtils.storeError(500, findErr);
-    return res.status(500).json(errorUtils.error_message('mongoose.findById() failed', 500));
+    return res.status(500).json(errorUtils.error_message(utils.MONGOOSE_FIND_BY_ID_FAIL, 500));
   });
 }
 
@@ -58,10 +58,10 @@ exports.update_dealership = (req, res, next) => {
   var updateData = {};
 
   if (!validator.isMongoId(req.body.id)) {
-    return res.status(400).json(errorUtils.error_message('Incorrect id format', 400));
+    return res.status(400).json(errorUtils.error_message(utils.MONGOOSE_INCORRECT_ID, 400));
   }
   if (preCheck_phone !== undefined && !validator.isMobilePhone(preCheck_phone)) {
-    return res.status(400).json(errorUtils.error_message('Incorrect phone number format', 400));
+    return res.status(400).json(errorUtils.error_message(utils.INCORRECT_PHONE_FORMAT, 400));
   }
 
   // after sanitizing data for mongodb, check if there is data to update
@@ -77,7 +77,7 @@ exports.update_dealership = (req, res, next) => {
 
   // check to make sure at least one thing is being updated
   if (_.isEmpty(updateData)) {
-    return res.status(400).json(errorUtils.error_message('At least one field must be provided to update', 400));
+    return res.status(400).json(errorUtils.error_message(utils.AT_LEAST_ONE_FIELD_REQUIRED, 400));
   }
 
   // assign auth0_id and id
@@ -95,21 +95,21 @@ exports.update_dealership = (req, res, next) => {
         UserModel.updateOne({ _id: user._id }, updateData)
         .exec()
         .then(update =>  {
-          res.status(201).json({message: 'Successfully updated'});
+          res.status(201).json({message: utils.MONGOOSE_SUCCESSFUL_UPDATE});
         }).catch(updateErr => {
           errorUtils.storeError(500, updateErr);
-          return res.status(500).json(errorUtils.error_message('mongoose.updateOne() failed', 500));
+          return res.status(500).json(errorUtils.error_message(utils.MONGOOSE_FIND_ONE_FAIL, 500));
         });
 
       } else {
-        return res.status(401).json(errorUtils.error_message('Unauthorized access', 401));
+        return res.status(401).json(errorUtils.error_message(utils.UNAUTHORIZED_ACCESS, 401));
       }
     } else {
-      return res.status(404).json(errorUtils.error_message('User doesn\'t exist', 404));
+      return res.status(404).json(errorUtils.error_message(utils.USER_DOES_NOT_EXIST, 404));
     }
   }).catch(findErr => {
     errorUtils.storeError(500, findErr);
-    return res.status(500).json(errorUtils.error_message('mongoose.findOne() failed', 500));
+    return res.status(500).json(errorUtils.error_message(utils.MONGOOSE_FIND_ONE_FAIL, 500));
   });
 }
 
@@ -119,7 +119,7 @@ exports.update_dealership_hours = (req, res, next) => {
   var updateData = {};
 
   if (!validator.isMongoId(req.body.id)) {
-    return res.status(400).json(errorUtils.error_message('Incorrect id format', 400));
+    return res.status(400).json(errorUtils.error_message(utils.MONGOOSE_INCORRECT_ID, 400));
   }
 
   const sunday = _.isUndefined(mongoSanitize(req.body.sundayHours)) ? { day: SUNDAY } : { day: SUNDAY, hours: mongoSanitize(req.body.sundayHours)};
@@ -139,11 +139,11 @@ exports.update_dealership_hours = (req, res, next) => {
 
       if (!utils.isLengthExact(from, HOUR_LENGTH) ||
           !utils.isLengthExact(to, HOUR_LENGTH)) {
-            return res.status(400).json(errorUtils.error_message('Must use 24 hour time format', 400));
+            return res.status(400).json(errorUtils.error_message(utils.USE_24_HOUR_FORMAT, 400));
           }
       if (!validator.isInt(from) ||
           !validator.isInt(to)) {
-            return res.status(400).json(errorUtils.error_message('Times must be numbers', 400));
+            return res.status(400).json(errorUtils.error_message(utils.TIME_MUST_BE_NUMBERS, 400));
           }
 
       updateData['dealership_hours.' + days[day].day + '.from'] = from;
@@ -165,23 +165,23 @@ exports.update_dealership_hours = (req, res, next) => {
         UserModel.updateOne({ _id: user._id }, updateData)
         .exec()
         .then(update =>  {
-          res.status(201).json({message: 'Successfully updated'});
+          res.status(201).json({message: utils.MONGOOSE_SUCCESSFUL_UPDATE});
         }).catch(updateErr => {
           errorUtils.storeError(500, updateErr);
-          return res.status(500).json(errorUtils.error_message('mongoose.updateOne() failed', 500));
+          return res.status(500).json(errorUtils.error_message(utils.MONGOOSE_FIND_ONE_FAIL, 500));
         });
 
       } else {
-        return res.status(401).json(errorUtils.error_message('Unauthorized access', 401));
+        return res.status(401).json(errorUtils.error_message(utils.UNAUTHORIZED_ACCESS, 401));
       }
     } else {
-      return res.status(404).json(errorUtils.error_message('User doesn\'t exist', 404));
+      return res.status(404).json(errorUtils.error_message(utils.USER_DOES_NOT_EXIST, 404));
     }
 
 
   }).catch(findOneErr => {
     errorUtils.storeError(500, findErr);
-    return res.status(500).json(errorUtils.error_message('mongoose.findOne() failed', 500));
+    return res.status(500).json(errorUtils.error_message(utils.MONGOOSE_FIND_ONE_FAIL, 500));
   });
 }
 
