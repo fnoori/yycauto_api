@@ -95,8 +95,10 @@ exports.update_dealership = (req, res, next) => {
   }
 
   // assign auth0_id and id
-  auth0Id = req.body.auth0_id;
+  auth0Id = req.user.azp;
   userId = req.body.id;
+
+  console.log(auth0Id);
 
   // after sanitizing data and checking for existance of data, begin update process
   UserModel.findOne({ auth0_id: auth0Id })
