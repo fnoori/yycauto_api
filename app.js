@@ -15,6 +15,9 @@ mongoose.connect(process.env.MONGO_URI_LOCAL, { useNewUrlParser: true })
 	console.log('Mongo Connection Error', err);
 });
 
+// set file upload path
+app.use('/uploads', express.static('uploads'));
+
 // enable bodyparser
 app.use(bodyParser.urlencoded({extended: true}));
 app.use(bodyParser.json());

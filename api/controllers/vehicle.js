@@ -7,6 +7,13 @@ const ErrorModel = require('../models/error');
 const mongoSanitize = require('mongo-sanitize');
 const errorUtils = require('../utils/errorUtils');
 const utils = require('../utils/utils');
+var cloudinary = require('cloudinary');
+
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET
+});
 
 exports.get_all_vehicles = (req, res, next) => {
   VehicleModel.find()
@@ -68,9 +75,11 @@ exports.add_new_vehicle = (req, res, next) => {
 
    vehicleData['Dealership'] = req.body.id;
 
-   // temp data here
-   vehicleData['VehiclePhotos'] = req.body.photos;
+   // upload tmp vehicle data first
+   vehicleData['VehiclePhotos'] = [utils.DEFAULT];
    vehicleData['VehicleFeatures'] = _.isUndefined(req.body.features) ? null : req.body.features;
+
+   // temp data here
    vehicleData['AdTier'] = 1;
 
    auth0Id = req.user.sub.split('|')[1];
@@ -103,9 +112,43 @@ exports.add_new_vehicle = (req, res, next) => {
      errorUtils.storeError(500, findOneErr);
      return res.status(500).json(errorUtils.error_message(utils.MONGOOSE_FIND_ONE_FAIL, 500));
    });
-/*
+}
 
-*/
+exports.add_vehicle_photos = (req, res, next) => {
+  var auth0Id = '';
+  var id = '';
+  var photoData = {};
+
+  if (!validator.isMongoId(req.body.id)) {
+    return res.status(400).json(errorUtils.error_message(utils.MONGOOSE_INCORRECT_ID, 400));
+  }
+
+  photoData.photos = req.file.filename;
+
+  auth0Id = req.user.sub.split('|')[1];
+  userId = req.body.id;
+
+  UserModel.findOne({ auth0_id: auth0Id })
+  .exec()
+  .then(user => {
+    if (user) {
+      if (userId === String(user._id)) {
+
+        cloudinary.v2.uploader.upload(`./uploads/${req.file.filename}`, (err, result) => {
+          console.log(result, err);
+        });
+          //function(error, result) {console.log(result, error)});
+
+      } else {
+        return res.status(401).json(errorUtils.error_message(utils.UNAUTHORIZED_ACCESS, 401));
+      }
+    } else {
+      return res.status(404).json(errorUtils.error_message(utils.USER_DOES_NOT_EXIST, 404));
+    }
+  }).catch(findOneErr => {
+    errorUtils.storeError(500, findOneErr);
+    return res.status(500).json(errorUtils.error_message(utils.MONGOOSE_FIND_ONE_FAIL, 500));
+  });
 }
 
 exports.update_vehicle = (req, res, next) => {

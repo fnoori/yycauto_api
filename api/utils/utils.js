@@ -39,6 +39,7 @@ exports.TRIM = 'trim';
 exports.MAKE_MAX_LENGTH = 15;
 exports.MODEL_MAX_LENGTH = 15;
 exports.TRIM_MAX_LENGTH = 10;
+exports.DEFAULT = '<default>';
 
 
 exports.isLengthCorrect = (checkText, minLength, maxLength) => {
