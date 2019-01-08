@@ -31,7 +31,11 @@ const vehicleSchema = mongoose.Schema({
         "Highway (L/100Km)": {type: String, required: false, max: 6},
         "Combined (L/100Km)": {type: String, required: false, max: 6}
     },
-    'Dealership': {type: mongoose.Schema.Types.ObjectId, required: true},
+    'Dealership': {
+      type: mongoose.Schema.Types.ObjectId,
+      required: true,
+      ref: 'User',
+    },
     'VehiclePhotos': {type: Array, required: true},
     'VehicleFeatures': {type: Array, required: false},
     'AdTier': {type: String, required: true}

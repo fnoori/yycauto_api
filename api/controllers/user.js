@@ -1,18 +1,3 @@
-const HOUR_LENGTH_MAX = 4;
-const MIN_LENGTH = 0;
-const FROM = 0;
-const TO = 1;
-const SUNDAY = 'Sunday';
-const MONDAY = 'Monday';
-const TUESDAY = 'Tuesday';
-const WEDNESDAY = 'Wednesday';
-const THURSDAY = 'Thursday';
-const FRIDAY = 'Friday';
-const SATURDAY = 'Saturday';
-const PHONE_LENGTH_MAX = 20;
-const ADDRESS_LENGTH_MAX = 70;
-const DEALERSHIP_NAME_LENGTH_MAX = 50;
-
 const mongoose = require('mongoose');
 const validator = require('validator');
 const _ = require('underscore');
@@ -68,21 +53,21 @@ exports.update_dealership = (req, res, next) => {
 
   // validate data and check which fields are being updated
   if (phone.length > 0) {
-    if (!utils.isLengthCorrect(phone, MIN_LENGTH, PHONE_LENGTH_MAX) || !validator.isMobilePhone(phone)) {
+    if (!utils.isLengthCorrect(phone, utils.MIN_LENGTH, utils.PHONE_LENGTH_MAX) || !validator.isMobilePhone(phone)) {
       return res.status(400).json(errorUtils.error_message(utils.INCORRECT_PHONE_FORMAT));
     } else {
       updateData.phone = phone;
     }
   }
   if (address.length > 0) {
-    if (!utils.isLengthCorrect(address, MIN_LENGTH, ADDRESS_LENGTH_MAX)) {
+    if (!utils.isLengthCorrect(address, utils.MIN_LENGTH, utils.ADDRESS_LENGTH_MAX)) {
       return res.status(400).json(errorUtils.error_message(utils.ADDRESS_INCORRECT_LENGTH));
     } else {
       updateData.address = address;
     }
   }
   if (dealershipName.length > 0) {
-    if (!utils.isLengthCorrect(dealershipName, MIN_LENGTH, DEALERSHIP_NAME_LENGTH_MAX)) {
+    if (!utils.isLengthCorrect(dealershipName, utils.MIN_LENGTH, utils.DEALERSHIP_NAME_LENGTH_MAX)) {
       return res.status(400).json(errorUtils.error_message(utils.DEALERSHIP_NAME_INCORRECT_LENGTH));
     } else {
       updateData.dealership_name = dealershipName;
@@ -137,13 +122,13 @@ exports.update_dealership_hours = (req, res, next) => {
   }
 
   // extract data being updated, otherwise assign empty string
-  const sunday = _.isUndefined(mongoSanitize(req.body.sundayHours)) ? { day: SUNDAY } : { day: SUNDAY, hours: mongoSanitize(req.body.sundayHours)};
-  const monday = _.isUndefined(mongoSanitize(req.body.mondayHours)) ? { day: MONDAY } : { day: MONDAY, hours: mongoSanitize(req.body.mondayHours) };
-  const tuesday = _.isUndefined(mongoSanitize(req.body.tuesdayHours)) ? { day: TUESDAY } : { day: TUESDAY, hours: mongoSanitize(req.body.tuesdayHours) };
-  const wednesday = _.isUndefined(mongoSanitize(req.body.wednesdayHours)) ? { day: WEDNESDAY } : { day: WEDNESDAY, hours: mongoSanitize(req.body.wednesdayHours) };
-  const thursday = _.isUndefined(mongoSanitize(req.body.thursdayHours)) ? { day: THURSDAY } : { day: THURSDAY, hours: mongoSanitize(req.body.thursdayHours) };
-  const friday = _.isUndefined(mongoSanitize(req.body.fridayHours)) ? { day: FRIDAY } : { day: FRIDAY, hours: mongoSanitize(req.body.fridayHours) };
-  const saturday = _.isUndefined(mongoSanitize(req.body.saturdayHours)) ? { day: SATURDAY } : { day: SATURDAY, hours: mongoSanitize(req.body.saturdayHours) };
+  const sunday = _.isUndefined(mongoSanitize(req.body.sundayHours)) ? { day: utils.SUNDAY } : { day: utils.SUNDAY, hours: mongoSanitize(req.body.sundayHours)};
+  const monday = _.isUndefined(mongoSanitize(req.body.mondayHours)) ? { day: utils.MONDAY } : { day: utils.MONDAY, hours: mongoSanitize(req.body.mondayHours) };
+  const tuesday = _.isUndefined(mongoSanitize(req.body.tuesdayHours)) ? { day: utils.TUESDAY } : { day: utils.TUESDAY, hours: mongoSanitize(req.body.tuesdayHours) };
+  const wednesday = _.isUndefined(mongoSanitize(req.body.wednesdayHours)) ? { day: utils.WEDNESDAY } : { day: utils.WEDNESDAY, hours: mongoSanitize(req.body.wednesdayHours) };
+  const thursday = _.isUndefined(mongoSanitize(req.body.thursdayHours)) ? { day: utils.THURSDAY } : { day: utils.THURSDAY, hours: mongoSanitize(req.body.thursdayHours) };
+  const friday = _.isUndefined(mongoSanitize(req.body.fridayHours)) ? { day: utils.FRIDAY } : { day: utils.FRIDAY, hours: mongoSanitize(req.body.fridayHours) };
+  const saturday = _.isUndefined(mongoSanitize(req.body.saturdayHours)) ? { day: utils.SATURDAY } : { day: utils.SATURDAY, hours: mongoSanitize(req.body.saturdayHours) };
   const days = [sunday, monday, tuesday, wednesday, thursday, friday, saturday];
 
   // loop through days and check which ones are actually being updated
@@ -152,8 +137,8 @@ exports.update_dealership_hours = (req, res, next) => {
       var from = days[day].hours.split('-')[0];
       var to = days[day].hours.split('-')[1];
 
-      if (!utils.isLengthExact(from, HOUR_LENGTH_MAX) ||
-          !utils.isLengthExact(to, HOUR_LENGTH_MAX)) {
+      if (!utils.isLengthExact(from, utils.HOUR_LENGTH_MAX) ||
+          !utils.isLengthExact(to, utils.HOUR_LENGTH_MAX)) {
             return res.status(400).json(errorUtils.error_message(utils.USE_24_HOUR_FORMAT, 400));
           }
       if (!validator.isInt(from) ||
@@ -196,7 +181,7 @@ exports.update_dealership_hours = (req, res, next) => {
 
 
   }).catch(findOneErr => {
-    errorUtils.storeError(500, findErr);
+    errorUtils.storeError(500, findOneErr);
     return res.status(500).json(errorUtils.error_message(utils.MONGOOSE_FIND_ONE_FAIL, 500));
   });
 }
