@@ -98,8 +98,6 @@ exports.update_dealership = (req, res, next) => {
   auth0Id = req.user.sub.split('|')[1];
   userId = req.body.id;
 
-  console.log(auth0Id);
-
   // after sanitizing data and checking for existance of data, begin update process
   UserModel.findOne({ auth0_id: auth0Id })
   .exec()
