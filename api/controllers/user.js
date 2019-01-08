@@ -95,7 +95,7 @@ exports.update_dealership = (req, res, next) => {
   }
 
   // assign auth0_id and id
-  auth0Id = req.user.azp;
+  auth0Id = req.user.sub.split('|')[1];
   userId = req.body.id;
 
   console.log(auth0Id);
@@ -168,7 +168,7 @@ exports.update_dealership_hours = (req, res, next) => {
     }
   }
 
-  auth0Id = req.body.auth0_id;
+  auth0Id = req.user.sub.split('|')[1];
   userId = req.body.id;
 
   // after sanitizing data and checking for existance of data, begin update process
