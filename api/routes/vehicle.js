@@ -30,6 +30,6 @@ const upload = multer({
 router.get('/get_all_vehicles', vehicleController.get_all_vehicles);
 
 router.post('/add_new_vehicle', checkJWT, vehicleController.add_new_vehicle);
-router.post('/add_vehicle_photos', checkJWT, upload.single('photo'), vehicleController.add_vehicle_photos);
+router.post('/add_vehicle_photos', checkJWT, upload.array('photos', 7), vehicleController.add_vehicle_photos);
 
 module.exports = router;

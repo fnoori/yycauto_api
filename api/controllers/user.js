@@ -97,7 +97,7 @@ exports.update_dealership = (req, res, next) => {
           res.status(201).json({message: utils.MONGOOSE_SUCCESSFUL_UPDATE});
         }).catch(updateErr => {
           errorUtils.storeError(500, updateErr);
-          return res.status(500).json(errorUtils.error_message(utils.MONGOOSE_FIND_ONE_FAIL, 500));
+          return res.status(500).json(errorUtils.error_message(utils.MONGOOSE_UPDATE_ONE_FAIL, 500));
         });
 
       } else {

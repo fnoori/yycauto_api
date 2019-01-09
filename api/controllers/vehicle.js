@@ -76,13 +76,14 @@ exports.add_new_vehicle = (req, res, next) => {
    vehicleData['Dealership'] = req.body.id;
 
    // upload tmp vehicle data first
-   vehicleData['VehiclePhotos'] = [utils.DEFAULT];
+   vehicleData['totalPhotos'] = -1;
    vehicleData['VehicleFeatures'] = _.isUndefined(req.body.features) ? null : req.body.features;
 
    // temp data here
    vehicleData['AdTier'] = 1;
 
-   auth0Id = req.user.sub.split('|')[1];
+   //auth0Id = req.user.sub.split('|')[1];
+   auth0Id = req.body.auth0_id;
    userId = req.body.id;
 
    UserModel.findOne({ auth0_id: auth0Id })
@@ -117,16 +118,29 @@ exports.add_new_vehicle = (req, res, next) => {
 exports.add_vehicle_photos = (req, res, next) => {
   var auth0Id = '';
   var id = '';
-  var photoData = {};
+  var vehicleId = '';
+  var photos = [];
 
   if (!validator.isMongoId(req.body.id)) {
     return res.status(400).json(errorUtils.error_message(utils.MONGOOSE_INCORRECT_ID, 400));
   }
+  if (!validator.isMongoId(req.body.vehicle_id)) {
+    return res.status(400).json(errorUtils.error_message(utils.MONGOOSE_INCORRECT_ID, 400));
+  }
 
-  photoData.photos = req.file.filename;
+  if (!utils.isArrayLengthCorrect(req.files, utils.MIN_LENGTH, utils.MAX_VEHICLE_PHOTOS)) {
+    return res.status(400).json(errorUtils.error_message(utils.INCORRECT_NUMBER_OF_IMAGES, 400));
+  }
 
-  auth0Id = req.user.sub.split('|')[1];
+  // there are files, add to array
+  for (file in req.files) {
+    photos.push(req.files[file].path);
+  }
+
+  //auth0Id = req.user.sub.split('|')[1];
+  auth0Id = req.body.auth0_id;
   userId = req.body.id;
+  vehicleId = req.body.vehicle_id;
 
   UserModel.findOne({ auth0_id: auth0Id })
   .exec()
@@ -134,18 +148,51 @@ exports.add_vehicle_photos = (req, res, next) => {
     if (user) {
       if (userId === String(user._id)) {
 
-        cloudinary.v2.uploader.upload(`./uploads/${req.file.filename}`, (err, result) => {
-          console.log(result, err);
+        // user is valid (updating their own inventory)
+        VehicleModel.findOneAndUpdate({ _id: vehicleId, 'Dealership': userId }, { totalPhotos: photos.length })
+        .populate('Dealership')
+        .exec()
+        .then(uploaded => {
+
+          // async function needed to upload files in a synchronious manner
+          async function uploadToCloudinary() {
+            for (photo in photos) {
+              await cloudinary.v2.uploader.upload(photos[photo],
+              { folder: `${userId}/${vehicleId}`, use_filename: true, unique_filename: false },
+              (err, result) => { /* do nothing, handled below */});
+            };
+
+            // return promise to confirm all the files have been uploaded before continuing
+            return Promise.resolve(1);
+          }
+
+          // after uploading files
+          uploadToCloudinary().then(uploadResult => {
+            res.status(201).json({ message: utils.VEHICLE_PHOTOS_UPLOADED });
+          }).catch(cloudinaryErr => {
+            errorUtils.storeError(500, cloudinaryErr.message);
+            return res.status(500).json(errorUtils.error_message(utils.VEHICLE_PHOTOS_UPLOAD_FAIL, 500));
+          }).finally(() => {
+            // always delete the files from tmp dir
+            errorUtils.deleteFiles(photos);
+          });
+
+        }).catch(findOneAndUpdateErr => {
+          errorUtils.deleteFiles(photos);
+          errorUtils.storeError(500, findOneAndUpdateErr);
+          return res.status(500).json(errorUtils.error_message(utils.MONGOOSE_FIND_ONE_AND_UPDATE_FAIL, 500));
         });
-          //function(error, result) {console.log(result, error)});
 
       } else {
+        errorUtils.deleteFiles(photos);
         return res.status(401).json(errorUtils.error_message(utils.UNAUTHORIZED_ACCESS, 401));
       }
     } else {
+      errorUtils.deleteFiles(photos);
       return res.status(404).json(errorUtils.error_message(utils.USER_DOES_NOT_EXIST, 404));
     }
   }).catch(findOneErr => {
+    errorUtils.deleteFiles(photos);
     errorUtils.storeError(500, findOneErr);
     return res.status(500).json(errorUtils.error_message(utils.MONGOOSE_FIND_ONE_FAIL, 500));
   });

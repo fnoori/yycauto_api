@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
 const ErrorModel = require('../models/error');
+const fs = require('fs');
 
 exports.storeError = (error_code, error_message) => {
   const newError = new ErrorModel({
@@ -22,4 +23,14 @@ exports.error_message = (message, error_code) => {
     message: message,
     error_code: error_code
   };
+}
+
+exports.deleteFiles = (files) => {
+  for (file in files) {
+    fs.unlink(files[file], (unlinkErr) => {
+      if (unlinkErr) {
+        throw unlinkErr;
+      }
+    });
+  }
 }
