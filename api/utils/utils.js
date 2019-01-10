@@ -66,7 +66,7 @@ exports.FUEL_CITY = { name: 'City (L/100Km)', max: 6 };
 exports.FUEL_HIGHWAY = { name: 'Highway (L/100Km)', max: 6 };
 exports.FUEL_COMBINED = { name: 'Combined (L/100Km)', max: 6 };
 
-exports.VEHICLE_FEATURES_CAT = 'array';
+exports.VEHICLE_FEATURES_IS_ARRAY = 'array';
 exports.VEHICLE_FEATURES = { name: 'VehicleFeatures' };
 exports.DEFAULT = '<default>';
 

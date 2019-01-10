@@ -1,13 +1,14 @@
 const mongoose = require('mongoose');
 const validator = require('validator');
+const _ = require('underscore');
+const mongoSanitize = require('mongo-sanitize');
+var cloudinary = require('cloudinary');
+
 const VehicleModel = require('../models/vehicle');
 const UserModel = require('../models/user');
-const _ = require('underscore');
 const ErrorModel = require('../models/error');
-const mongoSanitize = require('mongo-sanitize');
 const errorUtils = require('../utils/errorUtils');
 const utils = require('../utils/utils');
-var cloudinary = require('cloudinary');
 
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
@@ -235,20 +236,20 @@ exports.update_vehicle = (req, res, next) => {
   vehicleDetails.push(_.isUndefined(req.body.highway_fuel) ? null : { name: utils.FUEL_HIGHWAY.name, category: utils.FUEL_ECONOMY, details: req.body.highway_fuel, maxLength: utils.FUEL_HIGHWAY.max });
   vehicleDetails.push(_.isUndefined(req.body.combined) ? null : { name: utils.FUEL_COMBINED.name, category: utils.FUEL_ECONOMY, details: req.body.combined, maxLength: utils.FUEL_COMBINED.max });
 
-  vehicleDetails.push(_.isUndefined(req.body.features) ? null : { name: utils.VEHICLE_FEATURES.name, category: utils.VEHICLE_FEATURES_CAT, details: req.body.features, maxLength: null });
+  vehicleDetails.push(_.isUndefined(req.body.features) ? null : { name: utils.VEHICLE_FEATURES.name, category: utils.VEHICLE_FEATURES_IS_ARRAY, details: req.body.features, maxLength: null });
 
   var valueLengthTooLong = [];
   var updateData = {};
   var currentDetail = '';
   for (index in vehicleDetails) {
     currentDetail = vehicleDetails[index];
-    if (currentDetail && currentDetail.category != utils.VEHICLE_FEATURES_CAT) {
+    if (currentDetail && currentDetail.category != utils.VEHICLE_FEATURES_IS_ARRAY) {
       if (!utils.isLengthCorrect(currentDetail.details, utils.MIN_LENGTH, currentDetail.maxLength)) {
         valueLengthTooLong.push(currentDetail.name);
       } else {
         updateData[`${currentDetail.category}.${currentDetail.name}`] = currentDetail.details;
       }
-    } else if (currentDetail && currentDetail.category === utils.VEHICLE_FEATURES_CAT) {
+    } else if (currentDetail && currentDetail.category === utils.VEHICLE_FEATURES_IS_ARRAY) {
       updateData[`${currentDetail.name}`] = currentDetail.details;
     }
   }
