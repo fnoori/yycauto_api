@@ -41,13 +41,37 @@ exports.ADDRESS_LENGTH_MAX = 70;
 exports.DEALERSHIP_NAME_LENGTH_MAX = 50;
 exports.MAX_VEHICLE_PHOTOS = 7;
 
-exports.MAKE = 'make';
-exports.MODEL = 'model';
-exports.TRIM = 'trim';
-exports.MAKE_MAX_LENGTH = 15;
-exports.MODEL_MAX_LENGTH = 15;
-exports.TRIM_MAX_LENGTH = 10;
+exports.BASIC_INFO = 'basicInfo';
+exports.MAKE = { name: 'Make', max: 15 };
+exports.MODEL = { name: 'Model', max: 15 };
+exports.TRIM = { name: 'Trim', max: 10 };
+exports.TYPE = { name: 'Type', max: 20 };
+exports.YEAR = { name: 'Year', max: 4 };
+exports.EXTERIOR_COLOUR = { name: 'Exterior Colour', max: 15 };
+exports.INTERIOR_COLOUR = { name: 'Interior Colour', max: 15 };
+exports.PRICE = { name: 'Price', max: 10 };
+exports.KILOMETRES = { name: 'Kilometres', max: 8 };
+exports.FUEL_TYPE = { name: 'Fuel Type', max: 20 };
+exports.DOORS = { name:  'Doors', max: 2 };
+exports.SEATS = { name: 'Seats', max: 2 };
+exports.DESCRIPTION = { name: 'Description', max: 300 };
+exports.CAR_PROOF = { name: 'CarProof' };
+exports.TRANSMISSION = { name: 'Transmission', max:  20};
+exports.ENGINE_SIZE = { name: 'Engine Size (L)', max: 6 };
+exports.CYLINDERS = { name: 'Cylinders', max: 2 };
+exports.HORSEPOWER = { name: 'Horsepower @ RPM', max: 6 };
+exports.TORQUE = { name: 'Torque (lb - ft) @ RPM', max: 6 };
+exports.RECOMMENDED_FUEL = { name: 'Recommended Fuel', max: 20 };
+exports.FUEL_CITY = { name: 'City (L/100Km)', max: 6 };
+exports.FUEL_HIGHWAY = { name: 'Highway (L/100Km)', max: 6 };
+exports.FUEL_COMBINED = { name: 'Combined (L/100Km)', max: 6 };
+
+exports.VEHICLE_FEATURES_CAT = 'array';
+exports.VEHICLE_FEATURES = { name: 'VehicleFeatures' };
 exports.DEFAULT = '<default>';
+
+exports.MECHANICAL_SPECS = 'mechanicalSpecs';
+exports.FUEL_ECONOMY = 'fuelEconomy';
 
 
 exports.isLengthCorrect = (checkText, minLength, maxLength) => {
@@ -78,6 +102,16 @@ exports.lengthTooLong = (text) => {
   return `length of ${text} is too long`;
 }
 
+exports.followingLengthsTooLong = (textArray) => {
+  var tooLong = [];
+
+  for (index in textArray) {
+    tooLong.push(textArray[index]);
+  }
+
+  return { 'values exceeding maximum length': tooLong };
+}
+
 exports.containsInvalidMongoCharacter = (value) => {
   for (var key in value) {
     if (value.hasOwnProperty(key)) {
@@ -87,8 +121,10 @@ exports.containsInvalidMongoCharacter = (value) => {
             return true;
           }
         }
-      } else if (validator.contains(value[key], '$')) {
-        return true;
+      } else if (value[key]) {
+        if (validator.contains(value[key], '$')) {
+          return true;
+        }
       }
     }
   }
