@@ -24,6 +24,8 @@ exports.INCORRECT_NUMBER_OF_IMAGES = 'At least 1 and a maximum of 7 image must b
 exports.VEHICLE_DOES_NOT_EXIST = 'Vehicle does\'t exists';
 exports.VEHICLE_PHOTOS_UPLOADED = 'File(s) uploaded successfully';
 exports.VEHICLE_PHOTOS_UPLOAD_FAIL = 'File(s) failed to upload';
+exports.VEHICLE_CREATED_SUCCESSFULLY = 'Successfully created vehicle';
+exports.VEHICLE_UPDATED_SUCCESSFULLY = 'Vehicle successfully updated';
 
 exports.HOUR_LENGTH_MAX = 4;
 exports.MIN_LENGTH = 0;

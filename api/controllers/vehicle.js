@@ -32,7 +32,7 @@ exports.add_new_vehicle = (req, res, next) => {
   var id = '';
   var vehicleData = {};
 
-  if (!validator.isMongoId(req.body.id)) {
+  if (_.isUndefined(req.body.id) || !validator.isMongoId(req.body.id)) {
     return res.status(400).json(errorUtils.error_message(utils.MONGOOSE_INCORRECT_ID, 400));
   }
 
@@ -83,8 +83,7 @@ exports.add_new_vehicle = (req, res, next) => {
    // temp data here
    vehicleData['AdTier'] = 1;
 
-   //auth0Id = req.user.sub.split('|')[1];
-   auth0Id = req.body.auth0_id;
+   auth0Id = eval(process.env.AUTH0_ID_SOURCE);
    userId = req.body.id;
 
    UserModel.findOne({ auth0_id: auth0Id })
@@ -96,9 +95,7 @@ exports.add_new_vehicle = (req, res, next) => {
          const newVehicle = new VehicleModel(vehicleData);
          newVehicle.save()
          .then(saveResult => {
-           res.status(201).json({
-             result: 'successfully created vehicle'
-           });
+           res.status(201).json({ result: utils.VEHICLE_CREATED_SUCCESSFULLY });
          }).catch(saveErr => {
            errorUtils.storeError(500, saveErr);
            return res.status(500).json(errorUtils.error_message(utils.MONGOOSE_SAVE_FAIL, 500));
@@ -122,7 +119,7 @@ exports.add_vehicle_photos = (req, res, next) => {
   var vehicleId = '';
   var photos = [];
 
-  if (!validator.isMongoId(req.body.id)) {
+  if (_.isUndefined(req.body.id) || !validator.isMongoId(req.body.id)) {
     return res.status(400).json(errorUtils.error_message(utils.MONGOOSE_INCORRECT_ID, 400));
   }
   if (!validator.isMongoId(req.body.vehicle_id)) {
@@ -138,8 +135,7 @@ exports.add_vehicle_photos = (req, res, next) => {
     photos.push(req.files[file].path);
   }
 
-  //auth0Id = req.user.sub.split('|')[1];
-  auth0Id = req.body.auth0_id;
+  auth0Id = eval(process.env.AUTH0_ID_SOURCE);
   userId = req.body.id;
   vehicleId = req.body.vehicle_id;
 
@@ -200,6 +196,11 @@ exports.add_vehicle_photos = (req, res, next) => {
 }
 
 exports.update_vehicle = (req, res, next) => {
+  var vehicleDetails = [];
+  var auth0Id = '';
+  var id = '';
+  var vehicleId = '';
+
   // perform critical checks right at the start
   if (_.isUndefined(req.body.id) || !validator.isMongoId(req.body.id)) {
     return res.status(400).json(errorUtils.error_message(utils.MONGOOSE_INCORRECT_ID, 400));
@@ -207,8 +208,6 @@ exports.update_vehicle = (req, res, next) => {
   if (utils.containsInvalidMongoCharacter(req.body)) {
     return res.status(400).json(errorUtils.error_message(utils.CONTAINS_INVALID_CHARACTER, 400));
   }
-
-  var vehicleDetails = [];
 
   vehicleDetails.push(_.isUndefined(req.body.make) ? null : { name: utils.MAKE.name, category: utils.BASIC_INFO, details: req.body.make, maxLength: utils.MAKE.max });
   vehicleDetails.push(_.isUndefined(req.body.model) ? null : { name: utils.MODEL.name, category: utils.BASIC_INFO, details: req.body.model, maxLength: utils.MODEL.max });
@@ -254,5 +253,30 @@ exports.update_vehicle = (req, res, next) => {
     }
   }
 
-  return res.json(updateData);
+  auth0Id = eval(process.env.AUTH0_ID_SOURCE);
+  userId = req.body.id;
+  vehicleId = req.body.vehicle_id;
+
+  UserModel.findOne({ auth0_id: auth0Id })
+  .then(user => {
+    if (user) {
+
+      // updating correct inventory
+      if (userId === String(user._id)) {
+        VehicleModel.findOneAndUpdate({ _id: vehicleId, 'Dealership': userId }, updateData)
+        .populate('Dealership')
+        .exec()
+        .then(updated => {
+          res.status(201).json({ message: utils.VEHICLE_UPDATED_SUCCESSFULLY });
+        }).catch(findOneAndUpdateErr => {
+          errorUtils.storeError(500, findOneAndUpdateErr);
+          return res.status(500).json(errorUtils.error_message(utils.MONGOOSE_FIND_ONE_AND_UPDATE_FAIL, 500));
+        });
+      }
+
+    }
+  }).catch(findOneErr => {
+    errorUtils.storeError(500, findOneErr);
+    return res.status(500).json(errorUtils.error_message(utils.MONGOOSE_FIND_ONE_FAIL, 500));
+  });
 }

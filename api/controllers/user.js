@@ -80,7 +80,7 @@ exports.update_dealership = (req, res, next) => {
   }
 
   // assign auth0_id and id
-  auth0Id = req.user.sub.split('|')[1];
+  auth0Id = auth0Id = eval(process.env.AUTH0_ID_SOURCE);
   userId = req.body.id;
 
   // after sanitizing data and checking for existance of data, begin update process
@@ -151,7 +151,7 @@ exports.update_dealership_hours = (req, res, next) => {
     }
   }
 
-  auth0Id = req.user.sub.split('|')[1];
+  auth0Id = auth0Id = eval(process.env.AUTH0_ID_SOURCE);
   userId = req.body.id;
 
   // after sanitizing data and checking for existance of data, begin update process
