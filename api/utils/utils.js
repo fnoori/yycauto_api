@@ -123,8 +123,9 @@ exports.followingLengthsTooLong = (textArray) => {
 }
 
 exports.containsInvalidMongoCharacter = (value) => {
+  console.log(value);
   for (var key in value) {
-    if (value.hasOwnProperty(key)) {
+    if (Object.prototype.hasOwnProperty.call(value, key)) {
       if (value[key].constructor === Array) {
         for (index in value[key]) {
           if (validator.contains(value[key][index], '$')) {

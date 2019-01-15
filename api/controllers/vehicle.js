@@ -81,8 +81,7 @@ exports.add_new_vehicle = async (req, res, next) => {
 
    vehicleData['Dealership'] = req.body.id;
 
-   // upload tmp vehicle data first
-   vehicleData['totalPhotos'] = -1;
+   vehicleData['totalPhotos'] = req.files.length;
    vehicleData['VehicleFeatures'] = _.isUndefined(req.body.features) ? null : req.body.features;
 
    // temp data here
@@ -97,77 +96,32 @@ exports.add_new_vehicle = async (req, res, next) => {
      user = await UserModel.findOne({ auth0_id: auth0Id });
 
      if (!user) {
+       utils.deleteFiles(req.files);
        return res.status(404).json(errorUtils.error_message(utils.USER_DOES_NOT_EXIST, 404));
      }
      if (!validator.equals(String(user._id), userId)) {
+       utils.deleteFiles(req.files);
        return res.status(404).json(errorUtils.error_message(utils.UNAUTHORIZED_ACCESS, 404));
      }
 
      const newVehicle = new VehicleModel(vehicleData);
      vehicleSaved = await newVehicle.save();
      if (!vehicleSaved) {
+       utils.deleteFiles(req.files);
        return res.status(500).json(errorUtils.error_message(utils.MONGOOSE_SAVE_FAIL, 500));
      }
 
+     fs.mkdirSync(`./test/imagesUploaded/${userId}/${vehicleSaved._id}`, { recursive: true });
+     for (var i = 0; i < req.files.length; i++) {
+       fs.renameSync(req.files[i].path, `./test/imagesUploaded/${userId}/${vehicleSaved._id}/${req.files[i].filename}`);
+     }
+
+     res.json({ message: utils.VEHICLE_CREATED_SUCCESSFULLY });
+
    } catch (e) {
+     utils.deleteFiles(req.files);
      return res.status(500).json({error: e.message});
    }
-}
-
-/*
-  Needs to be async so we can be certain file is uploaded
-  correctly
- */
-exports.add_vehicle_photos = async (req, res, next) => {
-  var auth0Id = '';
-  var id = '';
-  var vehicleId = '';
-
-  if (_.isUndefined(req.body.id) || !validator.isMongoId(req.body.id)) {
-    return res.status(400).json(errorUtils.error_message(utils.MONGOOSE_INCORRECT_ID, 400));
-  }
-  if (!validator.isMongoId(req.body.vehicle_id)) {
-    return res.status(400).json(errorUtils.error_message(utils.MONGOOSE_INCORRECT_ID, 400));
-  }
-  if (!utils.isArrayLengthCorrect(req.files, utils.MIN_LENGTH, utils.MAX_VEHICLE_PHOTOS)) {
-    return res.status(400).json(errorUtils.error_message(utils.INCORRECT_NUMBER_OF_IMAGES, 400));
-  }
-
-  auth0Id = eval(process.env.AUTH0_ID_SOURCE);
-  userId = req.body.id;
-  vehicleId = req.body.vehicle_id;
-
-  var user;
-  var vehicle;
-  try {
-    user = await UserModel.findOne({ auth0_id: auth0Id });
-
-    if (!user) {
-      utils.deleteFiles(req.files);
-      return res.status(404).json(errorUtils.error_message(utils.USER_DOES_NOT_EXIST, 404));
-    }
-    if (!validator.equals(String(user._id), userId)) {
-      utils.deleteFiles(req.files);
-      return res.status(404).json(errorUtils.error_message(utils.UNAUTHORIZED_ACCESS, 404));
-    }
-
-    vehicle = await VehicleModel.findOneAndUpdate({ _id: vehicleId, 'Dealership': userId }, { totalPhotos: req.files.length }).populate('Dealership');
-    if (!vehicle) {
-      utils.deleteFiles(req.files);
-      return res.status(404).json(errorUtils.error_message(utils.VEHICLE_DOES_NOT_EXIST, 404));
-    }
-
-    fs.mkdirSync(`./test/imagesUploaded/${userId}/${vehicleId}`, { recursive: true });
-    for (var i = 0; i < req.files.length; i++) {
-      fs.renameSync(req.files[i].path, `./test/imagesUploaded/${userId}/${vehicleId}/${req.files[i].filename}`);
-    }
-
-    res.status(201).json({ message: utils.VEHICLE_PHOTOS_UPLOADED });
-
-  } catch (e) {
-    utils.deleteFiles(req.files);
-    return res.status(500).json({error: e.message});
-  }
 }
 
 exports.update_vehicle = (req, res, next) => {
