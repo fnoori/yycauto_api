@@ -28,7 +28,11 @@ exports.get_all_vehicles = (req, res, next) => {
   });
 }
 
-exports.add_new_vehicle = (req, res, next) => {
+/*
+  Needs to be async so we can be certain the vehicle has been created
+  successfully
+ */
+exports.add_new_vehicle = async (req, res, next) => {
   var auth0Id = '';
   var id = '';
   var vehicleData = {};
@@ -87,35 +91,27 @@ exports.add_new_vehicle = (req, res, next) => {
    auth0Id = eval(process.env.AUTH0_ID_SOURCE);
    userId = req.body.id;
 
-   return res.json({made: 'it'});
+   var user;
+   var vehicleSaved;
+   try {
+     user = await UserModel.findOne({ auth0_id: auth0Id });
 
-   /*
-   UserModel.findOne({ auth0_id: auth0Id })
-   .exec()
-   .then(user => {
-     if (user) {
-       if (userId === String(user._id)) {
-
-         const newVehicle = new VehicleModel(vehicleData);
-         newVehicle.save()
-         .then(saveResult => {
-           res.status(201).json({ result: utils.VEHICLE_CREATED_SUCCESSFULLY });
-         }).catch(saveErr => {
-           errorUtils.storeError(500, saveErr);
-           return res.status(500).json(errorUtils.error_message(utils.MONGOOSE_SAVE_FAIL, 500));
-         });
-
-       } else {
-         return res.status(401).json(errorUtils.error_message(utils.UNAUTHORIZED_ACCESS, 401));
-       }
-     } else {
-       return res.status(404).json(errorUtils.error_message(utils.USER_DOES_NOT_EXIST, 404));
+     if (!user) {
+      return res.status(404).json(errorUtils.error_message(utils.USER_DOES_NOT_EXIST, 404));
      }
-   }).catch(findOneErr => {
-     errorUtils.storeError(500, findOneErr);
-     return res.status(500).json(errorUtils.error_message(utils.MONGOOSE_FIND_ONE_FAIL, 500));
-   });
-   */
+     if (!validator.equals(String(user._id), userId)) {
+       return res.status(404).json(errorUtils.error_message(utils.UNAUTHORIZED_ACCESS, 404));
+     }
+
+     const newVehicle = new VehicleModel(vehicleData);
+     vehicleSaved = await newVehicle.save();
+     if (!vehicleSaved) {
+       return res.status(500).json(errorUtils.error_message(utils.MONGOOSE_SAVE_FAIL, 500));
+     }
+
+   } catch (e) {
+     return res.status(500).json({error: e.message});
+   }
 }
 
 /*
