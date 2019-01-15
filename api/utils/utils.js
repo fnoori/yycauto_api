@@ -1,5 +1,6 @@
 const _ = require('underscore');
 const validator = require('validator');
+const fs = require('fs');
 
 exports.MONGOOSE_FIND_FAIL = 'mongoose.find() failed';
 exports.MONGOOSE_INCORRECT_ID = 'Incorrect id format';
@@ -75,6 +76,13 @@ exports.DEFAULT = '<default>';
 exports.MECHANICAL_SPECS = 'mechanicalSpecs';
 exports.FUEL_ECONOMY = 'fuelEconomy';
 
+exports.DEVELOPMENT = 'development';
+exports.DEVELOPMENT_CLOUDINARY = 'development-cloudinary';
+
+exports.PRODUCTION = 'production';
+
+exports.TESTING = 'testing';
+
 
 exports.isLengthCorrect = (checkText, minLength, maxLength) => {
   if ((checkText.trim().length <= minLength) || (checkText.trim().length > maxLength)) {
@@ -132,4 +140,10 @@ exports.containsInvalidMongoCharacter = (value) => {
   }
 
   return false;
+}
+
+exports.deleteFiles = (files) => {
+  for (var i = 0; i < files.length; i++) {
+    fs.unlinkSync(files[i].path);
+  }
 }

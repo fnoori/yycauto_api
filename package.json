@@ -5,7 +5,8 @@
   "main": "server.js",
   "scripts": {
     "test": "mocha",
-    "dev": "NODE_ENV=development nodemon server.js"
+    "dev": "NODE_ENV=development nodemon server.js",
+    "dev-cloudinary": "NODE_ENV=development-cloudinary nodemon server.js"
   },
   "repository": {
     "type": "git",
@@ -31,6 +32,7 @@
     "mongo-sanitize": "^1.0.1",
     "mongoose": "^5.4.0",
     "multer": "^1.4.1",
+    "multer-storage-cloudinary": "^2.2.1",
     "nodemon": "^1.18.9",
     "passport": "^0.4.0",
     "passport-auth0": "^1.1.0",
