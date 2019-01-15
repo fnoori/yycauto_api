@@ -38,6 +38,6 @@ router.get('/get_all_vehicles', vehicleController.get_all_vehicles);
 
 router.post('/add_new_vehicle', checkJWT, upload.array('photos', 7), vehicleController.add_new_vehicle);
 
-router.patch('/update_vehicle', checkJWT, vehicleController.update_vehicle);
+router.patch('/update_vehicle', checkJWT, upload.array('photos', 7), vehicleController.update_vehicle);
 
 module.exports = router;

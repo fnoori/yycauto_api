@@ -27,6 +27,8 @@ exports.VEHICLE_PHOTOS_UPLOADED = 'File(s) uploaded successfully';
 exports.VEHICLE_PHOTOS_UPLOAD_FAIL = 'File(s) failed to upload';
 exports.VEHICLE_CREATED_SUCCESSFULLY = 'Successfully created vehicle';
 exports.VEHICLE_UPDATED_SUCCESSFULLY = 'Vehicle successfully updated';
+exports.REACHED_MAXIMUM_VEHICLE_PHOTOS = 'Maximum number of photos reached, please delete one, before uploading a new photo';
+exports.MAXIMUM_VEHICLE_PHOTOS = 'Maximum of 7 photos can be uploaded';
 
 exports.HOUR_LENGTH_MAX = 4;
 exports.MIN_LENGTH = 0;
@@ -123,7 +125,6 @@ exports.followingLengthsTooLong = (textArray) => {
 }
 
 exports.containsInvalidMongoCharacter = (value) => {
-  console.log(value);
   for (var key in value) {
     if (Object.prototype.hasOwnProperty.call(value, key)) {
       if (value[key].constructor === Array) {

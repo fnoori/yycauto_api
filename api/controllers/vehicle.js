@@ -51,6 +51,10 @@ exports.add_new_vehicle = async (req, res, next) => {
      return res.status(400).json(errorUtils.error_message(utils.CONTAINS_INVALID_CHARACTER, 400));
    }
 
+   if (req.files.length > 7) {
+     return res.status(400).json(errorUtils.error_message(utils.MAXIMUM_VEHICLE_PHOTOS, 400));
+   }
+
    vehicleData['_id'] = new mongoose.Types.ObjectId();
 
    vehicleData['basicInfo.Make'] = req.body.make;
@@ -124,11 +128,12 @@ exports.add_new_vehicle = async (req, res, next) => {
    }
 }
 
-exports.update_vehicle = (req, res, next) => {
+exports.update_vehicle = async (req, res, next) => {
   var vehicleDetails = [];
   var auth0Id = '';
   var id = '';
   var vehicleId = '';
+  var includesFiles = false;
 
   // perform critical checks right at the start
   if (_.isUndefined(req.body.id) || !validator.isMongoId(req.body.id)) {
@@ -136,6 +141,10 @@ exports.update_vehicle = (req, res, next) => {
   }
   if (utils.containsInvalidMongoCharacter(req.body)) {
     return res.status(400).json(errorUtils.error_message(utils.CONTAINS_INVALID_CHARACTER, 400));
+  }
+
+  if (req.files.length > 0) {
+    includesFiles = true;
   }
 
   vehicleDetails.push(_.isUndefined(req.body.make) ? null : { name: utils.MAKE.name, category: utils.BASIC_INFO, details: req.body.make, maxLength: utils.MAKE.max });
@@ -186,6 +195,49 @@ exports.update_vehicle = (req, res, next) => {
   userId = req.body.id;
   vehicleId = req.body.vehicle_id;
 
+  var user;
+  var updatedVehicle;
+  try {
+    user = await UserModel.findOne({ auth0_id: auth0Id });
+
+    if (!user) {
+      if (includesFiles) {
+        utils.deleteFiles(req.files);
+      }
+      return res.status(404).json(errorUtils.error_message(utils.USER_DOES_NOT_EXIST, 404));
+    }
+    if (!validator.equals(String(user._id), userId)) {
+      if (includesFiles) {
+        utils.deleteFiles(req.files);
+      }
+      return res.status(404).json(errorUtils.error_message(utils.UNAUTHORIZED_ACCESS, 404));
+    }
+
+    const vehicleToUpdate = await VehicleModel.findOne({ _id: vehicleId });
+    if (!vehicleToUpdate) {
+      return res.status(404).json(errorUtils.error_message(utils.VEHICLE_DOES_NOT_EXIST, 404));
+    }
+    if (includesFiles && vehicleToUpdate.totalPhotos >= 7) {
+      utils.deleteFiles(req.files);
+      return res.status(400).json(errorUtils.error_message(utils.REACHED_MAXIMUM_VEHICLE_PHOTOS, 400));
+    }
+
+    updatedVehicle = await VehicleModel.findOneAndUpdate({ _id: vehicleId, 'Dealership': userId }, updateData).populate('Dealership');
+    if (!updatedVehicle) {
+      if (includesFiles) {
+        utils.deleteFiles(req.files);
+      }
+      return res.status(500).json(errorUtils.error_message(utils.MONGOOSE_FIND_ONE_AND_UPDATE_FAIL, 500));
+    }
+
+    res.json({ message: utils.VEHICLE_UPDATED_SUCCESSFULLY });
+
+  } catch (e) {
+    utils.deleteFiles(req.files);
+    return res.status(500).json({error: e.message});
+  }
+
+  /*
   UserModel.findOne({ auth0_id: auth0Id })
   .then(user => {
     if (user) {
@@ -208,4 +260,5 @@ exports.update_vehicle = (req, res, next) => {
     errorUtils.storeError(500, findOneErr);
     return res.status(500).json(errorUtils.error_message(utils.MONGOOSE_FIND_ONE_FAIL, 500));
   });
+  */
 }
