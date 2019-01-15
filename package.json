@@ -36,6 +36,7 @@
     "nodemon": "^1.18.9",
     "passport": "^0.4.0",
     "passport-auth0": "^1.1.0",
+    "rimraf": "^2.6.3",
     "underscore": "^1.9.1",
     "validator": "^10.10.0"
   },

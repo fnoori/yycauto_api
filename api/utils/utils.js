@@ -11,6 +11,7 @@ exports.MONGOOSE_SAVE_FAIL = 'mongoose.save() failed';
 exports.MONGOOSE_UPDATE_ONE_FAIL = 'mongoose.updateOne() failed';
 exports.MONGOOSE_FIND_ONE_AND_UPDATE_FAIL = 'mongoose.findOneAndUpdate() failed';
 exports.MONGOOSE_POPULATE_FAIL = 'mongoose.populate() failed';
+exports.MONGOOSE_DELETE_ONE_FAIL = 'mongoose.deleteOne() failed';
 
 exports.INCORRECT_PHONE_FORMAT = 'Incorrect phone number format';
 exports.AT_LEAST_ONE_FIELD_REQUIRED = 'At least one field must be provided to update';
@@ -29,6 +30,7 @@ exports.VEHICLE_CREATED_SUCCESSFULLY = 'Successfully created vehicle';
 exports.VEHICLE_UPDATED_SUCCESSFULLY = 'Vehicle successfully updated';
 exports.REACHED_MAXIMUM_VEHICLE_PHOTOS = 'Maximum number of photos reached, please delete one, before uploading a new photo';
 exports.MAXIMUM_VEHICLE_PHOTOS = 'Maximum of 7 photos can be uploaded';
+exports.DELETE_VEHICLE_SUCCESSFULLY = 'Vehicle has been deleted successfully';
 
 exports.HOUR_LENGTH_MAX = 4;
 exports.MIN_LENGTH = 0;

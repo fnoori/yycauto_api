@@ -40,4 +40,6 @@ router.post('/add_new_vehicle', checkJWT, upload.array('photos', 7), vehicleCont
 
 router.patch('/update_vehicle', checkJWT, upload.array('photos', 7), vehicleController.update_vehicle);
 
+router.delete('/delete_vehicle', checkJWT, vehicleController.delete_vehicle);
+
 module.exports = router;

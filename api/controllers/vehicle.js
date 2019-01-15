@@ -3,6 +3,7 @@ const validator = require('validator');
 const _ = require('underscore');
 const mongoSanitize = require('mongo-sanitize');
 const fs = require('fs');
+const rimraf = require('rimraf');
 var cloudinary = require('cloudinary');
 
 const VehicleModel = require('../models/vehicle');
@@ -236,29 +237,43 @@ exports.update_vehicle = async (req, res, next) => {
     utils.deleteFiles(req.files);
     return res.status(500).json({error: e.message});
   }
+}
 
-  /*
-  UserModel.findOne({ auth0_id: auth0Id })
-  .then(user => {
-    if (user) {
+exports.delete_vehicle = async (req, res, next) => {
+  var auth0Id = '';
+  var id = '';
 
-      // updating correct inventory
-      if (userId === String(user._id)) {
-        VehicleModel.findOneAndUpdate({ _id: vehicleId, 'Dealership': userId }, updateData)
-        .populate('Dealership')
-        .exec()
-        .then(updated => {
-          res.status(201).json({ message: utils.VEHICLE_UPDATED_SUCCESSFULLY });
-        }).catch(findOneAndUpdateErr => {
-          errorUtils.storeError(500, findOneAndUpdateErr);
-          return res.status(500).json(errorUtils.error_message(utils.MONGOOSE_FIND_ONE_AND_UPDATE_FAIL, 500));
-        });
-      }
+  if (_.isUndefined(req.body.id) || !validator.isMongoId(req.body.id)) {
+    return res.status(400).json(errorUtils.error_message(utils.MONGOOSE_INCORRECT_ID, 400));
+  }
 
+  auth0Id = req.body.auth0_id;
+  userId = req.body.id;
+  vehicleId = req.body.vehicle_id;
+
+  var user;
+  var deleted;
+  var filesDeleted;
+  try {
+    user = await UserModel.findOne({ auth0_id: auth0Id });
+
+    if (!user) {
+      return res.status(404).json(errorUtils.error_message(utils.USER_DOES_NOT_EXIST, 404));
     }
-  }).catch(findOneErr => {
-    errorUtils.storeError(500, findOneErr);
-    return res.status(500).json(errorUtils.error_message(utils.MONGOOSE_FIND_ONE_FAIL, 500));
-  });
-  */
+    if (!validator.equals(String(user._id), userId)) {
+      return res.status(404).json(errorUtils.error_message(utils.UNAUTHORIZED_ACCESS, 404));
+    }
+
+    deleted = await VehicleModel.deleteOne({ _id: vehicleId });
+    if (!deleted) {
+      return res.status(500).json(errorUtils.error_message(utils.MONGOOSE_DELETE_ONE_FAIL, 500));
+    }
+
+    rimraf.sync(`./test/imagesUploaded/${userId}/${vehicleId}`);
+
+    res.json({ message: utils.DELETE_VEHICLE_SUCCESSFULLY });
+
+  } catch (e) {
+    return res.status(500).json({error: e.message});
+  }
 }
