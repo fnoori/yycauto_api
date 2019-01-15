@@ -97,7 +97,7 @@ exports.add_new_vehicle = async (req, res, next) => {
      user = await UserModel.findOne({ auth0_id: auth0Id });
 
      if (!user) {
-      return res.status(404).json(errorUtils.error_message(utils.USER_DOES_NOT_EXIST, 404));
+       return res.status(404).json(errorUtils.error_message(utils.USER_DOES_NOT_EXIST, 404));
      }
      if (!validator.equals(String(user._id), userId)) {
        return res.status(404).json(errorUtils.error_message(utils.UNAUTHORIZED_ACCESS, 404));
