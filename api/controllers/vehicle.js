@@ -87,7 +87,6 @@ exports.add_new_vehicle = async (req, res, next) => {
    vehicleData['Dealership'] = req.body.id;
 
    vehicleData['totalPhotos'] = req.files.length;
-   vehicleData['VehicleFeatures'] = _.isUndefined(req.body.features) ? null : req.body.features;
 
    // temp data here
    vehicleData['AdTier'] = 1;
@@ -144,7 +143,7 @@ exports.update_vehicle = async (req, res, next) => {
     return res.status(400).json(errorUtils.error_message(utils.CONTAINS_INVALID_CHARACTER, 400));
   }
 
-  if (req.files.length > 0) {
+  if (!_.isUndefined(req.files) && req.files.length > 0) {
     includesFiles = true;
   }
 
@@ -173,8 +172,6 @@ exports.update_vehicle = async (req, res, next) => {
   vehicleDetails.push(_.isUndefined(req.body.city_fuel) ? null : { name: utils.FUEL_CITY.name, category: utils.FUEL_ECONOMY, details: req.body.city_fuel, maxLength: utils.FUEL_CITY.max });
   vehicleDetails.push(_.isUndefined(req.body.highway_fuel) ? null : { name: utils.FUEL_HIGHWAY.name, category: utils.FUEL_ECONOMY, details: req.body.highway_fuel, maxLength: utils.FUEL_HIGHWAY.max });
   vehicleDetails.push(_.isUndefined(req.body.combined) ? null : { name: utils.FUEL_COMBINED.name, category: utils.FUEL_ECONOMY, details: req.body.combined, maxLength: utils.FUEL_COMBINED.max });
-
-  vehicleDetails.push(_.isUndefined(req.body.features) ? null : { name: utils.VEHICLE_FEATURES.name, category: utils.VEHICLE_FEATURES_IS_ARRAY, details: req.body.features, maxLength: null });
 
   var valueLengthTooLong = [];
   var updateData = {};
@@ -234,7 +231,9 @@ exports.update_vehicle = async (req, res, next) => {
     res.json({ message: utils.VEHICLE_UPDATED_SUCCESSFULLY });
 
   } catch (e) {
-    utils.deleteFiles(req.files);
+    if (includesFiles) {
+      utils.deleteFiles(req.files);
+    }
     return res.status(500).json({error: e.message});
   }
 }
@@ -247,7 +246,7 @@ exports.delete_vehicle = async (req, res, next) => {
     return res.status(400).json(errorUtils.error_message(utils.MONGOOSE_INCORRECT_ID, 400));
   }
 
-  auth0Id = req.body.auth0_id;
+  auth0Id = eval(process.env.AUTH0_ID_SOURCE);
   userId = req.body.id;
   vehicleId = req.body.vehicle_id;
 
@@ -269,7 +268,7 @@ exports.delete_vehicle = async (req, res, next) => {
       return res.status(500).json(errorUtils.error_message(utils.MONGOOSE_DELETE_ONE_FAIL, 500));
     }
 
-    rimraf.sync(`./test/imagesUploaded/${userId}/${vehicleId}`);
+    rimraf.sync(`./test/imagesUploaded/${userId}/${vehicleId}/`);
 
     res.json({ message: utils.DELETE_VEHICLE_SUCCESSFULLY });
 
