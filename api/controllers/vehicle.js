@@ -178,14 +178,12 @@ exports.update_vehicle = async (req, res, next) => {
   var currentDetail = '';
   for (index in vehicleDetails) {
     currentDetail = vehicleDetails[index];
-    if (currentDetail && currentDetail.category != utils.VEHICLE_FEATURES_IS_ARRAY) {
+    if (currentDetail && currentDetail.category) {
       if (!utils.isLengthCorrect(currentDetail.details, utils.MIN_LENGTH, currentDetail.maxLength)) {
         valueLengthTooLong.push(currentDetail.name);
       } else {
         updateData[`${currentDetail.category}.${currentDetail.name}`] = currentDetail.details;
       }
-    } else if (currentDetail && currentDetail.category === utils.VEHICLE_FEATURES_IS_ARRAY) {
-      updateData[`${currentDetail.name}`] = currentDetail.details;
     }
   }
 
