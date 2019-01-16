@@ -236,6 +236,56 @@ exports.update_vehicle = async (req, res, next) => {
   }
 }
 
+exports.delete_images = async (req, res, next) => {
+  var auth0Id = '';
+  var id = '';
+  var vehicleId = '';
+  var imagesToDelete = [];
+
+  if (_.isUndefined(req.body.id) || !validator.isMongoId(req.body.id)) {
+    return res.status(400).json(errorUtils.error_message(utils.MONGOOSE_INCORRECT_ID, 400));
+  }
+
+  if (utils.containsInvalidMongoCharacter(req.body)) {
+    return res.status(400).json(errorUtils.error_message(utils.CONTAINS_INVALID_CHARACTER, 400));
+  }
+
+  imagesToDelete = req.body.images_to_delete;
+  auth0Id = eval(process.env.AUTH0_ID_SOURCE);
+  userId = req.body.id;
+  vehicleId = req.body.vehicle_id;
+
+  var user;
+  var deleted;
+  var filesDeleted;
+  var updatedInCollection;
+  try {
+    user = await UserModel.findOne({ auth0_id: auth0Id });
+
+    if (!user) {
+      return res.status(404).json(errorUtils.error_message(utils.USER_DOES_NOT_EXIST, 404));
+    }
+    if (!validator.equals(String(user._id), userId)) {
+      return res.status(404).json(errorUtils.error_message(utils.UNAUTHORIZED_ACCESS, 404));
+    }
+
+    for (var i = 0; i < imagesToDelete.length; i++) {
+      fs.unlinkSync(`./test/imagesUploaded/${userId}/${vehicleId}/${imagesToDelete[i]}`);
+    }
+//updatedVehicle = await VehicleModel.findOneAndUpdate({ _id: vehicleId, 'Dealership': userId }, updateData).populate('Dealership');
+    updatedInCollection = UserModel.findOneAndUpdate({ 'Dealership': userId }, { $inc: { 'totalPhotos': -imagesToDelete.length } }).populate('Dealership')
+    if (!updatedInCollection) {
+      return res.status(500).json(errorUtils.error_message(utils.MONGOOSE_FIND_ONE_AND_UPDATE_FAIL, 500));
+    }
+
+    res.json({ message: 'Successfully deleted image(s)' });
+    //return res.json({ 'images to delete': imagesToDelete });
+  } catch (e) {
+    return res.status(500).json({error: e.message});
+  }
+
+}
+
 exports.delete_vehicle = async (req, res, next) => {
   var auth0Id = '';
   var id = '';
