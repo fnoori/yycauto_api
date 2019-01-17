@@ -1,10 +1,27 @@
 require('dotenv').config({path:'./config.env'});
 require('./config.js').configureEnvironment();
+const utils = require('./api/utils/utils');
+var http;
+var app;
+var port;
+var server;
 
-const http = require('http');
-const app = require('./app');
-const port = process.env.PORT || 3000;
-const server = http.createServer(app);
+if (process.env.NODE_ENV === utils.PRODUCTION) {
+
+  http = require('https');
+  app = require('./app');
+  port = process.env.PORT || 3000;
+  server = http.createServer(app);
+
+} else if (process.env.NODE_ENV === utils.DEVELOPMENT ||
+            process.env.NODE_ENV === utils.DEVELOPMENT_CLOUDINARY) {
+
+  http = require('http');
+  app = require('./test/api/app');
+  port = process.env.PORT || 3000;
+  server = http.createServer(app);
+
+}
 
 server.listen(port);
-console.log('Listening on port: ' + port);
+console.log(`ENVIRONMENT: ${process.env.NODE_ENV} -- Listening on port: ${port}`);
