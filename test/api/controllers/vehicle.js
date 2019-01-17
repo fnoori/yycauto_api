@@ -3,6 +3,7 @@ const validator = require('validator');
 const _ = require('underscore');
 const mongoSanitize = require('mongo-sanitize');
 const fs = require('fs');
+const rimraf = require('rimraf');
 var cloudinary = require('cloudinary');
 
 const VehicleModel = require('../models/vehicle');
@@ -19,16 +20,41 @@ cloudinary.config({
 
 exports.get_all_vehicles = (req, res, next) => {
   VehicleModel.find()
-  .populate('Dealership').exec()
-  .then(vehicle => {
-    res.status(201).json(vehicle);
+  .populate('Dealership', '-_id -auth0_id -__v')
+  .select('-__v').exec()
+  .then(vehicles => {
+    res.status(201).json(vehicles);
   }).catch(findErr => {
     errorUtils.storeError(500, findErr);
     return res.status(500).json(errorUtils.error_message(utils.MONGOOSE_FIND_FAIL, 500));
   });
 }
 
-exports.add_new_vehicle = (req, res, next) => {
+exports.get_vehicle_by_id = (req, res, next) => {
+  var vehicleId;
+
+  if (_.isUndefined(req.body.vehicle_id) || !validator.isMongoId(req.body.vehicle_id)) {
+    return res.status(400).json(errorUtils.error_message(utils.MONGOOSE_INCORRECT_ID, 400));
+  }
+
+  vehicleId = req.body.vehicle_id;
+
+  VehicleModel.findById(vehicleId)
+  .populate('Dealership', '-_id -auth0_id -__v')
+  .select('-__v').exec()
+  .then(vehicle => {
+    res.json(vehicle);
+  }).catch(findByIdErr => {
+    errorUtils.storeError(500, findByIdErr);
+    return res.status(500).json(errorUtils.error_message(utils.MONGOOSE_FIND_BY_ID_FAIL, 500));
+  });
+}
+
+/*
+  Needs to be async so we can be certain the vehicle has been created
+  successfully
+ */
+exports.add_new_vehicle = async (req, res, next) => {
   var auth0Id = '';
   var id = '';
   var vehicleData = {};
@@ -45,6 +71,10 @@ exports.add_new_vehicle = (req, res, next) => {
    */
    if (utils.containsInvalidMongoCharacter(req.body)) {
      return res.status(400).json(errorUtils.error_message(utils.CONTAINS_INVALID_CHARACTER, 400));
+   }
+
+   if (req.files.length > 7) {
+     return res.status(400).json(errorUtils.error_message(utils.MAXIMUM_VEHICLE_PHOTOS, 400));
    }
 
    vehicleData['_id'] = new mongoose.Types.ObjectId();
@@ -76,10 +106,9 @@ exports.add_new_vehicle = (req, res, next) => {
    vehicleData['fuelEconomy.combined (L/100Km)'] = _.isUndefined(req.body.combined) ? null : req.body.combined;
 
    vehicleData['Dealership'] = req.body.id;
-
-   // upload tmp vehicle data first
-   vehicleData['totalPhotos'] = -1;
-   vehicleData['VehicleFeatures'] = _.isUndefined(req.body.features) ? null : req.body.features;
+   vehicleData['totalPhotos'] = req.files.length;
+   vehicleData['date.created'] = new Date();
+   vehicleData['date.modified'] = new Date();
 
    // temp data here
    vehicleData['AdTier'] = 1;
@@ -87,116 +116,46 @@ exports.add_new_vehicle = (req, res, next) => {
    auth0Id = eval(process.env.AUTH0_ID_SOURCE);
    userId = req.body.id;
 
-   UserModel.findOne({ auth0_id: auth0Id })
-   .exec()
-   .then(user => {
-     if (user) {
-       if (userId === String(user._id)) {
+   var user;
+   var vehicleSaved;
+   try {
+     user = await UserModel.findOne({ auth0_id: auth0Id });
 
-         const newVehicle = new VehicleModel(vehicleData);
-         newVehicle.save()
-         .then(saveResult => {
-           res.status(201).json({ result: utils.VEHICLE_CREATED_SUCCESSFULLY });
-         }).catch(saveErr => {
-           errorUtils.storeError(500, saveErr);
-           return res.status(500).json(errorUtils.error_message(utils.MONGOOSE_SAVE_FAIL, 500));
-         });
-
-       } else {
-         return res.status(401).json(errorUtils.error_message(utils.UNAUTHORIZED_ACCESS, 401));
-       }
-     } else {
+     if (!user) {
+       utils.deleteFiles(req.files);
        return res.status(404).json(errorUtils.error_message(utils.USER_DOES_NOT_EXIST, 404));
      }
-   }).catch(findOneErr => {
-     errorUtils.storeError(500, findOneErr);
-     return res.status(500).json(errorUtils.error_message(utils.MONGOOSE_FIND_ONE_FAIL, 500));
-   });
+     if (!validator.equals(String(user._id), userId)) {
+       utils.deleteFiles(req.files);
+       return res.status(404).json(errorUtils.error_message(utils.UNAUTHORIZED_ACCESS, 404));
+     }
+
+     const newVehicle = new VehicleModel(vehicleData);
+     vehicleSaved = await newVehicle.save();
+     if (!vehicleSaved) {
+       utils.deleteFiles(req.files);
+       return res.status(500).json(errorUtils.error_message(utils.MONGOOSE_SAVE_FAIL, 500));
+     }
+
+     fs.mkdirSync(`./test/imagesUploaded/${userId}/${vehicleSaved._id}`, { recursive: true });
+     for (var i = 0; i < req.files.length; i++) {
+       fs.renameSync(req.files[i].path, `./test/imagesUploaded/${userId}/${vehicleSaved._id}/${req.files[i].filename}`);
+     }
+
+     res.json({ message: utils.VEHICLE_CREATED_SUCCESSFULLY });
+
+   } catch (e) {
+     utils.deleteFiles(req.files);
+     return res.status(500).json({error: e.message});
+   }
 }
 
-exports.add_vehicle_photos = (req, res, next) => {
-  var auth0Id = '';
-  var id = '';
-  var vehicleId = '';
-  var photos = [];
-
-  if (_.isUndefined(req.body.id) || !validator.isMongoId(req.body.id)) {
-    return res.status(400).json(errorUtils.error_message(utils.MONGOOSE_INCORRECT_ID, 400));
-  }
-  if (!validator.isMongoId(req.body.vehicle_id)) {
-    return res.status(400).json(errorUtils.error_message(utils.MONGOOSE_INCORRECT_ID, 400));
-  }
-
-  if (!utils.isArrayLengthCorrect(req.files, utils.MIN_LENGTH, utils.MAX_VEHICLE_PHOTOS)) {
-    return res.status(400).json(errorUtils.error_message(utils.INCORRECT_NUMBER_OF_IMAGES, 400));
-  }
-
-  // there are files, add to array
-  for (file in req.files) {
-    photos.push(req.files[file].path);
-  }
-
-  auth0Id = eval(process.env.AUTH0_ID_SOURCE);
-  userId = req.body.id;
-  vehicleId = req.body.vehicle_id;
-
-  UserModel.findOne({ auth0_id: auth0Id })
-  .exec()
-  .then(user => {
-    if (user) {
-      if (userId === String(user._id)) {
-
-        // user is valid (updating their own inventory)
-        VehicleModel.findOneAndUpdate({ _id: vehicleId, 'Dealership': userId }, { totalPhotos: photos.length })
-        .populate('Dealership')
-        .exec()
-        .then(uploaded => {
-
-          fs.mkdirSync(`${process.env.IMAGE_MOVE_DESTINATION}/${userId}/${vehicleId}`, { recursive: true }, (mkdirErr) => {
-            if (mkdirErr) {
-              console.log('fs.mkdir() error');
-              console.log(mkdirErr);
-            }
-          });
-
-          for (var i = 0; i < photos.length; i++) {
-            fs.rename(photos[i], `${process.env.IMAGE_MOVE_DESTINATION}/${userId}/${vehicleId}/${photos[i].split('/')[1]}`, (renameErr) => {
-              if (renameErr) {
-                console.log('fs.rename() error');
-                console.log(renameErr);
-              }
-            });
-          }
-
-          return res.json({ message: 'Successfully uploaded file(s)' });
-
-
-        }).catch(findOneAndUpdateErr => {
-          errorUtils.deleteFiles(photos);
-          errorUtils.storeError(500, findOneAndUpdateErr);
-          return res.status(500).json(errorUtils.error_message(utils.MONGOOSE_FIND_ONE_AND_UPDATE_FAIL, 500));
-        });
-
-      } else {
-        errorUtils.deleteFiles(photos);
-        return res.status(401).json(errorUtils.error_message(utils.UNAUTHORIZED_ACCESS, 401));
-      }
-    } else {
-      errorUtils.deleteFiles(photos);
-      return res.status(404).json(errorUtils.error_message(utils.USER_DOES_NOT_EXIST, 404));
-    }
-  }).catch(findOneErr => {
-    errorUtils.deleteFiles(photos);
-    errorUtils.storeError(500, findOneErr);
-    return res.status(500).json(errorUtils.error_message(utils.MONGOOSE_FIND_ONE_FAIL, 500));
-  });
-}
-
-exports.update_vehicle = (req, res, next) => {
+exports.update_vehicle = async (req, res, next) => {
   var vehicleDetails = [];
   var auth0Id = '';
   var id = '';
   var vehicleId = '';
+  var includesFiles = false;
 
   // perform critical checks right at the start
   if (_.isUndefined(req.body.id) || !validator.isMongoId(req.body.id)) {
@@ -204,6 +163,10 @@ exports.update_vehicle = (req, res, next) => {
   }
   if (utils.containsInvalidMongoCharacter(req.body)) {
     return res.status(400).json(errorUtils.error_message(utils.CONTAINS_INVALID_CHARACTER, 400));
+  }
+
+  if (!_.isUndefined(req.files) && req.files.length > 0) {
+    includesFiles = true;
   }
 
   vehicleDetails.push(_.isUndefined(req.body.make) ? null : { name: utils.MAKE.name, category: utils.BASIC_INFO, details: req.body.make, maxLength: utils.MAKE.max });
@@ -232,48 +195,161 @@ exports.update_vehicle = (req, res, next) => {
   vehicleDetails.push(_.isUndefined(req.body.highway_fuel) ? null : { name: utils.FUEL_HIGHWAY.name, category: utils.FUEL_ECONOMY, details: req.body.highway_fuel, maxLength: utils.FUEL_HIGHWAY.max });
   vehicleDetails.push(_.isUndefined(req.body.combined) ? null : { name: utils.FUEL_COMBINED.name, category: utils.FUEL_ECONOMY, details: req.body.combined, maxLength: utils.FUEL_COMBINED.max });
 
-  vehicleDetails.push(_.isUndefined(req.body.features) ? null : { name: utils.VEHICLE_FEATURES.name, category: utils.VEHICLE_FEATURES_IS_ARRAY, details: req.body.features, maxLength: null });
-
   var valueLengthTooLong = [];
   var updateData = {};
   var currentDetail = '';
   for (index in vehicleDetails) {
     currentDetail = vehicleDetails[index];
-    if (currentDetail && currentDetail.category != utils.VEHICLE_FEATURES_IS_ARRAY) {
+    if (currentDetail && currentDetail.category) {
       if (!utils.isLengthCorrect(currentDetail.details, utils.MIN_LENGTH, currentDetail.maxLength)) {
         valueLengthTooLong.push(currentDetail.name);
       } else {
         updateData[`${currentDetail.category}.${currentDetail.name}`] = currentDetail.details;
       }
-    } else if (currentDetail && currentDetail.category === utils.VEHICLE_FEATURES_IS_ARRAY) {
-      updateData[`${currentDetail.name}`] = currentDetail.details;
     }
+  }
+
+  updateData['date.modified'] = new Date();
+
+  auth0Id = eval(process.env.AUTH0_ID_SOURCE);
+  userId = req.body.id;
+  vehicleId = req.body.vehicle_id;
+
+  var user;
+  var updatedVehicle;
+  try {
+    user = await UserModel.findOne({ auth0_id: auth0Id });
+
+    if (!user) {
+      if (includesFiles) {
+        utils.deleteFiles(req.files);
+      }
+      return res.status(404).json(errorUtils.error_message(utils.USER_DOES_NOT_EXIST, 404));
+    }
+    if (!validator.equals(String(user._id), userId)) {
+      if (includesFiles) {
+        utils.deleteFiles(req.files);
+      }
+      return res.status(404).json(errorUtils.error_message(utils.UNAUTHORIZED_ACCESS, 404));
+    }
+
+    const vehicleToUpdate = await VehicleModel.findOne({ _id: vehicleId });
+    if (!vehicleToUpdate) {
+      return res.status(404).json(errorUtils.error_message(utils.VEHICLE_DOES_NOT_EXIST, 404));
+    }
+    if (includesFiles && vehicleToUpdate.totalPhotos >= 7) {
+      utils.deleteFiles(req.files);
+      return res.status(400).json(errorUtils.error_message(utils.REACHED_MAXIMUM_VEHICLE_PHOTOS, 400));
+    }
+
+    updatedVehicle = await VehicleModel.findOneAndUpdate({ _id: vehicleId, 'Dealership': userId }, updateData).populate('Dealership');
+    if (!updatedVehicle) {
+      if (includesFiles) {
+        utils.deleteFiles(req.files);
+      }
+      return res.status(500).json(errorUtils.error_message(utils.MONGOOSE_FIND_ONE_AND_UPDATE_FAIL, 500));
+    }
+
+    res.json({ message: utils.VEHICLE_UPDATED_SUCCESSFULLY });
+
+  } catch (e) {
+    if (includesFiles) {
+      utils.deleteFiles(req.files);
+    }
+    return res.status(500).json({error: e.message});
+  }
+}
+
+exports.delete_images = async (req, res, next) => {
+  var auth0Id = '';
+  var id = '';
+  var vehicleId = '';
+  var imagesToDelete = [];
+
+  if (_.isUndefined(req.body.id) || !validator.isMongoId(req.body.id)) {
+    return res.status(400).json(errorUtils.error_message(utils.MONGOOSE_INCORRECT_ID, 400));
+  }
+  if (utils.containsInvalidMongoCharacter(req.body)) {
+    return res.status(400).json(errorUtils.error_message(utils.CONTAINS_INVALID_CHARACTER, 400));
+  }
+  if (!_.isUndefined(req.body.images_to_delete)) {
+    imagesToDelete = req.body.images_to_delete;
+  } else {
+    return res.status(400).json(errorUtils.error_message(utils.DELETE_AT_LEAST_ONE_IMAGE, 400));
+  }
+
+
+  auth0Id = eval(process.env.AUTH0_ID_SOURCE);
+  userId = req.body.id;
+  vehicleId = req.body.vehicle_id;
+
+  var user;
+  var deleted;
+  var filesDeleted;
+  var updatedInCollection;
+  try {
+    user = await UserModel.findOne({ auth0_id: auth0Id });
+
+    if (!user) {
+      return res.status(404).json(errorUtils.error_message(utils.USER_DOES_NOT_EXIST, 404));
+    }
+    if (!validator.equals(String(user._id), userId)) {
+      return res.status(404).json(errorUtils.error_message(utils.UNAUTHORIZED_ACCESS, 404));
+    }
+
+    for (var i = 0; i < imagesToDelete.length; i++) {
+      var deleteRes = fs.unlinkSync(`./test/imagesUploaded/${userId}/${vehicleId}/${imagesToDelete[i]}`);
+      if (deleteRes) {
+        return res.status(500).json(errorUtils.error_message(utils.DELETE_IMAGE_FAIL, 500));
+      }
+    }
+
+    updatedInCollection = await VehicleModel.findOneAndUpdate({ 'Dealership': userId }, { $inc: { 'totalPhotos': -imagesToDelete.length } }).populate('Dealership');
+    if (!updatedInCollection) {
+      return res.status(500).json(errorUtils.error_message(utils.MONGOOSE_FIND_ONE_AND_UPDATE_FAIL, 500));
+    }
+
+    res.json({ message: 'Successfully deleted image(s)' });
+  } catch (e) {
+    return res.status(500).json({error: e.message});
+  }
+}
+
+exports.delete_vehicle = async (req, res, next) => {
+  var auth0Id = '';
+  var id = '';
+
+  if (_.isUndefined(req.body.id) || !validator.isMongoId(req.body.id)) {
+    return res.status(400).json(errorUtils.error_message(utils.MONGOOSE_INCORRECT_ID, 400));
   }
 
   auth0Id = eval(process.env.AUTH0_ID_SOURCE);
   userId = req.body.id;
   vehicleId = req.body.vehicle_id;
 
-  UserModel.findOne({ auth0_id: auth0Id })
-  .then(user => {
-    if (user) {
+  var user;
+  var deleted;
+  var filesDeleted;
+  try {
+    user = await UserModel.findOne({ auth0_id: auth0Id });
 
-      // updating correct inventory
-      if (userId === String(user._id)) {
-        VehicleModel.findOneAndUpdate({ _id: vehicleId, 'Dealership': userId }, updateData)
-        .populate('Dealership')
-        .exec()
-        .then(updated => {
-          res.status(201).json({ message: utils.VEHICLE_UPDATED_SUCCESSFULLY });
-        }).catch(findOneAndUpdateErr => {
-          errorUtils.storeError(500, findOneAndUpdateErr);
-          return res.status(500).json(errorUtils.error_message(utils.MONGOOSE_FIND_ONE_AND_UPDATE_FAIL, 500));
-        });
-      }
-
+    if (!user) {
+      return res.status(404).json(errorUtils.error_message(utils.USER_DOES_NOT_EXIST, 404));
     }
-  }).catch(findOneErr => {
-    errorUtils.storeError(500, findOneErr);
-    return res.status(500).json(errorUtils.error_message(utils.MONGOOSE_FIND_ONE_FAIL, 500));
-  });
+    if (!validator.equals(String(user._id), userId)) {
+      return res.status(404).json(errorUtils.error_message(utils.UNAUTHORIZED_ACCESS, 404));
+    }
+
+    deleted = await VehicleModel.deleteOne({ _id: vehicleId });
+    if (!deleted) {
+      return res.status(500).json(errorUtils.error_message(utils.MONGOOSE_DELETE_ONE_FAIL, 500));
+    }
+
+    rimraf.sync(`./test/imagesUploaded/${userId}/${vehicleId}/`);
+
+    res.json({ message: utils.DELETE_VEHICLE_SUCCESSFULLY });
+
+  } catch (e) {
+    return res.status(500).json({error: e.message});
+  }
 }

@@ -37,7 +37,7 @@ exports.get_dealership_by_id = (req, res, next) => {
 }
 
 // users are only allowed to update: phone, address, and dealership name from this API
-exports.update_dealership = async (req, res, next) => {
+exports.update_dealership = (req, res, next) => {
   var auth0Id = '';
   var userId = '';
   var updateData = {};
@@ -83,28 +83,33 @@ exports.update_dealership = async (req, res, next) => {
   auth0Id = auth0Id = eval(process.env.AUTH0_ID_SOURCE);
   userId = req.body.id;
 
-  var user;
-  var updated;
-  try {
-    user = await UserModel.findOne({ auth0_id: auth0Id });
+  // after sanitizing data and checking for existance of data, begin update process
+  UserModel.findOne({ auth0_id: auth0Id })
+  .exec()
+  .then(user => {
+    if (user) {
+      if (userId === String(user._id)) {
 
-    if (!user) {
+        // user found, now update
+        UserModel.updateOne({ _id: user._id }, updateData)
+        .exec()
+        .then(update =>  {
+          res.status(201).json({message: utils.MONGOOSE_SUCCESSFUL_UPDATE});
+        }).catch(updateErr => {
+          errorUtils.storeError(500, updateErr);
+          return res.status(500).json(errorUtils.error_message(utils.MONGOOSE_UPDATE_ONE_FAIL, 500));
+        });
+
+      } else {
+        return res.status(401).json(errorUtils.error_message(utils.UNAUTHORIZED_ACCESS, 401));
+      }
+    } else {
       return res.status(404).json(errorUtils.error_message(utils.USER_DOES_NOT_EXIST, 404));
     }
-    if (!validator.equals(String(user._id), userId)) {
-      return res.status(404).json(errorUtils.error_message(utils.UNAUTHORIZED_ACCESS, 404));
-    }
-
-    updated = await UserModel.updateOne({ _id: user._id }, updateData);
-    if (!updated) {
-      return res.status(500).json(errorUtils.error_message(utils.MONGOOSE_UPDATE_ONE_FAIL, 500));
-    }
-
-    res.status(201).json({ message: utils.MONGOOSE_SUCCESSFUL_UPDATE });
-
-  } catch (e) {
-    return res.status(500).json({error: e.message});
-  }
+  }).catch(findErr => {
+    errorUtils.storeError(500, findErr);
+    return res.status(500).json(errorUtils.error_message(utils.MONGOOSE_FIND_ONE_FAIL, 500));
+  });
 }
 
 exports.update_dealership_hours = (req, res, next) => {
