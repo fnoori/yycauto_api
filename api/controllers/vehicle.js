@@ -20,12 +20,33 @@ cloudinary.config({
 
 exports.get_all_vehicles = (req, res, next) => {
   VehicleModel.find()
-  .populate('Dealership').exec()
-  .then(vehicle => {
-    res.status(201).json(vehicle);
+  .populate('Dealership', '-_id -auth0_id -__v')
+  .select('-__v').exec()
+  .then(vehicles => {
+    res.status(201).json(vehicles);
   }).catch(findErr => {
     errorUtils.storeError(500, findErr);
     return res.status(500).json(errorUtils.error_message(utils.MONGOOSE_FIND_FAIL, 500));
+  });
+}
+
+exports.get_vehicle_by_id = (req, res, next) => {
+  var vehicleId;
+
+  if (_.isUndefined(req.body.vehicle_id) || !validator.isMongoId(req.body.vehicle_id)) {
+    return res.status(400).json(errorUtils.error_message(utils.MONGOOSE_INCORRECT_ID, 400));
+  }
+
+  vehicleId = req.body.vehicle_id;
+
+  VehicleModel.findById(vehicleId)
+  .populate('Dealership', '-_id -auth0_id -__v')
+  .select('-__v').exec()
+  .then(vehicle => {
+    res.json(vehicle);
+  }).catch(findByIdErr => {
+    errorUtils.storeError(500, findByIdErr);
+    return res.status(500).json(errorUtils.error_message(utils.MONGOOSE_FIND_BY_ID_FAIL, 500));
   });
 }
 
@@ -251,7 +272,7 @@ exports.delete_images = async (req, res, next) => {
   if (!_.isUndefined(req.body.images_to_delete)) {
     imagesToDelete = req.body.images_to_delete;
   } else {
-    return res.status(500).json(errorUtils.error_message(utils.DELETE_AT_LEAST_ONE_IMAGE, 500));
+    return res.status(400).json(errorUtils.error_message(utils.DELETE_AT_LEAST_ONE_IMAGE, 400));
   }
 
 
@@ -274,7 +295,10 @@ exports.delete_images = async (req, res, next) => {
     }
 
     for (var i = 0; i < imagesToDelete.length; i++) {
-      fs.unlinkSync(`./test/imagesUploaded/${userId}/${vehicleId}/${imagesToDelete[i]}`);
+      var deleteRes = fs.unlinkSync(`./test/imagesUploaded/${userId}/${vehicleId}/${imagesToDelete[i]}`);
+      if (deleteRes) {
+        return res.status(500).json(errorUtils.error_message(utils.DELETE_IMAGE_FAIL, 500));
+      }
     }
 
     updatedInCollection = await VehicleModel.findOneAndUpdate({ 'Dealership': userId }, { $inc: { 'totalPhotos': -imagesToDelete.length } }).populate('Dealership');
