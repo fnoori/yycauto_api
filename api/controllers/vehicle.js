@@ -273,7 +273,7 @@ exports.delete_images = async (req, res, next) => {
       fs.unlinkSync(`./test/imagesUploaded/${userId}/${vehicleId}/${imagesToDelete[i]}`);
     }
 //updatedVehicle = await VehicleModel.findOneAndUpdate({ _id: vehicleId, 'Dealership': userId }, updateData).populate('Dealership');
-    updatedInCollection = UserModel.findOneAndUpdate({ 'Dealership': userId }, { $inc: { 'totalPhotos': -imagesToDelete.length } }).populate('Dealership')
+    updatedInCollection = await VehicleModel.findOneAndUpdate({ 'Dealership': userId }, { $inc: { 'totalPhotos': -imagesToDelete.length } }).populate('Dealership');
     if (!updatedInCollection) {
       return res.status(500).json(errorUtils.error_message(utils.MONGOOSE_FIND_ONE_AND_UPDATE_FAIL, 500));
     }
