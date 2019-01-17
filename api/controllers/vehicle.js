@@ -245,12 +245,16 @@ exports.delete_images = async (req, res, next) => {
   if (_.isUndefined(req.body.id) || !validator.isMongoId(req.body.id)) {
     return res.status(400).json(errorUtils.error_message(utils.MONGOOSE_INCORRECT_ID, 400));
   }
-
   if (utils.containsInvalidMongoCharacter(req.body)) {
     return res.status(400).json(errorUtils.error_message(utils.CONTAINS_INVALID_CHARACTER, 400));
   }
+  if (!_.isUndefined(req.body.images_to_delete)) {
+    imagesToDelete = req.body.images_to_delete;
+  } else {
+    return res.status(500).json(errorUtils.error_message(utils.DELETE_AT_LEAST_ONE_IMAGE, 500));
+  }
 
-  imagesToDelete = req.body.images_to_delete;
+
   auth0Id = eval(process.env.AUTH0_ID_SOURCE);
   userId = req.body.id;
   vehicleId = req.body.vehicle_id;
@@ -272,18 +276,16 @@ exports.delete_images = async (req, res, next) => {
     for (var i = 0; i < imagesToDelete.length; i++) {
       fs.unlinkSync(`./test/imagesUploaded/${userId}/${vehicleId}/${imagesToDelete[i]}`);
     }
-//updatedVehicle = await VehicleModel.findOneAndUpdate({ _id: vehicleId, 'Dealership': userId }, updateData).populate('Dealership');
+
     updatedInCollection = await VehicleModel.findOneAndUpdate({ 'Dealership': userId }, { $inc: { 'totalPhotos': -imagesToDelete.length } }).populate('Dealership');
     if (!updatedInCollection) {
       return res.status(500).json(errorUtils.error_message(utils.MONGOOSE_FIND_ONE_AND_UPDATE_FAIL, 500));
     }
 
     res.json({ message: 'Successfully deleted image(s)' });
-    //return res.json({ 'images to delete': imagesToDelete });
   } catch (e) {
     return res.status(500).json({error: e.message});
   }
-
 }
 
 exports.delete_vehicle = async (req, res, next) => {

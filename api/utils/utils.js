@@ -31,6 +31,7 @@ exports.VEHICLE_UPDATED_SUCCESSFULLY = 'Vehicle successfully updated';
 exports.REACHED_MAXIMUM_VEHICLE_PHOTOS = 'Maximum number of photos reached, please delete one, before uploading a new photo';
 exports.MAXIMUM_VEHICLE_PHOTOS = 'Maximum of 7 photos can be uploaded';
 exports.DELETE_VEHICLE_SUCCESSFULLY = 'Vehicle has been deleted successfully';
+exports.DELETE_AT_LEAST_ONE_IMAGE = 'At least one image must be specified';
 
 exports.HOUR_LENGTH_MAX = 4;
 exports.MIN_LENGTH = 0;
