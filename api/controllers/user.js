@@ -79,6 +79,8 @@ exports.update_dealership = async (req, res, next) => {
     return res.status(400).json(errorUtils.error_message(utils.AT_LEAST_ONE_FIELD_REQUIRED, 400));
   }
 
+  updateData['date.modified'] = new Date();
+
   // assign auth0_id and id
   auth0Id = auth0Id = eval(process.env.AUTH0_ID_SOURCE);
   userId = req.body.id;
@@ -107,7 +109,7 @@ exports.update_dealership = async (req, res, next) => {
   }
 }
 
-exports.update_dealership_hours = (req, res, next) => {
+exports.update_dealership_hours = async (req, res, next) => {
   var auth0Id = '';
   var id = '';
   var updateData = {};
@@ -146,9 +148,35 @@ exports.update_dealership_hours = (req, res, next) => {
     }
   }
 
+  updateData['date.modified'] = new Date();
+
   auth0Id = auth0Id = eval(process.env.AUTH0_ID_SOURCE);
   userId = req.body.id;
 
+  var user;
+  var updated;
+  try {
+    user = await UserModel.findOne({ auth0_id: auth0Id });
+
+    if (!user) {
+      return res.status(404).json(errorUtils.error_message(utils.USER_DOES_NOT_EXIST, 404));
+    }
+    if (!validator.equals(String(user._id), userId)) {
+      return res.status(404).json(errorUtils.error_message(utils.UNAUTHORIZED_ACCESS, 404));
+    }
+
+    updated = await UserModel.updateOne({ _id: user._id }, updateData);
+    if (!updated) {
+      return res.status(500).json(errorUtils.error_message(utils.MONGOOSE_FIND_ONE_FAIL, 500));
+    }
+
+    res.status(201).json({message: utils.MONGOOSE_SUCCESSFUL_UPDATE});
+
+  } catch (e) {
+    return res.status(500).json({error: e.message});
+  }
+
+  /*
   // after sanitizing data and checking for existance of data, begin update process
   UserModel.findOne({ auth0_id: auth0Id })
   .exec()
@@ -179,6 +207,7 @@ exports.update_dealership_hours = (req, res, next) => {
     errorUtils.storeError(500, findOneErr);
     return res.status(500).json(errorUtils.error_message(utils.MONGOOSE_FIND_ONE_FAIL, 500));
   });
+  */
 }
 
 // the following method is created for testing purposes

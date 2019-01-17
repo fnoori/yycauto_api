@@ -15,6 +15,10 @@ const userSchema = mongoose.Schema({
       'Friday': { from: { type: String, max: 4, min: 4 }, to: { type: String, max: 4, min: 4 } },
       'Saturday': { from: { type: String, max: 4, min: 4 }, to: { type: String, max: 4, min: 4 } },
       'Sunday': { from: { type: String, max: 4, min: 4 }, to: { type: String, max: 4, min: 4 } }
+    },
+    'date': {
+      'created': {type: Date, required: true},
+      'modified': {type: Date, require: true}
     }
 });
 
