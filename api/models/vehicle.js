@@ -37,7 +37,11 @@ const vehicleSchema = mongoose.Schema({
       ref: 'User',
     },
     'totalPhotos': {type: Number, required: true},
-    'AdTier': {type: String, required: true}
+    'AdTier': {type: String, required: true},
+    'date': {
+      'created': {type: Date, required: true},
+      'modified': {type: Date, require: true}
+    }
 });
 
 module.exports = mongoose.model('Vehicle', vehicleSchema);

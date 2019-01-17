@@ -106,8 +106,9 @@ exports.add_new_vehicle = async (req, res, next) => {
    vehicleData['fuelEconomy.combined (L/100Km)'] = _.isUndefined(req.body.combined) ? null : req.body.combined;
 
    vehicleData['Dealership'] = req.body.id;
-
    vehicleData['totalPhotos'] = req.files.length;
+   vehicleData['date.created'] = new Date();
+   vehicleData['date.modified'] = new Date();
 
    // temp data here
    vehicleData['AdTier'] = 1;
@@ -207,6 +208,8 @@ exports.update_vehicle = async (req, res, next) => {
       }
     }
   }
+
+  updateData['date.modified'] = new Date();
 
   auth0Id = eval(process.env.AUTH0_ID_SOURCE);
   userId = req.body.id;
