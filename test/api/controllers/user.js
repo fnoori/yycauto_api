@@ -41,9 +41,13 @@ exports.update_dealership = async (req, res, next) => {
   var auth0Id = '';
   var userId = '';
   var updateData = {};
+  var includesLogo = false;
 
   if (!validator.isMongoId(req.body.id)) {
     return res.status(400).json(errorUtils.error_message(utils.MONGOOSE_INCORRECT_ID, 400));
+  }
+  if (req.file) {
+    includesLogo = true;
   }
 
   // extract data being updated, otherwise assign empty string
@@ -100,6 +104,10 @@ exports.update_dealership = async (req, res, next) => {
     updated = await UserModel.updateOne({ _id: user._id }, updateData);
     if (!updated) {
       return res.status(500).json(errorUtils.error_message(utils.MONGOOSE_UPDATE_ONE_FAIL, 500));
+    }
+
+    if (includesLogo) {
+      
     }
 
     res.status(201).json({ message: utils.MONGOOSE_SUCCESSFUL_UPDATE });
