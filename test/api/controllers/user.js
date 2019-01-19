@@ -9,6 +9,13 @@ const mongoSanitize = require('mongo-sanitize');
 const errorUtils = require('../utils/errorUtils');
 const utils = require('../utils/utils');
 const excludedParams = '-_id -__v -auth0_id';
+var cloudinary = require('cloudinary');
+
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET
+});
 
 exports.get_all_dealerships = (req, res, next) => {
   UserModel.find()
@@ -103,16 +110,22 @@ exports.update_dealership = async (req, res, next) => {
 
     updated = await UserModel.updateOne({ _id: user._id }, updateData);
     if (!updated) {
+      errorUtils.storeError(500, utils.MONGOOSE_UPDATE_ONE_FAIL);
       return res.status(500).json(errorUtils.error_message(utils.MONGOOSE_UPDATE_ONE_FAIL, 500));
     }
 
     if (includesLogo) {
-      
+      var cloudinaryRename = await cloudinary.v2.uploader.rename(req.file.public_id, `test/users/${user._id}/logo`);
+      if (!cloudinaryRename) {
+        errorUtils.storeError(500, utils.CLOUDINARY_UPLOAD_FAIL);
+        return res.status(500).json(errorUtils.error_message(utils.CLOUDINARY_UPLOAD_FAIL, 500));
+      }
     }
 
     res.status(201).json({ message: utils.MONGOOSE_SUCCESSFUL_UPDATE });
 
   } catch (e) {
+    errorUtils.storeError(500, e.message);
     return res.status(500).json({error: e.message});
   }
 }
@@ -175,12 +188,14 @@ exports.update_dealership_hours = async (req, res, next) => {
 
     updated = await UserModel.updateOne({ _id: user._id }, updateData);
     if (!updated) {
+      errorUtils.storeError(500, utils.MONGOOSE_FIND_ONE_FAIL);
       return res.status(500).json(errorUtils.error_message(utils.MONGOOSE_FIND_ONE_FAIL, 500));
     }
 
     res.status(201).json({message: utils.MONGOOSE_SUCCESSFUL_UPDATE});
 
   } catch (e) {
+    errorUtils.storeError(500, e.message);
     return res.status(500).json({error: e.message});
   }
 }

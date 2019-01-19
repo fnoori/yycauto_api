@@ -6,7 +6,8 @@
   "scripts": {
     "test": "mocha",
     "dev": "NODE_ENV=development nodemon server.js",
-    "dev-cloudinary": "NODE_ENV=development-cloudinary nodemon server.js"
+    "dev-cloudinary": "NODE_ENV=development-cloudinary nodemon server.js",
+    "prod": "NODE_ENV=production nodemon server.js"
   },
   "repository": {
     "type": "git",

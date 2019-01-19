@@ -2,6 +2,7 @@ const express = require('express');
 const checkJWT = require('../middlewares/authentication');
 const router = express.Router();
 const userController = require('../controllers/user');
+var multer  = require('multer');
 var cloudinary = require('cloudinary');
 var cloudinaryStorage = require('multer-storage-cloudinary');
 
