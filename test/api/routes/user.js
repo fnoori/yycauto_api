@@ -20,7 +20,7 @@ if (validator.equals(process.env.NODE_ENV, utils.DEVELOPMENT)) {
         cb(null, req.body.id + '-' + Date.now() + '.' + file.mimetype.split('/').pop());
       }
   });
-} else if (validator.equals(process.env.NODE_ENG, utils.DEVELOPMENT_CLOUDINARY)) {
+} else if (validator.equals(process.env.NODE_ENV, utils.DEVELOPMENT_CLOUDINARY)) {
   storage = cloudinaryStorage({
     cloudinary: cloudinary,
     folder: 'test/uploads',

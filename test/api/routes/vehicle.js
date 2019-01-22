@@ -37,12 +37,6 @@ fileFilter = (req, file, cb) => {
         }
 };
 
-storage = multer.diskStorage({
-    destination: function(req, file, cb) {
-      cb(null, 'uploads');
-    }
-});
-
 const upload = multer({
     storage: storage,
     limits: { fileSize: 2000000 },
