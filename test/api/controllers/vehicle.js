@@ -125,18 +125,24 @@ exports.add_new_vehicle = async (req, res, next) => {
      user = await UserModel.findOne({ auth0_id: auth0Id });
 
      if (!user) {
-       utils.deleteFiles(req.files);
+       if (validator.equals(process.env.NODE_ENV, utils.DEVELOPMENT)) {
+         utils.deleteFiles(req.files);
+       }
        return res.status(404).json(errorUtils.error_message(utils.USER_DOES_NOT_EXIST, 404));
      }
      if (!validator.equals(String(user._id), userId)) {
-       utils.deleteFiles(req.files);
+       if (validator.equals(process.env.NODE_ENV, utils.DEVELOPMENT)) {
+         utils.deleteFiles(req.files);
+       }
        return res.status(404).json(errorUtils.error_message(utils.UNAUTHORIZED_ACCESS, 404));
      }
 
      const newVehicle = new VehicleModel(vehicleData);
      vehicleSaved = await newVehicle.save();
      if (!vehicleSaved) {
-       utils.deleteFiles(req.files);
+       if (validator.equals(process.env.NODE_ENV, utils.DEVELOPMENT)) {
+         utils.deleteFiles(req.files);
+       }
        return res.status(500).json(errorUtils.error_message(utils.MONGOOSE_SAVE_FAIL, 500));
      }
 
@@ -148,8 +154,9 @@ exports.add_new_vehicle = async (req, res, next) => {
      } else if (validator.equals(process.env.NODE_ENV, utils.DEVELOPMENT_CLOUDINARY)) {
        var cloudinaryRename;
        for (var i = 0; i < req.files.length; i++) {
-         cloudinaryRename= await cloudinary.v2.uploader.rename(req.files[i].public_id, `test/users/${user._id}/${vehicleSaved._id}/${req.files[i].public_id.split('/')[2]}.${req.files[i].format}`);
-         if (!validator.equals(cloudinaryRename.result, utils.OKAY) {
+         console.log('in for loop');
+         cloudinaryRename = await cloudinary.v2.uploader.rename(req.files[i].public_id, `test/users/${user._id}/${vehicleSaved._id}/${req.files[i].public_id.split('/')[2]}.${req.files[i].format}`);
+         if (!validator.equals(cloudinaryRename.result, utils.OKAY)) {
            errorUtils.storeError(500, utils.CLOUDINARY_UPLOAD_FAIL);
            return res.status(500).json(errorUtils.error_message(utils.CLOUDINARY_UPLOAD_FAIL, 500));
          }
@@ -278,7 +285,7 @@ exports.update_vehicle = async (req, res, next) => {
       var cloudinaryRename;
       for (var i = 0; i < req.files.length; i++) {
         cloudinaryRename= await cloudinary.v2.uploader.rename(req.files[i].public_id, `test/users/${user._id}/${updatedVehicle._id}/${req.files[i].public_id.split('/')[2]}.${req.files[i].format}`);
-        if (!validator.equals(cloudinaryRename.result, utils.OKAY) {
+        if (!validator.equals(cloudinaryRename.result, utils.OKAY)) {
           errorUtils.storeError(500, utils.CLOUDINARY_UPLOAD_FAIL);
           return res.status(500).json(errorUtils.error_message(utils.CLOUDINARY_UPLOAD_FAIL, 500));
         }
@@ -390,7 +397,19 @@ exports.delete_vehicle = async (req, res, next) => {
       return res.status(500).json(errorUtils.error_message(utils.MONGOOSE_DELETE_ONE_FAIL, 500));
     }
 
-    rimraf.sync(`./test/imagesUploaded/${userId}/${vehicleId}/`);
+    if (validator.equals(process.env.NODE_ENV, utils.DEVELOPMENT)) {
+      rimraf.sync(`./test/imagesUploaded/${userId}/${vehicleId}/`);
+    } else if (validator.equals(process.env.NODE_ENV, utils.DEVELOPMENT_CLOUDINARY)) {
+      var allFiles = await cloudinary.v2.api.resources({ type: 'upload', prefix:  `test/users/${user._id}/${vehicleId}/`});
+
+      var deleteRes;
+      for (var i = 0; i < allFiles.length; i++) {
+        deleteRes = await cloudinary.v2.uploader.destroy(allFiles[i].public_id);
+        if (!validator.equals(deleteRes.result, utils.OKAY)) {
+          return res.status(500).json(errorUtils.error_message(utils.CLOUDINARY_DELETE_VEHICLE_FAIL, 500));
+        }
+      }
+    }
 
     res.json({ message: utils.DELETE_VEHICLE_SUCCESSFULLY });
 
