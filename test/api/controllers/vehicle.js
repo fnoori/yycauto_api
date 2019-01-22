@@ -149,7 +149,7 @@ exports.add_new_vehicle = async (req, res, next) => {
        var cloudinaryRename;
        for (var i = 0; i < req.files.length; i++) {
          cloudinaryRename= await cloudinary.v2.uploader.rename(req.files[i].public_id, `test/users/${user._id}/${vehicleSaved._id}/${req.files[i].public_id.split('/')[2]}.${req.files[i].format}`);
-         if (!cloudinaryRename) {
+         if (!validator.equals(cloudinaryRename.result, utils.OKAY) {
            errorUtils.storeError(500, utils.CLOUDINARY_UPLOAD_FAIL);
            return res.status(500).json(errorUtils.error_message(utils.CLOUDINARY_UPLOAD_FAIL, 500));
          }
@@ -278,7 +278,7 @@ exports.update_vehicle = async (req, res, next) => {
       var cloudinaryRename;
       for (var i = 0; i < req.files.length; i++) {
         cloudinaryRename= await cloudinary.v2.uploader.rename(req.files[i].public_id, `test/users/${user._id}/${updatedVehicle._id}/${req.files[i].public_id.split('/')[2]}.${req.files[i].format}`);
-        if (!cloudinaryRename) {
+        if (!validator.equals(cloudinaryRename.result, utils.OKAY) {
           errorUtils.storeError(500, utils.CLOUDINARY_UPLOAD_FAIL);
           return res.status(500).json(errorUtils.error_message(utils.CLOUDINARY_UPLOAD_FAIL, 500));
         }
@@ -333,10 +333,19 @@ exports.delete_images = async (req, res, next) => {
       return res.status(404).json(errorUtils.error_message(utils.UNAUTHORIZED_ACCESS, 404));
     }
 
-    for (var i = 0; i < imagesToDelete.length; i++) {
-      var deleteRes = fs.unlinkSync(`./test/imagesUploaded/${userId}/${vehicleId}/${imagesToDelete[i]}`);
-      if (deleteRes) {
-        return res.status(500).json(errorUtils.error_message(utils.DELETE_IMAGE_FAIL, 500));
+    if (validator.equals(process.env.NODE_ENV, utils.DEVELOPMENT)) {
+      for (var i = 0; i < imagesToDelete.length; i++) {
+        var deleteRes = fs.unlinkSync(`./test/imagesUploaded/${userId}/${vehicleId}/${imagesToDelete[i]}`);
+        if (deleteRes) {
+          return res.status(500).json(errorUtils.error_message(utils.DELETE_IMAGE_FAIL, 500));
+        }
+      }
+    } else if (validator.equals(process.env.NODE_ENV, utils.DEVELOPMENT_CLOUDINARY)) {
+      for (var i = 0; i < imagesToDelete.length; i++) {
+        var deleteRes = await cloudinary.v2.uploader.destroy(`test/users/${user._id}/${vehicleId}/${imagesToDelete[i]}`);
+        if (!validator.equals(deleteRes.result, utils.OKAY)) {
+          return res.status(500).json(errorUtils.error_message(utils.DELETE_IMAGE_FAIL, 500));
+        }
       }
     }
 

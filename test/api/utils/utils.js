@@ -82,6 +82,7 @@ exports.FUEL_COMBINED = { name: 'Combined (L/100Km)', max: 6 };
 exports.VEHICLE_FEATURES_IS_ARRAY = 'array';
 exports.VEHICLE_FEATURES = { name: 'VehicleFeatures' };
 exports.DEFAULT = '<default>';
+exports.OKAY = 'ok';
 
 exports.MECHANICAL_SPECS = 'mechanicalSpecs';
 exports.FUEL_ECONOMY = 'fuelEconomy';
