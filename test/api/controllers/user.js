@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 const validator = require('validator');
 const _ = require('underscore');
+const fs = require('fs');
 
 const UserModel = require('../models/user');
 const ErrorModel = require('../models/error');
@@ -115,10 +116,15 @@ exports.update_dealership = async (req, res, next) => {
     }
 
     if (includesLogo) {
-      var cloudinaryRename = await cloudinary.v2.uploader.rename(req.file.public_id, `test/users/${user._id}/logo`);
-      if (!cloudinaryRename) {
-        errorUtils.storeError(500, utils.CLOUDINARY_UPLOAD_FAIL);
-        return res.status(500).json(errorUtils.error_message(utils.CLOUDINARY_UPLOAD_FAIL, 500));
+      if (validator.equals(process.env.NODE_ENV, utils.DEVELOPMENT)) {
+        var fsMkdir = fs.mkdirSync(`./test/imagesUploaded/${user._id}`, { recursive: true });
+        var fsRename = fs.renameSync(req.file.path, `./test/imagesUploaded/${user._id}/logo.${req.file.mimetype.split('/')[1]}`);
+      } else if (validator.equals(process.env.NODE_ENV, utils.DEVELOPMENT_CLOUDINARY)) {
+        var cloudinaryRename = await cloudinary.v2.uploader.rename(req.file.public_id, `test/users/${user._id}/logo`);
+        if (!cloudinaryRename) {
+          errorUtils.storeError(500, utils.CLOUDINARY_UPLOAD_FAIL);
+          return res.status(500).json(errorUtils.error_message(utils.CLOUDINARY_UPLOAD_FAIL, 500));
+        }
       }
     }
 
