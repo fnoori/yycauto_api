@@ -34,6 +34,7 @@ exports.DELETE_VEHICLE_SUCCESSFULLY = 'Vehicle has been deleted successfully';
 exports.DELETE_AT_LEAST_ONE_IMAGE = 'At least one image must be specified';
 exports.DELETE_IMAGE_FAIL = 'Failed to delete image(s)';
 exports.MUST_UPLOAD_AT_LEAST_ONE = 'Must upload at least one image for vehicle';
+exports.INCORRECT_VEHICLE_PHOTOS = 'At least one vehicle photo must be uploaded and at most seven'
 
 exports.CLOUDINARY_UPLOAD_FAIL = 'Failed to upload to cloudinary';
 

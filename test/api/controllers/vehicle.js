@@ -76,11 +76,9 @@ exports.add_new_vehicle = async (req, res, next) => {
    if (_.isUndefined(req.files)) {
      return res.status(400).json(errorUtils.error_message(utils.MUST_UPLOAD_AT_LEAST_ONE, 400));
    }
-   if (req.files.length > 7) {
-     return res.status(400).json(errorUtils.error_message(utils.MAXIMUM_VEHICLE_PHOTOS, 400));
+   if (!utils.isArrayLengthCorrect(req.files, utils.MIN_LENGTH, utils.MAX_VEHICLE_PHOTOS)) {
+     return res.status(400).json(errorUtils.error_message(utils.INCORRECT_VEHICLE_PHOTOS, 400));
    }
-
-   return res.json(req.files);
 
    vehicleData['_id'] = new mongoose.Types.ObjectId();
 
