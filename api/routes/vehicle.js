@@ -13,7 +13,7 @@ var fileFilter;
 
 storage = cloudinaryStorage({
   cloudinary: cloudinary,
-  folder: 'uploads',
+  folder: 'production/uploads',
   allowedFormats: ['jpg', 'png']
 });
 

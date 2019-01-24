@@ -8,7 +8,7 @@ var server;
 
 if (process.env.NODE_ENV === utils.PRODUCTION) {
 
-  http = require('https');
+  http = require('http');
   app = require('./app');
   port = process.env.PORT || 3000;
   server = http.createServer(app);

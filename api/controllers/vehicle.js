@@ -73,8 +73,11 @@ exports.add_new_vehicle = async (req, res, next) => {
      return res.status(400).json(errorUtils.error_message(utils.CONTAINS_INVALID_CHARACTER, 400));
    }
 
-   if (req.files.length > 7) {
-     return res.status(400).json(errorUtils.error_message(utils.MAXIMUM_VEHICLE_PHOTOS, 400));
+   if (_.isUndefined(req.files)) {
+     return res.status(400).json(errorUtils.error_message(utils.MUST_UPLOAD_AT_LEAST_ONE, 400));
+   }
+   if (!utils.isArrayLengthCorrect(req.files, utils.MIN_LENGTH, utils.MAX_VEHICLE_PHOTOS)) {
+     return res.status(400).json(errorUtils.error_message(utils.INCORRECT_VEHICLE_PHOTOS, 400));
    }
 
    vehicleData['_id'] = new mongoose.Types.ObjectId();
@@ -118,34 +121,38 @@ exports.add_new_vehicle = async (req, res, next) => {
 
    var user;
    var vehicleSaved;
+   var cloudinaryRename;
    try {
      user = await UserModel.findOne({ auth0_id: auth0Id });
 
      if (!user) {
-       utils.deleteFiles(req.files);
+       // delete files from cloudinary upload dir here
        return res.status(404).json(errorUtils.error_message(utils.USER_DOES_NOT_EXIST, 404));
      }
      if (!validator.equals(String(user._id), userId)) {
-       utils.deleteFiles(req.files);
        return res.status(404).json(errorUtils.error_message(utils.UNAUTHORIZED_ACCESS, 404));
      }
 
      const newVehicle = new VehicleModel(vehicleData);
      vehicleSaved = await newVehicle.save();
      if (!vehicleSaved) {
-       utils.deleteFiles(req.files);
+       // delete files from cloudinary upload dir here
        return res.status(500).json(errorUtils.error_message(utils.MONGOOSE_SAVE_FAIL, 500));
      }
 
-     fs.mkdirSync(`./test/imagesUploaded/${userId}/${vehicleSaved._id}`, { recursive: true });
      for (var i = 0; i < req.files.length; i++) {
-       fs.renameSync(req.files[i].path, `./test/imagesUploaded/${userId}/${vehicleSaved._id}/${req.files[i].filename}`);
+       cloudinaryRename = await cloudinary.v2.uploader.rename(req.files[i].public_id, `production/users/${user._id}/${vehicleSaved._id}/${req.files[i].public_id.split('/')[2]}.${req.files[i].format}`);
+
+       if (!cloudinaryRename) {
+         errorUtils.storeError(500, utils.CLOUDINARY_UPLOAD_FAIL);
+         return res.status(500).json(errorUtils.error_message(utils.CLOUDINARY_UPLOAD_FAIL, 500));
+       }
      }
 
      res.json({ message: utils.VEHICLE_CREATED_SUCCESSFULLY });
 
    } catch (e) {
-     utils.deleteFiles(req.files);
+     // delete files from cloudinary upload dir here
      return res.status(500).json({error: e.message});
    }
 }
@@ -222,13 +229,13 @@ exports.update_vehicle = async (req, res, next) => {
 
     if (!user) {
       if (includesFiles) {
-        utils.deleteFiles(req.files);
+        // delete files from cloudinary upload dir here
       }
       return res.status(404).json(errorUtils.error_message(utils.USER_DOES_NOT_EXIST, 404));
     }
     if (!validator.equals(String(user._id), userId)) {
       if (includesFiles) {
-        utils.deleteFiles(req.files);
+        // delete files from cloudinary upload dir here
       }
       return res.status(404).json(errorUtils.error_message(utils.UNAUTHORIZED_ACCESS, 404));
     }
@@ -238,14 +245,14 @@ exports.update_vehicle = async (req, res, next) => {
       return res.status(404).json(errorUtils.error_message(utils.VEHICLE_DOES_NOT_EXIST, 404));
     }
     if (includesFiles && vehicleToUpdate.totalPhotos >= 7) {
-      utils.deleteFiles(req.files);
+      // delete files from cloudinary upload dir here
       return res.status(400).json(errorUtils.error_message(utils.REACHED_MAXIMUM_VEHICLE_PHOTOS, 400));
     }
 
     updatedVehicle = await VehicleModel.findOneAndUpdate({ _id: vehicleId, 'Dealership': userId }, updateData).populate('Dealership');
     if (!updatedVehicle) {
       if (includesFiles) {
-        utils.deleteFiles(req.files);
+        // delete files from cloudinary upload dir here
       }
       return res.status(500).json(errorUtils.error_message(utils.MONGOOSE_FIND_ONE_AND_UPDATE_FAIL, 500));
     }
@@ -254,7 +261,7 @@ exports.update_vehicle = async (req, res, next) => {
 
   } catch (e) {
     if (includesFiles) {
-      utils.deleteFiles(req.files);
+      // delete files from cloudinary upload dir here
     }
     return res.status(500).json({error: e.message});
   }
