@@ -251,7 +251,6 @@ exports.update_vehicle = async (req, res, next) => {
     }
 
     updateData['$inc'] = { totalPhotos: req.files.length };
-    //updatedVehicle = await VehicleModel.findOneAndUpdate({ _id: vehicleId, 'Dealership': userId }, updateData).populate('Dealership');
     updatedVehicle = await VehicleModel.findOneAndUpdate({ _id: vehicleId, 'Dealership': userId },
                             updateData).populate('Dealership');
     if (!updatedVehicle) {
