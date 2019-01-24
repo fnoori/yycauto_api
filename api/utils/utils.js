@@ -33,8 +33,11 @@ exports.MAXIMUM_VEHICLE_PHOTOS = 'Maximum of 7 photos can be uploaded';
 exports.DELETE_VEHICLE_SUCCESSFULLY = 'Vehicle has been deleted successfully';
 exports.DELETE_AT_LEAST_ONE_IMAGE = 'At least one image must be specified';
 exports.DELETE_IMAGE_FAIL = 'Failed to delete image(s)';
+exports.MUST_UPLOAD_AT_LEAST_ONE = 'Must upload at least one image for vehicle';
+exports.INCORRECT_VEHICLE_PHOTOS = 'At least one vehicle photo must be uploaded and at most seven'
 
 exports.CLOUDINARY_UPLOAD_FAIL = 'Failed to upload to cloudinary';
+exports.CLOUDINARY_DELETE_VEHICLE_FAIL = 'Failed to delete vehicle from cloudinary';
 
 exports.HOUR_LENGTH_MAX = 4;
 exports.MIN_LENGTH = 0;
@@ -80,6 +83,7 @@ exports.FUEL_COMBINED = { name: 'Combined (L/100Km)', max: 6 };
 exports.VEHICLE_FEATURES_IS_ARRAY = 'array';
 exports.VEHICLE_FEATURES = { name: 'VehicleFeatures' };
 exports.DEFAULT = '<default>';
+exports.OKAY = 'ok';
 
 exports.MECHANICAL_SPECS = 'mechanicalSpecs';
 exports.FUEL_ECONOMY = 'fuelEconomy';
