@@ -11,18 +11,10 @@ const utils = require('../utils/utils');
 var storage;
 var fileFilter;
 
-/*
 storage = cloudinaryStorage({
   cloudinary: cloudinary,
   folder: 'uploads',
   allowedFormats: ['jpg', 'png']
-});
-*/
-
-storage = multer.diskStorage({
-    destination: function(req, file, cb) {
-      cb(null, 'uploads');
-    }
 });
 
 const upload = multer({
@@ -30,6 +22,15 @@ const upload = multer({
     limits: { fileSize: 2000000 },
     fileFilter: fileFilter
 });
+
+fileFilter = (req, file, cb) => {
+  if (file.mimetype == 'image/jpeg' ||
+  file.mimetype == 'image/png') {
+    cb(null, true);
+  } else {
+    cb(null, false);
+  }
+};
 
 router.get('/get_all_vehicles', vehicleController.get_all_vehicles);
 router.get('/get_vehicle_by_id', vehicleController.get_vehicle_by_id);
