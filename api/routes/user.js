@@ -22,6 +22,15 @@ const upload = multer({
     fileFilter: fileFilter
 });
 
+fileFilter = (req, file, cb) => {
+  if (file.mimetype == 'image/jpeg' ||
+      file.mimetype == 'image/png') {
+        cb(null, true);
+      } else {
+        cb(null, false);
+      }
+};
+
 
 router.get('/get_all_dealerships', userController.get_all_dealerships);
 router.get('/get_dealership_by_id', userController.get_dealership_by_id);
