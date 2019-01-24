@@ -400,15 +400,7 @@ exports.delete_vehicle = async (req, res, next) => {
     if (validator.equals(process.env.NODE_ENV, utils.DEVELOPMENT)) {
       rimraf.sync(`./test/imagesUploaded/${userId}/${vehicleId}/`);
     } else if (validator.equals(process.env.NODE_ENV, utils.DEVELOPMENT_CLOUDINARY)) {
-      var allFiles = await cloudinary.v2.api.resources({ type: 'upload', prefix:  `test/users/${user._id}/${vehicleId}/`});
-
-      var deleteRes;
-      for (var i = 0; i < allFiles.length; i++) {
-        deleteRes = await cloudinary.v2.uploader.destroy(allFiles[i].public_id);
-        if (!validator.equals(deleteRes.result, utils.OKAY)) {
-          return res.status(500).json(errorUtils.error_message(utils.CLOUDINARY_DELETE_VEHICLE_FAIL, 500));
-        }
-      }
+      const cloudinaryDel =  await cloudinary.v2.api.delete_resources_by_prefix(`test/users/${user._id}/${vehicleId}`);
     }
 
     res.json({ message: utils.DELETE_VEHICLE_SUCCESSFULLY });
