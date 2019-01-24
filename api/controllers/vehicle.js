@@ -315,9 +315,17 @@ exports.delete_images = async (req, res, next) => {
       return res.status(404).json(errorUtils.error_message(utils.UNAUTHORIZED_ACCESS, 404));
     }
 
+/*
     for (var i = 0; i < imagesToDelete.length; i++) {
       var deleteRes = fs.unlinkSync(`./test/imagesUploaded/${userId}/${vehicleId}/${imagesToDelete[i]}`);
       if (deleteRes) {
+        return res.status(500).json(errorUtils.error_message(utils.DELETE_IMAGE_FAIL, 500));
+      }
+    }
+*/
+    for (var i = 0; i < imagesToDelete.length; i++) {
+      var deleteRes = await cloudinary.v2.uploader.destroy(`production/users/${user._id}/${vehicleId}/${imagesToDelete[i]}`);
+      if (!validator.equals(deleteRes.result, utils.OKAY)) {
         return res.status(500).json(errorUtils.error_message(utils.DELETE_IMAGE_FAIL, 500));
       }
     }
