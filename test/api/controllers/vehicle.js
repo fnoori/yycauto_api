@@ -154,9 +154,9 @@ exports.add_new_vehicle = async (req, res, next) => {
      } else if (validator.equals(process.env.NODE_ENV, utils.DEVELOPMENT_CLOUDINARY)) {
        var cloudinaryRename;
        for (var i = 0; i < req.files.length; i++) {
-         console.log('in for loop');
          cloudinaryRename = await cloudinary.v2.uploader.rename(req.files[i].public_id, `test/users/${user._id}/${vehicleSaved._id}/${req.files[i].public_id.split('/')[2]}.${req.files[i].format}`);
-         if (!validator.equals(cloudinaryRename.result, utils.OKAY)) {
+         console.log(cloudinaryRename);
+         if (!cloudinaryRename) {
            errorUtils.storeError(500, utils.CLOUDINARY_UPLOAD_FAIL);
            return res.status(500).json(errorUtils.error_message(utils.CLOUDINARY_UPLOAD_FAIL, 500));
          }
@@ -285,7 +285,7 @@ exports.update_vehicle = async (req, res, next) => {
       var cloudinaryRename;
       for (var i = 0; i < req.files.length; i++) {
         cloudinaryRename= await cloudinary.v2.uploader.rename(req.files[i].public_id, `test/users/${user._id}/${updatedVehicle._id}/${req.files[i].public_id.split('/')[2]}.${req.files[i].format}`);
-        if (!validator.equals(cloudinaryRename.result, utils.OKAY)) {
+        if (!cloudinaryRename) {
           errorUtils.storeError(500, utils.CLOUDINARY_UPLOAD_FAIL);
           return res.status(500).json(errorUtils.error_message(utils.CLOUDINARY_UPLOAD_FAIL, 500));
         }
