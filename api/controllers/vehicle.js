@@ -224,6 +224,7 @@ exports.update_vehicle = async (req, res, next) => {
 
   var user;
   var updatedVehicle;
+  var cloudinaryRename;
   try {
     user = await UserModel.findOne({ auth0_id: auth0Id });
 
@@ -244,17 +245,28 @@ exports.update_vehicle = async (req, res, next) => {
     if (!vehicleToUpdate) {
       return res.status(404).json(errorUtils.error_message(utils.VEHICLE_DOES_NOT_EXIST, 404));
     }
-    if (includesFiles && vehicleToUpdate.totalPhotos >= 7) {
-      // delete files from cloudinary upload dir here
+    if ((includesFiles && vehicleToUpdate.totalPhotos >= 7) || (vehicleToUpdate.totalPhotos + req.files.length > 7)) {
+      // delete file from cloudinary upload dir
       return res.status(400).json(errorUtils.error_message(utils.REACHED_MAXIMUM_VEHICLE_PHOTOS, 400));
     }
 
-    updatedVehicle = await VehicleModel.findOneAndUpdate({ _id: vehicleId, 'Dealership': userId }, updateData).populate('Dealership');
+    updateData['$inc'] = { totalPhotos: req.files.length };
+    //updatedVehicle = await VehicleModel.findOneAndUpdate({ _id: vehicleId, 'Dealership': userId }, updateData).populate('Dealership');
+    updatedVehicle = await VehicleModel.findOneAndUpdate({ _id: vehicleId, 'Dealership': userId },
+                            updateData).populate('Dealership');
     if (!updatedVehicle) {
       if (includesFiles) {
         // delete files from cloudinary upload dir here
       }
       return res.status(500).json(errorUtils.error_message(utils.MONGOOSE_FIND_ONE_AND_UPDATE_FAIL, 500));
+    }
+
+    for (var i = 0; i < req.files.length; i++) {
+      cloudinaryRename= await cloudinary.v2.uploader.rename(req.files[i].public_id, `production/users/${user._id}/${updatedVehicle._id}/${req.files[i].public_id.split('/')[2]}.${req.files[i].format}`);
+      if (!cloudinaryRename) {
+        errorUtils.storeError(500, utils.CLOUDINARY_UPLOAD_FAIL);
+        return res.status(500).json(errorUtils.error_message(utils.CLOUDINARY_UPLOAD_FAIL, 500));
+      }
     }
 
     res.json({ message: utils.VEHICLE_UPDATED_SUCCESSFULLY });

@@ -267,8 +267,7 @@ exports.update_vehicle = async (req, res, next) => {
     }
 
     updatedVehicle = await VehicleModel.findOneAndUpdate({ _id: vehicleId, 'Dealership': userId },
-                            { $inc: { totalPhotos: req.files.length } }, updateData)
-                            .populate('Dealership');
+                            updateData).populate('Dealership');
 
     if (!updatedVehicle) {
       if (includesFiles) {
