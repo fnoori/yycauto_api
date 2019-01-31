@@ -51,11 +51,15 @@ exports.update_dealership = async (req, res, next) => {
   var updateData = {};
   var includesLogo = false;
 
-  if (!validator.isMongoId(req.body.id)) {
-    return res.status(400).json(errorUtils.error_message(utils.MONGOOSE_INCORRECT_ID, 400));
-  }
   if (req.file) {
     includesLogo = true;
+  }
+
+  if (!validator.isMongoId(req.body.id)) {
+    if (includesLogo) {
+      var cloudinaryDelete = cloudinary.v2.uploader.destroy(req.file.public_id);
+    }
+    return res.status(400).json(errorUtils.error_message(utils.MONGOOSE_INCORRECT_ID, 400));
   }
 
   // extract data being updated, otherwise assign empty string
@@ -65,6 +69,9 @@ exports.update_dealership = async (req, res, next) => {
 
   // validate data and check which fields are being updated
   if (phone.length > 0) {
+    if (includesLogo) {
+      var cloudinaryDelete = cloudinary.v2.uploader.destroy(req.file.public_id);
+    }
     if (!utils.isLengthCorrect(phone, utils.MIN_LENGTH, utils.PHONE_LENGTH_MAX) || !validator.isMobilePhone(phone)) {
       return res.status(400).json(errorUtils.error_message(utils.INCORRECT_PHONE_FORMAT));
     } else {
@@ -72,6 +79,9 @@ exports.update_dealership = async (req, res, next) => {
     }
   }
   if (address.length > 0) {
+    if (includesLogo) {
+      var cloudinaryDelete = cloudinary.v2.uploader.destroy(req.file.public_id);
+    }
     if (!utils.isLengthCorrect(address, utils.MIN_LENGTH, utils.ADDRESS_LENGTH_MAX)) {
       return res.status(400).json(errorUtils.error_message(utils.ADDRESS_INCORRECT_LENGTH));
     } else {
@@ -79,6 +89,9 @@ exports.update_dealership = async (req, res, next) => {
     }
   }
   if (dealershipName.length > 0) {
+    if (includesLogo) {
+      var cloudinaryDelete = cloudinary.v2.uploader.destroy(req.file.public_id);
+    }
     if (!utils.isLengthCorrect(dealershipName, utils.MIN_LENGTH, utils.DEALERSHIP_NAME_LENGTH_MAX)) {
       return res.status(400).json(errorUtils.error_message(utils.DEALERSHIP_NAME_INCORRECT_LENGTH));
     } else {
@@ -88,6 +101,9 @@ exports.update_dealership = async (req, res, next) => {
 
   // check to make sure at least one thing is being updated
   if (_.isEmpty(updateData) && !includesLogo) {
+    if (includesLogo) {
+      var cloudinaryDelete = cloudinary.v2.uploader.destroy(req.file.public_id);
+    }
     return res.status(400).json(errorUtils.error_message(utils.AT_LEAST_ONE_FIELD_REQUIRED, 400));
   }
 
@@ -103,14 +119,23 @@ exports.update_dealership = async (req, res, next) => {
     user = await UserModel.findOne({ auth0_id: auth0Id });
 
     if (!user) {
+      if (includesLogo) {
+        var cloudinaryDelete = cloudinary.v2.uploader.destroy(req.file.public_id);
+      }
       return res.status(404).json(errorUtils.error_message(utils.USER_DOES_NOT_EXIST, 404));
     }
     if (!validator.equals(String(user._id), userId)) {
+      if (includesLogo) {
+        var cloudinaryDelete = cloudinary.v2.uploader.destroy(req.file.public_id);
+      }
       return res.status(404).json(errorUtils.error_message(utils.UNAUTHORIZED_ACCESS, 404));
     }
 
     updated = await UserModel.updateOne({ _id: user._id }, updateData);
     if (!updated) {
+      if (includesLogo) {
+        var cloudinaryDelete = cloudinary.v2.uploader.destroy(req.file.public_id);
+      }
       errorUtils.storeError(500, utils.MONGOOSE_UPDATE_ONE_FAIL);
       return res.status(500).json(errorUtils.error_message(utils.MONGOOSE_UPDATE_ONE_FAIL, 500));
     }
@@ -131,6 +156,9 @@ exports.update_dealership = async (req, res, next) => {
     res.status(201).json({ message: utils.MONGOOSE_SUCCESSFUL_UPDATE });
 
   } catch (e) {
+    if (includesLogo) {
+      var cloudinaryDelete = cloudinary.v2.uploader.destroy(req.file.public_id);
+    }
     errorUtils.storeError(500, e.message);
     return res.status(500).json({error: e.message});
   }
