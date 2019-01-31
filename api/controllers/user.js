@@ -88,7 +88,7 @@ exports.update_dealership = async (req, res, next) => {
   }
 
   // check to make sure at least one thing is being updated
-  if (_.isEmpty(updateData)) {
+  if (_.isEmpty(updateData) && !includesLogo) {
     return res.status(400).json(errorUtils.error_message(utils.AT_LEAST_ONE_FIELD_REQUIRED, 400));
   }
 
@@ -117,7 +117,7 @@ exports.update_dealership = async (req, res, next) => {
     }
 
     if (includesLogo) {
-      var cloudinaryRename = await cloudinary.v2.uploader.rename(req.file.public_id, `production/users/${user._id}/logo`);
+      var cloudinaryRename = await cloudinary.v2.uploader.rename(req.file.public_id, `production/users/${user._id}/logo.${req.file.format}`, { overwrite: true });
       if (!cloudinaryRename) {
         errorUtils.storeError(500, utils.CLOUDINARY_UPLOAD_FAIL);
         return res.status(500).json(errorUtils.error_message(utils.CLOUDINARY_UPLOAD_FAIL, 500));
