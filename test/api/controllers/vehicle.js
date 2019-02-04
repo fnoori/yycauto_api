@@ -19,9 +19,20 @@ cloudinary.config({
 });
 
 exports.get_all_vehicles = (req, res, next) => {
+  if (utils.containsInvalidMongoCharacter(req.body)) {
+    return res.status(400).json(errorUtils.error_message(utils.CONTAINS_INVALID_CHARACTER, 400));
+  }
+
+  const limit = parseInt(req.params.limit);
+  const skip = parseInt(req.params.skip);
+
+  console.log(typeof(limit));
+
   VehicleModel.find()
   .populate('Dealership', '-_id -auth0_id -__v')
-  .select('-__v').exec()
+  .skip(skip).limit(limit)
+  .select('-__v')
+  .exec()
   .then(vehicles => {
     res.status(201).json(vehicles);
   }).catch(findErr => {

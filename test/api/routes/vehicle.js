@@ -43,7 +43,7 @@ const upload = multer({
     fileFilter: fileFilter
 });
 
-router.get('/get_all_vehicles', vehicleController.get_all_vehicles);
+router.get('/get_all_vehicles/:skip/:limit', vehicleController.get_all_vehicles);
 router.get('/get_vehicle_by_id', vehicleController.get_vehicle_by_id);
 
 router.post('/add_new_vehicle', checkJWT, upload.array('photos', 7), vehicleController.add_new_vehicle);
