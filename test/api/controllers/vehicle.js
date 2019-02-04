@@ -26,8 +26,6 @@ exports.get_all_vehicles = (req, res, next) => {
   const limit = parseInt(req.params.limit);
   const skip = parseInt(req.params.skip);
 
-  console.log(typeof(limit));
-
   VehicleModel.find()
   .populate('Dealership', '-_id -auth0_id -__v')
   .skip(skip).limit(limit)
