@@ -141,16 +141,7 @@ exports.update_dealership = async (req, res, next) => {
     }
 
     if (includesLogo) {
-      if (validator.equals(process.env.NODE_ENV, utils.DEVELOPMENT)) {
-        var fsMkdir = fs.mkdirSync(`./test/imagesUploaded/${user._id}`, { recursive: true });
-        var fsRename = fs.renameSync(req.file.path, `./test/imagesUploaded/${user._id}/logo.${req.file.mimetype.split('/')[1]}`);
-      } else if (validator.equals(process.env.NODE_ENV, utils.DEVELOPMENT_CLOUDINARY)) {
-        var cloudinaryRename = await cloudinary.v2.uploader.rename(req.file.public_id, `test/users/${user._id}/logo.${req.file.format}`, { overwrite: true });
-        if (!cloudinaryRename) {
-          errorUtils.storeError(500, utils.CLOUDINARY_UPLOAD_FAIL);
-          return res.status(500).json(errorUtils.error_message(utils.CLOUDINARY_UPLOAD_FAIL, 500));
-        }
-      }
+      uploadFile(user, req.file);
     }
 
     res.status(201).json({ message: utils.MONGOOSE_SUCCESSFUL_UPDATE });
@@ -232,4 +223,40 @@ exports.update_dealership_hours = async (req, res, next) => {
     errorUtils.storeError(500, e.message);
     return res.status(500).json({error: e.message});
   }
+}
+
+/*
+ENVIRONMENT_DEV
+ENVIRONMENT_DEV_CLOUDINARY
+ENVIRONMENT_PRODUCTION
+*/
+uploadFile = async (user, file) => {
+
+  try {
+    if (validator.equals(process.env.NODE_ENV, process.env.ENVIRONMENT_DEV)) {
+
+      var fsMkdir = fs.mkdirSync(`./test/imagesUploaded/${user._id}`, { recursive: true });
+      var fsRename = fs.renameSync(file.path, `./test/imagesUploaded/${user._id}/logo.${file.mimetype.split('/')[1]}`);
+
+    } else if (validator.equals(process.env.NODE_ENV, process.env.ENVIRONMENT_DEV_CLOUDINARY)) {
+
+      var cloudinaryRename = await cloudinary.v2.uploader.rename(file.public_id, `test/users/${user._id}/logo.${file.format}`, { overwrite: true });
+      if (!cloudinaryRename) {
+        errorUtils.storeError(500, utils.CLOUDINARY_UPLOAD_FAIL);
+        return res.status(500).json(errorUtils.error_message(utils.CLOUDINARY_UPLOAD_FAIL, 500));
+      }
+
+    } else if (validator.equals(process.env.NODE_ENV, process.env.ENVIRONMENT_PRODUCTION)) {
+
+      // TODO: production upload goes here
+
+    }
+  } catch (e) {
+    errorUtils.storeError(500, e.message);
+    return { error: e.message };
+  }
+}
+
+deleteFiles = (files) => {
+
 }

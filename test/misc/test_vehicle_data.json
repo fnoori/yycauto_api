@@ -1,0 +1,456 @@
+{
+    "_id" : ObjectId("5c58a7c2c222faacb272cb97"),
+    "basicInfo" : {
+        "Make" : "Honda",
+        "Model" : "Civic",
+        "Trim" : "SE",
+        "Type" : "Sedan",
+        "Year" : "2012",
+        "Exterior Colour" : "Black",
+        "Interior Colour" : null,
+        "Price" : "12000",
+        "Kilometres" : "32000",
+        "Fuel Type" : "Gas",
+        "Doors" : null,
+        "Seats" : null,
+        "Description" : null
+    },
+    "mechanicalSpecs" : {
+        "CarProof" : null,
+        "Transmission" : "Auto",
+        "Engine Size (L)" : null,
+        "Cylinders" : null,
+        "Torque (lb - ft) @ RPM" : null,
+        "Recommended Fuel" : "Regular"
+    },
+    "fuelEconomy" : {
+        "City (L/100Km)" : null,
+        "Highway (L/100Km)" : null
+    },
+    "date" : {
+        "created" : ISODate("2019-02-04T20:59:46.948Z"),
+        "modified" : ISODate("2019-02-04T20:59:46.948Z")
+    },
+    "Dealership" : ObjectId("5c40c7079b728c00074f967a"),
+    "totalPhotos" : 1,
+    "AdTier" : "1",
+    "__v" : 0
+},
+{
+    "_id" : ObjectId("5c58a7e4c222faacb272cb98"),
+    "basicInfo" : {
+        "Make" : "Toyota",
+        "Model" : "Corolla",
+        "Trim" : "SE",
+        "Type" : "Sedan",
+        "Year" : "2012",
+        "Exterior Colour" : "Black",
+        "Interior Colour" : null,
+        "Price" : "12000",
+        "Kilometres" : "32000",
+        "Fuel Type" : "Gas",
+        "Doors" : null,
+        "Seats" : null,
+        "Description" : null
+    },
+    "mechanicalSpecs" : {
+        "CarProof" : null,
+        "Transmission" : "Auto",
+        "Engine Size (L)" : null,
+        "Cylinders" : null,
+        "Torque (lb - ft) @ RPM" : null,
+        "Recommended Fuel" : "Regular"
+    },
+    "fuelEconomy" : {
+        "City (L/100Km)" : null,
+        "Highway (L/100Km)" : null
+    },
+    "date" : {
+        "created" : ISODate("2019-02-04T21:00:20.207Z"),
+        "modified" : ISODate("2019-02-04T21:00:20.207Z")
+    },
+    "Dealership" : ObjectId("5c40c7079b728c00074f967a"),
+    "totalPhotos" : 1,
+    "AdTier" : "1",
+    "__v" : 0
+},
+{
+    "_id" : ObjectId("5c58a7f1c222faacb272cb99"),
+    "basicInfo" : {
+        "Make" : "Volkswagon",
+        "Model" : "Golf",
+        "Trim" : "SE",
+        "Type" : "Sedan",
+        "Year" : "2012",
+        "Exterior Colour" : "Black",
+        "Interior Colour" : null,
+        "Price" : "12000",
+        "Kilometres" : "32000",
+        "Fuel Type" : "Gas",
+        "Doors" : null,
+        "Seats" : null,
+        "Description" : null
+    },
+    "mechanicalSpecs" : {
+        "CarProof" : null,
+        "Transmission" : "Auto",
+        "Engine Size (L)" : null,
+        "Cylinders" : null,
+        "Torque (lb - ft) @ RPM" : null,
+        "Recommended Fuel" : "Regular"
+    },
+    "fuelEconomy" : {
+        "City (L/100Km)" : null,
+        "Highway (L/100Km)" : null
+    },
+    "date" : {
+        "created" : ISODate("2019-02-04T21:00:33.904Z"),
+        "modified" : ISODate("2019-02-04T21:00:33.904Z")
+    },
+    "Dealership" : ObjectId("5c40c7079b728c00074f967a"),
+    "totalPhotos" : 1,
+    "AdTier" : "1",
+    "__v" : 0
+},
+{
+    "_id" : ObjectId("5c58a7fcc222faacb272cb9a"),
+    "basicInfo" : {
+        "Make" : "Ford",
+        "Model" : "Focus",
+        "Trim" : "SE",
+        "Type" : "Sedan",
+        "Year" : "2012",
+        "Exterior Colour" : "Black",
+        "Interior Colour" : null,
+        "Price" : "12000",
+        "Kilometres" : "32000",
+        "Fuel Type" : "Gas",
+        "Doors" : null,
+        "Seats" : null,
+        "Description" : null
+    },
+    "mechanicalSpecs" : {
+        "CarProof" : null,
+        "Transmission" : "Auto",
+        "Engine Size (L)" : null,
+        "Cylinders" : null,
+        "Torque (lb - ft) @ RPM" : null,
+        "Recommended Fuel" : "Regular"
+    },
+    "fuelEconomy" : {
+        "City (L/100Km)" : null,
+        "Highway (L/100Km)" : null
+    },
+    "date" : {
+        "created" : ISODate("2019-02-04T21:00:44.343Z"),
+        "modified" : ISODate("2019-02-04T21:00:44.343Z")
+    },
+    "Dealership" : ObjectId("5c40c7079b728c00074f967a"),
+    "totalPhotos" : 1,
+    "AdTier" : "1",
+    "__v" : 0
+},
+{
+    "_id" : ObjectId("5c58a810c222faacb272cb9b"),
+    "basicInfo" : {
+        "Make" : "Acura",
+        "Model" : "TLX",
+        "Trim" : "SE",
+        "Type" : "Sedan",
+        "Year" : "2012",
+        "Exterior Colour" : "Black",
+        "Interior Colour" : null,
+        "Price" : "12000",
+        "Kilometres" : "32000",
+        "Fuel Type" : "Gas",
+        "Doors" : null,
+        "Seats" : null,
+        "Description" : null
+    },
+    "mechanicalSpecs" : {
+        "CarProof" : null,
+        "Transmission" : "Auto",
+        "Engine Size (L)" : null,
+        "Cylinders" : null,
+        "Torque (lb - ft) @ RPM" : null,
+        "Recommended Fuel" : "Regular"
+    },
+    "fuelEconomy" : {
+        "City (L/100Km)" : null,
+        "Highway (L/100Km)" : null
+    },
+    "date" : {
+        "created" : ISODate("2019-02-04T21:01:04.869Z"),
+        "modified" : ISODate("2019-02-04T21:01:04.869Z")
+    },
+    "Dealership" : ObjectId("5c40c7079b728c00074f967a"),
+    "totalPhotos" : 1,
+    "AdTier" : "1",
+    "__v" : 0
+},
+{
+    "_id" : ObjectId("5c58a81fc222faacb272cb9c"),
+    "basicInfo" : {
+        "Make" : "Mazda",
+        "Model" : "Miata",
+        "Trim" : "SE",
+        "Type" : "Sedan",
+        "Year" : "2012",
+        "Exterior Colour" : "Black",
+        "Interior Colour" : null,
+        "Price" : "12000",
+        "Kilometres" : "32000",
+        "Fuel Type" : "Gas",
+        "Doors" : null,
+        "Seats" : null,
+        "Description" : null
+    },
+    "mechanicalSpecs" : {
+        "CarProof" : null,
+        "Transmission" : "Auto",
+        "Engine Size (L)" : null,
+        "Cylinders" : null,
+        "Torque (lb - ft) @ RPM" : null,
+        "Recommended Fuel" : "Regular"
+    },
+    "fuelEconomy" : {
+        "City (L/100Km)" : null,
+        "Highway (L/100Km)" : null
+    },
+    "date" : {
+        "created" : ISODate("2019-02-04T21:01:19.793Z"),
+        "modified" : ISODate("2019-02-04T21:01:19.793Z")
+    },
+    "Dealership" : ObjectId("5c40c7079b728c00074f967a"),
+    "totalPhotos" : 1,
+    "AdTier" : "1",
+    "__v" : 0
+},
+{
+    "_id" : ObjectId("5c58a82dc222faacb272cb9d"),
+    "basicInfo" : {
+        "Make" : "Kia",
+        "Model" : "Forte",
+        "Trim" : "SE",
+        "Type" : "Sedan",
+        "Year" : "2012",
+        "Exterior Colour" : "Black",
+        "Interior Colour" : null,
+        "Price" : "12000",
+        "Kilometres" : "32000",
+        "Fuel Type" : "Gas",
+        "Doors" : null,
+        "Seats" : null,
+        "Description" : null
+    },
+    "mechanicalSpecs" : {
+        "CarProof" : null,
+        "Transmission" : "Auto",
+        "Engine Size (L)" : null,
+        "Cylinders" : null,
+        "Torque (lb - ft) @ RPM" : null,
+        "Recommended Fuel" : "Regular"
+    },
+    "fuelEconomy" : {
+        "City (L/100Km)" : null,
+        "Highway (L/100Km)" : null
+    },
+    "date" : {
+        "created" : ISODate("2019-02-04T21:01:33.226Z"),
+        "modified" : ISODate("2019-02-04T21:01:33.226Z")
+    },
+    "Dealership" : ObjectId("5c40c7079b728c00074f967a"),
+    "totalPhotos" : 1,
+    "AdTier" : "1",
+    "__v" : 0
+},
+{
+    "_id" : ObjectId("5c58a841c222faacb272cb9e"),
+    "basicInfo" : {
+        "Make" : "Nissan",
+        "Model" : "Sentra",
+        "Trim" : "SE",
+        "Type" : "Sedan",
+        "Year" : "2012",
+        "Exterior Colour" : "Black",
+        "Interior Colour" : null,
+        "Price" : "12000",
+        "Kilometres" : "32000",
+        "Fuel Type" : "Gas",
+        "Doors" : null,
+        "Seats" : null,
+        "Description" : null
+    },
+    "mechanicalSpecs" : {
+        "CarProof" : null,
+        "Transmission" : "Auto",
+        "Engine Size (L)" : null,
+        "Cylinders" : null,
+        "Torque (lb - ft) @ RPM" : null,
+        "Recommended Fuel" : "Regular"
+    },
+    "fuelEconomy" : {
+        "City (L/100Km)" : null,
+        "Highway (L/100Km)" : null
+    },
+    "date" : {
+        "created" : ISODate("2019-02-04T21:01:53.606Z"),
+        "modified" : ISODate("2019-02-04T21:01:53.606Z")
+    },
+    "Dealership" : ObjectId("5c40c7079b728c00074f967a"),
+    "totalPhotos" : 1,
+    "AdTier" : "1",
+    "__v" : 0
+},
+{
+    "_id" : ObjectId("5c58a84fc222faacb272cb9f"),
+    "basicInfo" : {
+        "Make" : "Dodge",
+        "Model" : "Caravan",
+        "Trim" : "SE",
+        "Type" : "Sedan",
+        "Year" : "2012",
+        "Exterior Colour" : "Black",
+        "Interior Colour" : null,
+        "Price" : "12000",
+        "Kilometres" : "32000",
+        "Fuel Type" : "Gas",
+        "Doors" : null,
+        "Seats" : null,
+        "Description" : null
+    },
+    "mechanicalSpecs" : {
+        "CarProof" : null,
+        "Transmission" : "Auto",
+        "Engine Size (L)" : null,
+        "Cylinders" : null,
+        "Torque (lb - ft) @ RPM" : null,
+        "Recommended Fuel" : "Regular"
+    },
+    "fuelEconomy" : {
+        "City (L/100Km)" : null,
+        "Highway (L/100Km)" : null
+    },
+    "date" : {
+        "created" : ISODate("2019-02-04T21:02:07.794Z"),
+        "modified" : ISODate("2019-02-04T21:02:07.794Z")
+    },
+    "Dealership" : ObjectId("5c40c7079b728c00074f967a"),
+    "totalPhotos" : 1,
+    "AdTier" : "1",
+    "__v" : 0
+},
+{
+    "_id" : ObjectId("5c59d9db8fae62bc06d32eca"),
+    "basicInfo" : {
+        "Make" : "Honda",
+        "Model" : "Accord",
+        "Trim" : "SE",
+        "Type" : "Sedan",
+        "Year" : "2012",
+        "Exterior Colour" : "Red",
+        "Interior Colour" : null,
+        "Price" : "12000",
+        "Kilometres" : "32000",
+        "Fuel Type" : "Gas",
+        "Doors" : null,
+        "Seats" : null,
+        "Description" : null
+    },
+    "mechanicalSpecs" : {
+        "CarProof" : null,
+        "Transmission" : "Auto",
+        "Engine Size (L)" : null,
+        "Cylinders" : null,
+        "Torque (lb - ft) @ RPM" : null,
+        "Recommended Fuel" : "Regular"
+    },
+    "fuelEconomy" : {
+        "City (L/100Km)" : null,
+        "Highway (L/100Km)" : null
+    },
+    "date" : {
+        "created" : ISODate("2019-02-05T18:45:47.563Z"),
+        "modified" : ISODate("2019-02-05T18:45:47.563Z")
+    },
+    "Dealership" : ObjectId("5c40c7079b728c00074f967a"),
+    "totalPhotos" : 1,
+    "AdTier" : "1",
+    "__v" : 0
+},
+{
+    "_id" : ObjectId("5c59da108fae62bc06d32ecb"),
+    "basicInfo" : {
+        "Make" : "Nissan",
+        "Model" : "Rogue",
+        "Trim" : "SE",
+        "Type" : "Sedan",
+        "Year" : "2013",
+        "Exterior Colour" : "Red",
+        "Interior Colour" : null,
+        "Price" : "12000",
+        "Kilometres" : "32000",
+        "Fuel Type" : "Gas",
+        "Doors" : null,
+        "Seats" : null,
+        "Description" : null
+    },
+    "mechanicalSpecs" : {
+        "CarProof" : null,
+        "Transmission" : "Auto",
+        "Engine Size (L)" : null,
+        "Cylinders" : null,
+        "Torque (lb - ft) @ RPM" : null,
+        "Recommended Fuel" : "Regular"
+    },
+    "fuelEconomy" : {
+        "City (L/100Km)" : null,
+        "Highway (L/100Km)" : null
+    },
+    "date" : {
+        "created" : ISODate("2019-02-05T18:46:40.724Z"),
+        "modified" : ISODate("2019-02-05T18:46:40.724Z")
+    },
+    "Dealership" : ObjectId("5c40c7079b728c00074f967a"),
+    "totalPhotos" : 1,
+    "AdTier" : "1",
+    "__v" : 0
+},
+{
+    "_id" : ObjectId("5c59da2f8fae62bc06d32ecc"),
+    "basicInfo" : {
+        "Make" : "Mitsubishi",
+        "Model" : "Accent",
+        "Trim" : "SE",
+        "Type" : "Sedan",
+        "Year" : "2013",
+        "Exterior Colour" : "Red",
+        "Interior Colour" : null,
+        "Price" : "12000",
+        "Kilometres" : "32000",
+        "Fuel Type" : "Gas",
+        "Doors" : null,
+        "Seats" : null,
+        "Description" : null
+    },
+    "mechanicalSpecs" : {
+        "CarProof" : null,
+        "Transmission" : "Auto",
+        "Engine Size (L)" : null,
+        "Cylinders" : null,
+        "Torque (lb - ft) @ RPM" : null,
+        "Recommended Fuel" : "Regular"
+    },
+    "fuelEconomy" : {
+        "City (L/100Km)" : null,
+        "Highway (L/100Km)" : null
+    },
+    "date" : {
+        "created" : ISODate("2019-02-05T18:47:11.060Z"),
+        "modified" : ISODate("2019-02-05T18:47:11.060Z")
+    },
+    "Dealership" : ObjectId("5c40c7079b728c00074f967a"),
+    "totalPhotos" : 1,
+    "AdTier" : "1",
+    "__v" : 0
+}
