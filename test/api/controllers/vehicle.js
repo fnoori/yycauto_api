@@ -60,6 +60,30 @@ exports.get_vehicle_by_id = (req, res, next) => {
 }
 
 /*
+  this function will search vehicles and dealerships
+*/
+exports.search_data = (req, res, next) => {
+  if (utils.containsInvalidMongoCharacter(req.body)) {
+    return res.status(400).json(errorUtils.error_message(utils.CONTAINS_INVALID_CHARACTER, 400));
+  }
+
+  const searchQuery = req.params.search_query.split(/\s+/).map(kw => `"${kw}"`).join(' ');
+  const limit = parseInt(req.params.limit);
+  const skip = parseInt(req.params.skip);
+
+  VehicleModel.find({ '$text': { '$search': searchQuery } })
+  .populate('Dealership', '-_id -auth0_id -__v')
+  .skip(skip).limit(limit)
+  .select('-__v')
+  .exec().then(searchResult => {
+    res.json(searchResult);
+  }).catch(findErr => {
+    errorUtils.storeError(500, findErr);
+    return res.status(500).json(errorUtils.error_message(utils.MONGOOSE_FIND_FAIL, 500));
+  });
+}
+
+/*
   Needs to be async so we can be certain the vehicle has been created
   successfully
  */

@@ -1,0 +1,11 @@
+{
+  "basicInfo.Make": "text",
+  "basicInfo.Model": "text",
+  "basicInfo.Year": "text",
+  "mechanicalSpecs.Transmission": "text",
+  "fuelEconomy.City (L/100Km)": "text",
+  "fuelEconomy.Highway (L/100Km)": "text",
+  "fuelEconomy.Combined (L/100Km)": "text",
+  "basicInfo.Exterior Colour": "text",
+  "basicInfo.Interior Colour": "text"
+}
