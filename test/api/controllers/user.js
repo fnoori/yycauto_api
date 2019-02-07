@@ -57,7 +57,7 @@ exports.update_dealership = async (req, res, next) => {
 
   if (!validator.isMongoId(req.body.id)) {
     if (includesLogo) {
-      var cloudinaryDelete = cloudinary.v2.uploader.destroy(req.file.public_id);
+      deleteFile(req.body.id, req.file);
     }
     return res.status(400).json(errorUtils.error_message(utils.MONGOOSE_INCORRECT_ID, 400));
   }
@@ -70,7 +70,7 @@ exports.update_dealership = async (req, res, next) => {
   // validate data and check which fields are being updated
   if (phone.length > 0) {
     if (includesLogo) {
-      var cloudinaryDelete = cloudinary.v2.uploader.destroy(req.file.public_id);
+      deleteFile(req.body.id, req.file);
     }
     if (!utils.isLengthCorrect(phone, utils.MIN_LENGTH, utils.PHONE_LENGTH_MAX) || !validator.isMobilePhone(phone)) {
       return res.status(400).json(errorUtils.error_message(utils.INCORRECT_PHONE_FORMAT));
@@ -80,7 +80,7 @@ exports.update_dealership = async (req, res, next) => {
   }
   if (address.length > 0) {
     if (includesLogo) {
-      var cloudinaryDelete = cloudinary.v2.uploader.destroy(req.file.public_id);
+      deleteFile(req.body.id, req.file);
     }
     if (!utils.isLengthCorrect(address, utils.MIN_LENGTH, utils.ADDRESS_LENGTH_MAX)) {
       return res.status(400).json(errorUtils.error_message(utils.ADDRESS_INCORRECT_LENGTH));
@@ -90,7 +90,7 @@ exports.update_dealership = async (req, res, next) => {
   }
   if (dealershipName.length > 0) {
     if (includesLogo) {
-      var cloudinaryDelete = cloudinary.v2.uploader.destroy(req.file.public_id);
+      deleteFile(req.body.id, req.file);
     }
     if (!utils.isLengthCorrect(dealershipName, utils.MIN_LENGTH, utils.DEALERSHIP_NAME_LENGTH_MAX)) {
       return res.status(400).json(errorUtils.error_message(utils.DEALERSHIP_NAME_INCORRECT_LENGTH));
@@ -102,7 +102,7 @@ exports.update_dealership = async (req, res, next) => {
   // check to make sure at least one thing is being updated
   if (_.isEmpty(updateData) && !includesLogo) {
     if (includesLogo) {
-      var cloudinaryDelete = cloudinary.v2.uploader.destroy(req.file.public_id);
+      deleteFile(req.body.id, req.file);
     }
     return res.status(400).json(errorUtils.error_message(utils.AT_LEAST_ONE_FIELD_REQUIRED, 400));
   }
@@ -120,13 +120,13 @@ exports.update_dealership = async (req, res, next) => {
 
     if (!user) {
       if (includesLogo) {
-        var cloudinaryDelete = cloudinary.v2.uploader.destroy(req.file.public_id);
+        deleteFile(req.body.id, req.file);
       }
       return res.status(404).json(errorUtils.error_message(utils.USER_DOES_NOT_EXIST, 404));
     }
     if (!validator.equals(String(user._id), userId)) {
       if (includesLogo) {
-        var cloudinaryDelete = cloudinary.v2.uploader.destroy(req.file.public_id);
+        deleteFile(req.body.id, req.file);
       }
       return res.status(404).json(errorUtils.error_message(utils.UNAUTHORIZED_ACCESS, 404));
     }
@@ -134,21 +134,21 @@ exports.update_dealership = async (req, res, next) => {
     updated = await UserModel.updateOne({ _id: user._id }, updateData);
     if (!updated) {
       if (includesLogo) {
-        var cloudinaryDelete = cloudinary.v2.uploader.destroy(req.file.public_id);
+        deleteFile(req.body.id, req.file);
       }
       errorUtils.storeError(500, utils.MONGOOSE_UPDATE_ONE_FAIL);
       return res.status(500).json(errorUtils.error_message(utils.MONGOOSE_UPDATE_ONE_FAIL, 500));
     }
 
     if (includesLogo) {
-      uploadFile(user, req.file);
+      deleteFile(req.body.id, req.file);
     }
 
     res.status(201).json({ message: utils.MONGOOSE_SUCCESSFUL_UPDATE });
 
   } catch (e) {
     if (includesLogo) {
-      var cloudinaryDelete = cloudinary.v2.uploader.destroy(req.file.public_id);
+      deleteFile(req.body.id, req.file);
     }
     errorUtils.storeError(500, e.message);
     return res.status(500).json({error: e.message});
@@ -231,32 +231,55 @@ ENVIRONMENT_DEV_CLOUDINARY
 ENVIRONMENT_PRODUCTION
 */
 uploadFile = async (user, file) => {
-
   try {
     if (validator.equals(process.env.NODE_ENV, process.env.ENVIRONMENT_DEV)) {
 
-      var fsMkdir = fs.mkdirSync(`./test/imagesUploaded/${user._id}`, { recursive: true });
-      var fsRename = fs.renameSync(file.path, `./test/imagesUploaded/${user._id}/logo.${file.mimetype.split('/')[1]}`);
+      let fsMkdir = fs.mkdirSync(`./test/imagesUploaded/${user._id}`, { recursive: true });
+      let fsRename = fs.renameSync(file.path, `./test/imagesUploaded/${user._id}/logo.${file.mimetype.split('/')[1]}`);
 
     } else if (validator.equals(process.env.NODE_ENV, process.env.ENVIRONMENT_DEV_CLOUDINARY)) {
 
-      var cloudinaryRename = await cloudinary.v2.uploader.rename(file.public_id, `test/users/${user._id}/logo.${file.format}`, { overwrite: true });
-      if (!cloudinaryRename) {
+      let renameCloudDev = await cloudinary.v2.uploader.rename(file.public_id, `test/users/${user._id}/logo.${file.format}`, { overwrite: true });
+      if (!renameCloudDev) {
         errorUtils.storeError(500, utils.CLOUDINARY_UPLOAD_FAIL);
+        deleteFile(user, file);
         return res.status(500).json(errorUtils.error_message(utils.CLOUDINARY_UPLOAD_FAIL, 500));
       }
 
     } else if (validator.equals(process.env.NODE_ENV, process.env.ENVIRONMENT_PRODUCTION)) {
 
-      // TODO: production upload goes here
+      let renameProd = await cloudinary.v2.uploader.rename(req.file.public_id, `production/users/${user._id}/logo.${req.file.format}`, { overwrite: true });
+      if (!renameProd) {
+        errorUtils.storeError(500, utils.CLOUDINARY_UPLOAD_FAIL);
+        deleteFile(user, file);
+        return res.status(500).json(errorUtils.error_message(utils.CLOUDINARY_UPLOAD_FAIL, 500));
+      }
+
+    }
+  } catch (e) {
+    errorUtils.storeError(500, e.message);
+    deleteFile(user, file);
+    return { error: e.message };
+  }
+}
+
+deleteFile = async (user, file) => {
+  try {
+    if (validator.equals(process.env.NODE_ENV, process.env.ENVIRONMENT_DEV)) {
+
+      let fsRm = fs.unlinkSync(`uploads/${file.filename}`);
+
+    } else if (validator.equals(process.env.NODE_ENV, process.env.ENVIRONMENT_DEV_CLOUDINARY)) {
+
+      let cloudinaryDeleteDevCloud = await cloudinary.v2.uploader.destroy(file.public_id);
+
+    } else if (validator.equals(process.env.NODE_ENV, process.env.ENVIRONMENT_PRODUCTION)) {
+
+      let cloudinaryDeleteProd = await cloudinary.v2.uploader.destroy(file.public_id);
 
     }
   } catch (e) {
     errorUtils.storeError(500, e.message);
     return { error: e.message };
   }
-}
-
-deleteFiles = (files) => {
-
 }
