@@ -195,16 +195,22 @@ exports.update_vehicle = async (req, res, next) => {
   var vehicleId = '';
   var includesFiles = false;
 
+  if (!_.isUndefined(req.files) && req.files.length > 0) {
+    includesFiles = true;
+  }
+
   // perform critical checks right at the start
   if (_.isUndefined(req.body.id) || !validator.isMongoId(req.body.id)) {
+    if (includesFiles) {
+      deleteFiles(req.files);
+    }
     return res.status(400).json(errorUtils.error_message(utils.MONGOOSE_INCORRECT_ID, 400));
   }
   if (utils.containsInvalidMongoCharacter(req.body)) {
+    if (includesFiles) {
+      deleteFiles(req.files);
+    }
     return res.status(400).json(errorUtils.error_message(utils.CONTAINS_INVALID_CHARACTER, 400));
-  }
-
-  if (!_.isUndefined(req.files) && req.files.length > 0) {
-    includesFiles = true;
   }
 
   vehicleDetails.push(_.isUndefined(req.body.make) ? null : { name: utils.MAKE.name, category: utils.BASIC_INFO, details: req.body.make, maxLength: utils.MAKE.max });
@@ -233,6 +239,7 @@ exports.update_vehicle = async (req, res, next) => {
   vehicleDetails.push(_.isUndefined(req.body.highway_fuel) ? null : { name: utils.FUEL_HIGHWAY.name, category: utils.FUEL_ECONOMY, details: req.body.highway_fuel, maxLength: utils.FUEL_HIGHWAY.max });
   vehicleDetails.push(_.isUndefined(req.body.combined) ? null : { name: utils.FUEL_COMBINED.name, category: utils.FUEL_ECONOMY, details: req.body.combined, maxLength: utils.FUEL_COMBINED.max });
 
+  // TODO: check what 'valueLengthTooLong' is actually doing
   var valueLengthTooLong = [];
   var updateData = {};
   var currentDetail = '';
@@ -260,56 +267,48 @@ exports.update_vehicle = async (req, res, next) => {
 
     if (!user) {
       if (includesFiles) {
-        utils.deleteFiles(req.files);
+        deleteFiles(req.files);
       }
       return res.status(404).json(errorUtils.error_message(utils.USER_DOES_NOT_EXIST, 404));
     }
     if (!validator.equals(String(user._id), userId)) {
       if (includesFiles) {
-        utils.deleteFiles(req.files);
+        deleteFiles(req.files);
       }
       return res.status(404).json(errorUtils.error_message(utils.UNAUTHORIZED_ACCESS, 404));
     }
 
     const vehicleToUpdate = await VehicleModel.findOne({ _id: vehicleId });
     if (!vehicleToUpdate) {
+      if (includesFiles) {
+        deleteFiles(req.files);
+      }
       return res.status(404).json(errorUtils.error_message(utils.VEHICLE_DOES_NOT_EXIST, 404));
     }
     if ((includesFiles && vehicleToUpdate.totalPhotos >= 7) || (vehicleToUpdate.totalPhotos + req.files.length > 7)) {
-      utils.deleteFiles(req.files);
+      deleteFiles(req.files);
       return res.status(400).json(errorUtils.error_message(utils.REACHED_MAXIMUM_VEHICLE_PHOTOS, 400));
     }
 
     updatedVehicle = await VehicleModel.findOneAndUpdate({ _id: vehicleId, 'Dealership': userId },
-                            updateData).populate('Dealership');
+                            { $inc: { totalPhotos: req.files.length } }, updateData).populate('Dealership');
 
     if (!updatedVehicle) {
       if (includesFiles) {
-        utils.deleteFiles(req.files);
+        deleteFiles(req.files);
       }
       return res.status(500).json(errorUtils.error_message(utils.MONGOOSE_FIND_ONE_AND_UPDATE_FAIL, 500));
     }
 
-    if (validator.equals(process.env.NODE_ENV, utils.DEVELOPMENT)) {
-      for (var i = 0; i < req.files.length; i++) {
-        fs.renameSync(req.files[i].path, `./test/imagesUploaded/${userId}/${updatedVehicle._id}/${req.files[i].filename}`);
-      }
-    } else if (validator.equals(process.env.NODE_ENV, utils.DEVELOPMENT_CLOUDINARY)) {
-      var cloudinaryRename;
-      for (var i = 0; i < req.files.length; i++) {
-        cloudinaryRename= await cloudinary.v2.uploader.rename(req.files[i].public_id, `test/users/${user._id}/${updatedVehicle._id}/${req.files[i].public_id.split('/')[2]}.${req.files[i].format}`);
-        if (!cloudinaryRename) {
-          errorUtils.storeError(500, utils.CLOUDINARY_UPLOAD_FAIL);
-          return res.status(500).json(errorUtils.error_message(utils.CLOUDINARY_UPLOAD_FAIL, 500));
-        }
-      }
+    if (includesFiles) {
+      uploadFiles(user, updatedVehicle, req.files);
     }
 
     res.json({ message: utils.VEHICLE_UPDATED_SUCCESSFULLY });
 
   } catch (e) {
     if (includesFiles) {
-      utils.deleteFiles(req.files);
+      deleteFiles(req.files);
     }
     errorUtils.storeError(500, e.message);
     return res.status(500).json({error: e.message});
@@ -483,6 +482,4 @@ deleteFiles = (files) => {
     errorUtils.storeError(500, e.message);
     return { error: e.message };
   }
-
-
 }
