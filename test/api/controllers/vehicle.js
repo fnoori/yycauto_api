@@ -97,9 +97,7 @@ exports.add_new_vehicle = async (req, res, next) => {
   }
 
   if (_.isUndefined(req.body.id) || !validator.isMongoId(req.body.id)) {
-    req.files.forEach((file) => {
-      cloudinary.v2.uploader.destroy(file.public_id);
-    });
+    deleteFiles(req.files);
     return res.status(400).json(errorUtils.error_message(utils.MONGOOSE_INCORRECT_ID, 400));
   }
 
@@ -110,16 +108,12 @@ exports.add_new_vehicle = async (req, res, next) => {
     for the optional fields, check if there is data, otherwise input "null"
    */
    if (utils.containsInvalidMongoCharacter(req.body)) {
-     req.files.forEach((file) => {
-       cloudinary.v2.uploader.destroy(file.public_id);
-     });
+     deleteFiles(req.files);
      return res.status(400).json(errorUtils.error_message(utils.CONTAINS_INVALID_CHARACTER, 400));
    }
 
    if (!utils.isArrayLengthCorrect(req.files, utils.MIN_LENGTH, utils.MAX_VEHICLE_PHOTOS)) {
-     req.files.forEach((file) => {
-       cloudinary.v2.uploader.destroy(file.public_id);
-     });
+     deleteFiles(req.files);
      return res.status(400).json(errorUtils.error_message(utils.INCORRECT_VEHICLE_PHOTOS, 400));
    }
 
@@ -168,65 +162,27 @@ exports.add_new_vehicle = async (req, res, next) => {
      user = await UserModel.findOne({ auth0_id: auth0Id });
 
      if (!user) {
-       if (validator.equals(process.env.NODE_ENV, utils.DEVELOPMENT)) {
-         utils.deleteFiles(req.files);
-       } else if (validator.equals(process.env.NODE_ENV, utils.DEVELOPMENT_CLOUDINARY)) {
-         req.files.forEach((file) => {
-           cloudinary.v2.uploader.destroy(file.public_id);
-         });
-       }
+       deleteFiles(req.files);
        return res.status(404).json(errorUtils.error_message(utils.USER_DOES_NOT_EXIST, 404));
      }
      if (!validator.equals(String(user._id), userId)) {
-       if (validator.equals(process.env.NODE_ENV, utils.DEVELOPMENT)) {
-         utils.deleteFiles(req.files);
-       } else if (validator.equals(process.env.NODE_ENV, utils.DEVELOPMENT_CLOUDINARY)) {
-         req.files.forEach((file) => {
-           cloudinary.v2.uploader.destroy(file.public_id);
-         });
-       }
+       deleteFiles(req.files);
        return res.status(404).json(errorUtils.error_message(utils.UNAUTHORIZED_ACCESS, 404));
      }
 
      const newVehicle = new VehicleModel(vehicleData);
      vehicleSaved = await newVehicle.save();
      if (!vehicleSaved) {
-       if (validator.equals(process.env.NODE_ENV, utils.DEVELOPMENT)) {
-         utils.deleteFiles(req.files);
-       } else if (validator.equals(process.env.NODE_ENV, utils.DEVELOPMENT_CLOUDINARY)) {
-         req.files.forEach((file) => {
-           cloudinary.v2.uploader.destroy(file.public_id);
-         });
-       }
+       deleteFiles(req.files);
        return res.status(500).json(errorUtils.error_message(utils.MONGOOSE_SAVE_FAIL, 500));
      }
 
-     if (validator.equals(process.env.NODE_ENV, utils.DEVELOPMENT)) {
-       fs.mkdirSync(`./test/imagesUploaded/${userId}/${vehicleSaved._id}`, { recursive: true });
-       for (var i = 0; i < req.files.length; i++) {
-         fs.renameSync(req.files[i].path, `./test/imagesUploaded/${userId}/${vehicleSaved._id}/${req.files[i].filename}`);
-       }
-     } else if (validator.equals(process.env.NODE_ENV, utils.DEVELOPMENT_CLOUDINARY)) {
-       var cloudinaryRename;
-       for (var i = 0; i < req.files.length; i++) {
-         cloudinaryRename = await cloudinary.v2.uploader.rename(req.files[i].public_id, `test/users/${user._id}/${vehicleSaved._id}/${req.files[i].public_id.split('/')[2]}.${req.files[i].format}`);
-         if (!cloudinaryRename) {
-           errorUtils.storeError(500, utils.CLOUDINARY_UPLOAD_FAIL);
-           return res.status(500).json(errorUtils.error_message(utils.CLOUDINARY_UPLOAD_FAIL, 500));
-         }
-       }
-     }
+     uploadFiles(user, newVehicle, req.files);
 
      res.json({ message: utils.VEHICLE_CREATED_SUCCESSFULLY });
 
    } catch (e) {
-     if (validator.equals(process.env.NODE_ENV, utils.DEVELOPMENT)) {
-       utils.deleteFiles(req.files);
-     } else if (validator.equals(process.env.NODE_ENV, utils.DEVELOPMENT_CLOUDINARY)) {
-       req.files.forEach((file) => {
-         cloudinary.v2.uploader.destroy(file.public_id);
-       });
-     }
+     deleteFiles(req.files);
      errorUtils.storeError(500, e.message);
      return res.status(500).json({error: e.message});
    }
@@ -398,12 +354,7 @@ exports.delete_images = async (req, res, next) => {
     }
 
     if (validator.equals(process.env.NODE_ENV, utils.DEVELOPMENT)) {
-      for (var i = 0; i < imagesToDelete.length; i++) {
-        var deleteRes = fs.unlinkSync(`./test/imagesUploaded/${userId}/${vehicleId}/${imagesToDelete[i]}`);
-        if (deleteRes) {
-          return res.status(500).json(errorUtils.error_message(utils.DELETE_IMAGE_FAIL, 500));
-        }
-      }
+      // moved to function
     } else if (validator.equals(process.env.NODE_ENV, utils.DEVELOPMENT_CLOUDINARY)) {
       for (var i = 0; i < imagesToDelete.length; i++) {
         var deleteRes = await cloudinary.v2.uploader.destroy(`test/users/${user._id}/${vehicleId}/${imagesToDelete[i]}`);
@@ -465,4 +416,73 @@ exports.delete_vehicle = async (req, res, next) => {
   } catch (e) {
     return res.status(500).json({error: e.message});
   }
+}
+
+uploadFiles = async (user, vehicle, files) => {
+  try {
+    if (validator.equals(process.env.NODE_ENV, process.env.ENVIRONMENT_DEV)) {
+
+      fs.mkdirSync(`./test/imagesUploaded/${user._id}/${vehicle._id}`, { recursive: true });
+      for (var i = 0; i < files.length; i++) {
+        fs.renameSync(files[i].path, `./test/imagesUploaded/${user._id}/${vehicle._id}/${files[i].filename}`);
+      }
+
+    } else if (validator.equals(process.env.NODE_ENV, process.env.ENVIRONMENT_DEV_CLOUDINARY)) {
+
+      let cloudinaryRenameDev;
+      for (var i = 0; i < files.length; i++) {
+        cloudinaryRenameDev = await cloudinary.v2.uploader.rename(files[i].public_id, `test/users/${user._id}/${vehicle._id}/${files[i].public_id.split('/')[2]}.${files[i].format}`);
+        if (!cloudinaryRenameDev) {
+          errorUtils.storeError(500, utils.CLOUDINARY_UPLOAD_FAIL);
+          throw 'Upload failed';
+        }
+      }
+
+    } else if (validator.equals(process.env.NODE_ENV, process.env.ENVIRONMENT_PRODUCTION)) {
+
+      let cloudinaryRenameProd;
+      for (var i = 0; i < files.length; i++) {
+        cloudinaryRenameProd = await cloudinary.v2.uploader.rename(files[i].public_id, `production/users/${user._id}/${vehicle._id}/${files[i].public_id.split('/')[2]}.${files[i].format}`);
+
+        if (!cloudinaryRenameProd) {
+          errorUtils.storeError(500, utils.CLOUDINARY_UPLOAD_FAIL);
+          throw 'Upload failed';
+        }
+      }
+
+    }
+
+  } catch (e) {
+    errorUtils.storeError(500, e.message);
+    return { error: e.message };
+  }
+}
+
+deleteFiles = (files) => {
+  try {
+    if (validator.equals(process.env.NODE_ENV, process.env.ENVIRONMENT_DEV)) {
+
+      files.forEach((file) => {
+        fs.unlinkSync(file.path);
+      });
+
+    } else if (validator.equals(process.env.NODE_ENV, process.env.ENVIRONMENT_DEV_CLOUDINARY)) {
+
+      files.forEach((file) => {
+        cloudinary.v2.uploader.destroy(file.public_id);
+      });
+
+    } else if (validator.equals(process.env.NODE_ENV, process.env.ENVIRONMENT_PRODUCTION)) {
+
+      files.forEach((file) => {
+        cloudinary.v2.uploader.destroy(file.public_id);
+      });
+
+    }
+  } catch (e) {
+    errorUtils.storeError(500, e.message);
+    return { error: e.message };
+  }
+
+
 }

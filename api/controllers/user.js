@@ -238,7 +238,7 @@ uploadFile = async (user, file) => {
       if (!renameCloudDev) {
         errorUtils.storeError(500, utils.CLOUDINARY_UPLOAD_FAIL);
         deleteFile(user, file);
-        return res.status(500).json(errorUtils.error_message(utils.CLOUDINARY_UPLOAD_FAIL, 500));
+        throw 'Upload failed';
       }
 
     } else if (validator.equals(process.env.NODE_ENV, process.env.ENVIRONMENT_PRODUCTION)) {
@@ -247,7 +247,7 @@ uploadFile = async (user, file) => {
       if (!renameProd) {
         errorUtils.storeError(500, utils.CLOUDINARY_UPLOAD_FAIL);
         deleteFile(user, file);
-        return res.status(500).json(errorUtils.error_message(utils.CLOUDINARY_UPLOAD_FAIL, 500));
+        throw 'Upload Failed';
       }
 
     }
@@ -258,7 +258,7 @@ uploadFile = async (user, file) => {
   }
 }
 
-deleteFile = async (user, file) => {
+deleteFile = async (file) => {
   try {
     if (validator.equals(process.env.NODE_ENV, process.env.ENVIRONMENT_DEV)) {
 
