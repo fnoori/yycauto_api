@@ -352,18 +352,9 @@ exports.delete_images = async (req, res, next) => {
       return res.status(404).json(errorUtils.error_message(utils.UNAUTHORIZED_ACCESS, 404));
     }
 
-    if (validator.equals(process.env.NODE_ENV, utils.DEVELOPMENT)) {
-      // moved to function
-    } else if (validator.equals(process.env.NODE_ENV, utils.DEVELOPMENT_CLOUDINARY)) {
-      for (var i = 0; i < imagesToDelete.length; i++) {
-        var deleteRes = await cloudinary.v2.uploader.destroy(`test/users/${user._id}/${vehicleId}/${imagesToDelete[i]}`);
-        if (!validator.equals(deleteRes.result, utils.OKAY)) {
-          return res.status(500).json(errorUtils.error_message(utils.DELETE_IMAGE_FAIL, 500));
-        }
-      }
-    }
+    deleteImages(user, vehicleId, imagesToDelete);
 
-    updatedInCollection = await VehicleModel.findOneAndUpdate({ 'Dealership': userId }, { $inc: { 'totalPhotos': -imagesToDelete.length } }).populate('Dealership');
+    updatedInCollection = await VehicleModel.findOneAndUpdate({ _id: vehicleId, 'Dealership': userId }, { $inc: { 'totalPhotos': -imagesToDelete.length } }).populate('Dealership');
     if (!updatedInCollection) {
       return res.status(500).json(errorUtils.error_message(utils.MONGOOSE_FIND_ONE_AND_UPDATE_FAIL, 500));
     }
@@ -404,11 +395,7 @@ exports.delete_vehicle = async (req, res, next) => {
       return res.status(500).json(errorUtils.error_message(utils.MONGOOSE_DELETE_ONE_FAIL, 500));
     }
 
-    if (validator.equals(process.env.NODE_ENV, utils.DEVELOPMENT)) {
-      rimraf.sync(`./test/imagesUploaded/${userId}/${vehicleId}/`);
-    } else if (validator.equals(process.env.NODE_ENV, utils.DEVELOPMENT_CLOUDINARY)) {
-      const cloudinaryDel =  await cloudinary.v2.api.delete_resources_by_prefix(`test/users/${user._id}/${vehicleId}`);
-    }
+    cleanupAfterVehicleDelete(userId, vehicleId);
 
     res.json({ message: utils.DELETE_VEHICLE_SUCCESSFULLY });
 
@@ -457,7 +444,7 @@ uploadFiles = async (user, vehicle, files) => {
   }
 }
 
-deleteFiles = (files) => {
+deleteFiles = async (files) => {
   try {
     if (validator.equals(process.env.NODE_ENV, process.env.ENVIRONMENT_DEV)) {
 
@@ -482,4 +469,54 @@ deleteFiles = (files) => {
     errorUtils.storeError(500, e.message);
     return { error: e.message };
   }
+}
+
+deleteImages = async (user, vehicleId, images) => {
+  try {
+    if (validator.equals(process.env.NODE_ENV, process.env.ENVIRONMENT_DEV)) {
+
+      images.forEach((image) => {
+        fs.unlinkSync(`./test/imagesUploaded/${user._id}/${vehicleId}/${image}`);
+      });
+
+    } else if (validator.equals(process.env.NODE_ENV, process.env.ENVIRONMENT_DEV_CLOUDINARY)) {
+
+      images.forEach((image) => {
+        cloudinary.v2.uploader.destroy(`test/users/${user._id}/${vehicleId}/${image}`);
+      });
+
+    } else if (validator.equals(process.env.NODE_ENV, process.env.ENVIRONMENT_PRODUCTION)) {
+
+      images.forEach((image) => {
+        cloudinary.v2.uploader.destroy(`production/users/${user._id}/${vehicleId}/${image}`);
+      });
+
+    }
+  } catch (e) {
+    errorUtils.storeError(500, e.message);
+    return { error: e.message };
+  }
+}
+
+cleanupAfterVehicleDelete = (userId, vehicleId) => {
+  try {
+    if (validator.equals(process.env.NODE_ENV, utils.DEVELOPMENT)) {
+
+      rimraf.sync(`./test/imagesUploaded/${userId}/${vehicleId}/`);
+
+    } else if (validator.equals(process.env.NODE_ENV, utils.DEVELOPMENT_CLOUDINARY)) {
+
+      const cloudinaryDelDev =  await cloudinary.v2.api.delete_resources_by_prefix(`test/users/${userId}/${vehicleId}`);
+
+    } else if (validator.equals(process.env.NODE_ENV, process.env.ENVIRONMENT_PRODUCTION)) {
+
+      const cloudinaryDelProd =  await cloudinary.v2.api.delete_resources_by_prefix(`production/users/${userId}/${vehicleId}`);
+
+    }
+  } catch (e) {
+    errorUtils.storeError(500, e.message);
+    return { error: e.message };
+  }
+
+
 }
