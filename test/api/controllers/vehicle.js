@@ -444,7 +444,7 @@ uploadFiles = async (user, vehicle, files) => {
   }
 }
 
-deleteFiles = async (files) => {
+deleteFiles = (files) => {
   try {
     if (validator.equals(process.env.NODE_ENV, process.env.ENVIRONMENT_DEV)) {
 
@@ -454,14 +454,14 @@ deleteFiles = async (files) => {
 
     } else if (validator.equals(process.env.NODE_ENV, process.env.ENVIRONMENT_DEV_CLOUDINARY)) {
 
-      files.forEach((file) => {
-        cloudinary.v2.uploader.destroy(file.public_id);
+      files.forEach(async (file) => {
+        await cloudinary.v2.uploader.destroy(file.public_id);
       });
 
     } else if (validator.equals(process.env.NODE_ENV, process.env.ENVIRONMENT_PRODUCTION)) {
 
-      files.forEach((file) => {
-        cloudinary.v2.uploader.destroy(file.public_id);
+      files.forEach(async (file) => {
+        await cloudinary.v2.uploader.destroy(file.public_id);
       });
 
     }
@@ -481,14 +481,14 @@ deleteImages = async (user, vehicleId, images) => {
 
     } else if (validator.equals(process.env.NODE_ENV, process.env.ENVIRONMENT_DEV_CLOUDINARY)) {
 
-      images.forEach((image) => {
-        cloudinary.v2.uploader.destroy(`test/users/${user._id}/${vehicleId}/${image}`);
+      images.forEach(async (image) => {
+        await cloudinary.v2.uploader.destroy(`test/users/${user._id}/${vehicleId}/${image}`);
       });
 
     } else if (validator.equals(process.env.NODE_ENV, process.env.ENVIRONMENT_PRODUCTION)) {
 
-      images.forEach((image) => {
-        cloudinary.v2.uploader.destroy(`production/users/${user._id}/${vehicleId}/${image}`);
+      images.forEach(async (image) => {
+        await cloudinary.v2.uploader.destroy(`production/users/${user._id}/${vehicleId}/${image}`);
       });
 
     }
@@ -498,7 +498,7 @@ deleteImages = async (user, vehicleId, images) => {
   }
 }
 
-cleanupAfterVehicleDelete = (userId, vehicleId) => {
+cleanupAfterVehicleDelete = async (userId, vehicleId) => {
   try {
     if (validator.equals(process.env.NODE_ENV, utils.DEVELOPMENT)) {
 
@@ -506,17 +506,15 @@ cleanupAfterVehicleDelete = (userId, vehicleId) => {
 
     } else if (validator.equals(process.env.NODE_ENV, utils.DEVELOPMENT_CLOUDINARY)) {
 
-      const cloudinaryDelDev =  await cloudinary.v2.api.delete_resources_by_prefix(`test/users/${userId}/${vehicleId}`);
+      await cloudinary.v2.api.delete_resources_by_prefix(`test/users/${userId}/${vehicleId}`);
 
     } else if (validator.equals(process.env.NODE_ENV, process.env.ENVIRONMENT_PRODUCTION)) {
 
-      const cloudinaryDelProd =  await cloudinary.v2.api.delete_resources_by_prefix(`production/users/${userId}/${vehicleId}`);
+      await cloudinary.v2.api.delete_resources_by_prefix(`production/users/${userId}/${vehicleId}`);
 
     }
   } catch (e) {
     errorUtils.storeError(500, e.message);
     return { error: e.message };
   }
-
-
 }
