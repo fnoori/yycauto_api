@@ -6,6 +6,10 @@ var app;
 var port;
 var server;
 
+/*
+  this will need to be changed for release
+  from 'http' to 'https'
+*/
 if (process.env.NODE_ENV === utils.PRODUCTION) {
 
   http = require('http');
@@ -17,7 +21,7 @@ if (process.env.NODE_ENV === utils.PRODUCTION) {
             process.env.NODE_ENV === utils.DEVELOPMENT_CLOUDINARY) {
 
   http = require('http');
-  app = require('./test/api/app');
+  app = require('./app');
   port = process.env.PORT || 3000;
   server = http.createServer(app);
 
