@@ -2,6 +2,13 @@ const express = require('express');
 const app = express();
 const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
+const validator = require('validator');
+
+if (process.env.NODE_ENV === process.env.ENVIRONMENT_DEV ||
+            process.env.NODE_ENV === process.env.ENVIRONMENT_DEV_CLOUDINARY) {
+  let cors = require('cors')
+  app.use(cors());
+}
 
 if (!process.env.AUTH0_DOMAIN || !process.env.AUTH0_AUDIENCE) {
   throw 'Make sure you have AUTH0_DOMAIN, and AUTH0_AUDIENCE in your .env file';
