@@ -32,7 +32,7 @@ fileFilter = (req, file, cb) => {
   }
 };
 
-router.get('/get_all_vehicles/:skip/:limit', vehicleController.get_all_vehicles);
+router.get('/get_all_tier_two_vehicles/:skip/:limit', vehicleController.get_all_tier_two_vehicles);
 router.get('/get_vehicle_by_id', vehicleController.get_vehicle_by_id);
 router.get('/search/:skip/:limit/:search_query', vehicleController.search_data);
 router.get('/tier_one/:search_query', vehicleController.get_tier_one_vehicles);

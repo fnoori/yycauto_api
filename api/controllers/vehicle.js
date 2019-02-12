@@ -18,7 +18,7 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_API_SECRET
 });
 
-exports.get_all_vehicles = (req, res, next) => {
+exports.get_all_tier_two_vehicles = (req, res, next) => {
   if (utils.containsInvalidMongoCharacter(req.body)) {
     return res.status(400).json(errorUtils.error_message(utils.CONTAINS_INVALID_CHARACTER, 400));
   }
@@ -26,7 +26,7 @@ exports.get_all_vehicles = (req, res, next) => {
   const limit = parseInt(req.params.limit);
   const skip = parseInt(req.params.skip);
 
-  VehicleModel.find()
+  VehicleModel.find( { 'AdTier': utils.TIER_TWO } )
   .populate('Dealership', '-_id -auth0_id -__v')
   .skip(skip).limit(limit)
   .select('-__v')

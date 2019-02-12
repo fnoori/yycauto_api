@@ -56,6 +56,7 @@ exports.ADDRESS_LENGTH_MAX = 70;
 exports.DEALERSHIP_NAME_LENGTH_MAX = 50;
 exports.MAX_VEHICLE_PHOTOS = 7;
 exports.TIER_ONE = '1';
+exports.TIER_TWO = '2';
 exports.TIER_ONE_MAX = 5;
 
 exports.BASIC_INFO = 'basicInfo';
