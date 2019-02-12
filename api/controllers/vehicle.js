@@ -59,6 +59,20 @@ exports.get_vehicle_by_id = (req, res, next) => {
   });
 }
 
+exports.get_tier_one_vehicles = (req, res, next) => {
+  const limit = parseInt(req.params.limit);
+  const skip = parseInt(req.params.skip);
+
+  VehicleModel.aggregate([
+    { '$match': { 'AdTier': { '$in': ['1'] } } },
+    { '$sample': { 'size': 3 } }]).exec()
+    .then(result => {
+      res.json(result);
+    }).catch(aggregate => {
+      console.log(aggregate);
+    });
+}
+
 /*
   this function will search vehicles and dealerships
 */
