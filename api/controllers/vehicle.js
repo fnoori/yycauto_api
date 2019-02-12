@@ -151,7 +151,7 @@ exports.add_new_vehicle = async (req, res, next) => {
    vehicleData['date.modified'] = new Date();
 
    // temp data here
-   vehicleData['AdTier'] = 1;
+   vehicleData['AdTier'] = req.body.ad_tier;
 
    auth0Id = eval(process.env.AUTH0_ID_SOURCE);
    userId = req.body.id;
