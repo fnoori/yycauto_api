@@ -12,6 +12,7 @@ exports.MONGOOSE_UPDATE_ONE_FAIL = 'mongoose.updateOne() failed';
 exports.MONGOOSE_FIND_ONE_AND_UPDATE_FAIL = 'mongoose.findOneAndUpdate() failed';
 exports.MONGOOSE_POPULATE_FAIL = 'mongoose.populate() failed';
 exports.MONGOOSE_DELETE_ONE_FAIL = 'mongoose.deleteOne() failed';
+exports.MONGOOSE_AGGREGATE_FAIL = 'mongoose.aggregate() failed';
 
 exports.INCORRECT_PHONE_FORMAT = 'Incorrect phone number format';
 exports.AT_LEAST_ONE_FIELD_REQUIRED = 'At least one field must be provided to update';

@@ -60,17 +60,33 @@ exports.get_vehicle_by_id = (req, res, next) => {
 }
 
 exports.get_tier_one_vehicles = (req, res, next) => {
-  const limit = parseInt(req.params.limit);
-  const skip = parseInt(req.params.skip);
+  let query = req.params.search_query;
 
-  VehicleModel.aggregate([
-    { '$match': { 'AdTier': { '$in': ['1'] } } },
-    { '$sample': { 'size': 3 } }]).exec()
-    .then(result => {
-      res.json(result);
-    }).catch(aggregate => {
-      console.log(aggregate);
-    });
+  if (!_.isUndefined(query)) {
+    query = query.split(/\s+/).map(kw => `"${kw}"`).join(' ');
+    VehicleModel.aggregate([
+      { '$match': {
+        'AdTier': { '$in': ['1'] } ,
+        '$text': { '$search': query }
+      } },
+      { '$sample': { 'size': 5 } }]).exec()
+      .then(result => {
+        res.json(result);
+      }).catch(aggregateErr => {
+        errorUtils.storeError(500, aggregateErr);
+        return res.status(500).json(errorUtils.error_message(utils.MONGOOSE_AGGREGATE_FAIL, 500));
+      });
+  } else {
+    VehicleModel.aggregate([
+      { '$match': { 'AdTier': { '$in': ['1'] } } },
+      { '$sample': { 'size': 5 } }]).exec()
+      .then(result => {
+        res.json(result);
+      }).catch(aggregateErr => {
+        errorUtils.storeError(500, aggregateErr);
+        return res.status(500).json(errorUtils.error_message(utils.MONGOOSE_AGGREGATE_FAIL, 500));
+      });
+  }
 }
 
 /*
