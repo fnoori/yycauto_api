@@ -18,6 +18,7 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_API_SECRET
 });
 
+// gets tier 2 vehicles, with lazyload
 exports.get_all_tier_two_vehicles = (req, res, next) => {
   if (utils.containsInvalidMongoCharacter(req.body)) {
     return res.status(400).json(errorUtils.error_message(utils.CONTAINS_INVALID_CHARACTER, 400));
@@ -59,6 +60,7 @@ exports.get_vehicle_by_id = (req, res, next) => {
   });
 }
 
+// gets tier 1 vehicles, both if being searched or initial load
 exports.get_tier_one_vehicles = (req, res, next) => {
   let query = req.params.search_query;
 
