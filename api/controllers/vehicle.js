@@ -66,10 +66,10 @@ exports.get_tier_one_vehicles = (req, res, next) => {
     query = query.split(/\s+/).map(kw => `"${kw}"`).join(' ');
     VehicleModel.aggregate([
       { '$match': {
-        'AdTier': { '$in': ['1'] } ,
+        'AdTier': { '$in': [utils.TIER_ONE] } ,
         '$text': { '$search': query }
       } },
-      { '$sample': { 'size': 5 } }]).exec()
+      { '$sample': { 'size': utils.TIER_ONE_MAX } }]).exec()
       .then(result => {
         res.json(result);
       }).catch(aggregateErr => {
@@ -78,8 +78,8 @@ exports.get_tier_one_vehicles = (req, res, next) => {
       });
   } else {
     VehicleModel.aggregate([
-      { '$match': { 'AdTier': { '$in': ['1'] } } },
-      { '$sample': { 'size': 5 } }]).exec()
+      { '$match': { 'AdTier': { '$in': [utils.TIER_ONE] } } },
+      { '$sample': { 'size': utils.TIER_ONE_MAX } }]).exec()
       .then(result => {
         res.json(result);
       }).catch(aggregateErr => {
