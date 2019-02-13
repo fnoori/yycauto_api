@@ -64,6 +64,12 @@ exports.get_vehicle_by_id = (req, res, next) => {
 exports.get_tier_one_vehicles = (req, res, next) => {
   let query = req.params.search_query;
 
+/*
+  cloudinary.v2.api.resources(
+    { prefix:  },
+    function(error, result){console.log(result); });
+*/
+
   if (!_.isUndefined(query)) {
     query = query.split(/\s+/).map(kw => `"${kw}"`).join(' ');
     VehicleModel.aggregate([
@@ -83,7 +89,13 @@ exports.get_tier_one_vehicles = (req, res, next) => {
       { '$match': { 'AdTier': { '$in': [utils.TIER_ONE] } } },
       { '$sample': { 'size': utils.TIER_ONE_MAX } }]).exec()
       .then(result => {
-        res.json(result);
+        cloudinary.v2.api.resources({ type: 'upload', prefix: `result._id` })
+        .then(filenameRes => {
+          res.json(filenameRes);
+          //res.json(result);
+        }).catch(filenameErr => {
+          console.log(filenameErr);
+        });
       }).catch(aggregateErr => {
         errorUtils.storeError(500, aggregateErr);
         return res.status(500).json(errorUtils.error_message(utils.MONGOOSE_AGGREGATE_FAIL, 500));
