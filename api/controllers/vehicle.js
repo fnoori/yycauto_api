@@ -448,8 +448,10 @@ uploadFiles = async (user, vehicle, files) => {
     } else if (validator.equals(process.env.NODE_ENV, process.env.ENVIRONMENT_DEV_CLOUDINARY)) {
 
       let cloudinaryRenameDev;
+      let cloudinaryAddTag;
       for (var i = 0; i < files.length; i++) {
         cloudinaryRenameDev = await cloudinary.v2.uploader.rename(files[i].public_id, `test/users/${user._id}/${vehicle._id}/${files[i].public_id.split('/')[2]}.${files[i].format}`);
+        cloudinaryAddTag = await cloudinary.v2.uploader.add_tag(vehicle._id, cloudinaryRenameDev.public_id);
         if (!cloudinaryRenameDev) {
           errorUtils.storeError(500, utils.CLOUDINARY_UPLOAD_FAIL);
           throw 'Upload failed';
@@ -459,9 +461,10 @@ uploadFiles = async (user, vehicle, files) => {
     } else if (validator.equals(process.env.NODE_ENV, process.env.ENVIRONMENT_PRODUCTION)) {
 
       let cloudinaryRenameProd;
+      let cloudinaryTagProd;
       for (var i = 0; i < files.length; i++) {
         cloudinaryRenameProd = await cloudinary.v2.uploader.rename(files[i].public_id, `production/users/${user._id}/${vehicle._id}/${files[i].public_id.split('/')[2]}.${files[i].format}`);
-
+        cloudinaryTagProd = await cloudinary.v2.uploader.add_tag(vehicle._id, cloudinaryRenameDev.public_id);
         if (!cloudinaryRenameProd) {
           errorUtils.storeError(500, utils.CLOUDINARY_UPLOAD_FAIL);
           throw 'Upload failed';
