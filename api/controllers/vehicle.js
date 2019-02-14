@@ -28,7 +28,6 @@ exports.get_all_tier_two_vehicles = (req, res, next) => {
   const skip = parseInt(req.params.skip);
 
   VehicleModel.find( { 'AdTier': utils.TIER_TWO } )
-  .populate('Dealership', '-auth0_id -__v')
   .skip(skip).limit(limit)
   .select('-__v')
   .exec()
@@ -82,7 +81,6 @@ exports.get_tier_one_vehicles = (req, res, next) => {
     VehicleModel.aggregate([
       { '$match': { 'AdTier': { '$in': [utils.TIER_ONE] } } },
       { '$sample': { 'size': utils.TIER_ONE_MAX } },
-      { '$lookup': { from: 'dealerships', localField: 'Dealership._id', foreignField: '_id', as: 'Dealership._id' } }
     ]).exec()
       .then(result => {
         res.json(result);
