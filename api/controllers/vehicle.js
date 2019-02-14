@@ -334,7 +334,7 @@ exports.update_vehicle = async (req, res, next) => {
       }
       return res.status(404).json(errorUtils.error_message(utils.VEHICLE_DOES_NOT_EXIST, 404));
     }
-    
+
     if ((includesFiles && vehicleToUpdate.photos.length >= 7) || (vehicleToUpdate.photos.length + req.files.length > 7)) {
       deleteFiles(req.files);
       return res.status(400).json(errorUtils.error_message(utils.REACHED_MAXIMUM_VEHICLE_PHOTOS, 400));
@@ -386,7 +386,6 @@ exports.delete_images = async (req, res, next) => {
     return res.status(400).json(errorUtils.error_message(utils.DELETE_AT_LEAST_ONE_IMAGE, 400));
   }
 
-
   auth0Id = eval(process.env.AUTH0_ID_SOURCE);
   userId = req.body.id;
   vehicleId = req.body.vehicle_id;
@@ -407,7 +406,11 @@ exports.delete_images = async (req, res, next) => {
 
     deleteImages(user, vehicleId, imagesToDelete);
 
-    updatedInCollection = await VehicleModel.findOneAndUpdate({ _id: vehicleId, 'Dealership': userId }, { $inc: { 'totalPhotos': -imagesToDelete.length } }).populate('Dealership');
+    updatedInCollection = await VehicleModel.findOneAndUpdate({ _id: vehicleId, 'Dealership': userId },
+                    {
+                      $inc: { 'totalPhotos': -imagesToDelete.length },
+                      $pull: { 'photos': { $in: imagesToDelete }}
+                    }).populate('Dealership');
     if (!updatedInCollection) {
       return res.status(500).json(errorUtils.error_message(utils.MONGOOSE_FIND_ONE_AND_UPDATE_FAIL, 500));
     }
