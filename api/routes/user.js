@@ -1,5 +1,6 @@
 const express = require('express');
 const checkJWT = require('../middlewares/authentication');
+const validator = require('validator');
 const router = express.Router();
 const userController = require('../controllers/user');
 
@@ -10,11 +11,28 @@ var cloudinaryStorage = require('multer-storage-cloudinary');
 var storage;
 var fileFilter;
 
-storage = cloudinaryStorage({
-  cloudinary: cloudinary,
-  folder: 'production/uploads',
-  allowedFormats: ['jpg', 'png']
-});
+if (validator.equals(process.env.NODE_ENV, process.env.ENVIRONMENT_DEV)) {
+  storage = multer.diskStorage({
+    destination: function(req, file, cb) {
+      cb(null, 'uploads');
+    },
+    filename: function(req, file, cb){
+      cb(null, req.body.id + '-' + Date.now() + '.' + file.mimetype.split('/').pop());
+    }
+  });
+} else if (validator.equals(process.env.NODE_ENV, process.env.ENVIRONMENT_DEV_CLOUDINARY)) {
+  storage = cloudinaryStorage({
+    cloudinary: cloudinary,
+    folder: 'test/uploads',
+    allowedFormats: ['jpg', 'png']
+  });
+} else if (validator.equals(process.env.NODE_ENV, process.env.ENVIRONMENT_PRODUCTION)) {
+  storage = cloudinaryStorage({
+    cloudinary: cloudinary,
+    folder: 'production/uploads',
+    allowedFormats: ['jpg', 'png']
+  });
+}
 
 const upload = multer({
     storage: storage,

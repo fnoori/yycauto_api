@@ -89,13 +89,7 @@ exports.get_tier_one_vehicles = (req, res, next) => {
       { '$match': { 'AdTier': { '$in': [utils.TIER_ONE] } } },
       { '$sample': { 'size': utils.TIER_ONE_MAX } }]).exec()
       .then(result => {
-        cloudinary.v2.api.resources({ type: 'upload', prefix: `result._id` })
-        .then(filenameRes => {
-          res.json(filenameRes);
-          //res.json(result);
-        }).catch(filenameErr => {
-          console.log(filenameErr);
-        });
+        res.json(result);
       }).catch(aggregateErr => {
         errorUtils.storeError(500, aggregateErr);
         return res.status(500).json(errorUtils.error_message(utils.MONGOOSE_AGGREGATE_FAIL, 500));
@@ -135,6 +129,7 @@ exports.add_new_vehicle = async (req, res, next) => {
   var auth0Id = '';
   var id = '';
   var vehicleData = {};
+  let photos = [];
 
   if (_.isUndefined(req.files)) {
     return res.status(400).json(errorUtils.error_message(utils.MUST_UPLOAD_AT_LEAST_ONE, 400));
@@ -194,8 +189,13 @@ exports.add_new_vehicle = async (req, res, next) => {
    vehicleData['date.created'] = new Date();
    vehicleData['date.modified'] = new Date();
 
-   // temp data here
    vehicleData['AdTier'] = req.body.ad_tier;
+
+   req.files.forEach((photo) => {
+     photos.push(`${photo.public_id.split('/')[2]}.${photo.format}`)
+   });
+
+   vehicleData['photos'] = photos;
 
    auth0Id = eval(process.env.AUTH0_ID_SOURCE);
    userId = req.body.id;
@@ -238,9 +238,14 @@ exports.update_vehicle = async (req, res, next) => {
   var id = '';
   var vehicleId = '';
   var includesFiles = false;
+  let photos = [];
 
   if (!_.isUndefined(req.files) && req.files.length > 0) {
     includesFiles = true;
+
+    req.files.forEach((photo) => {
+      photos.push(`${photo.public_id.split('/')[2]}.${photo.format}`)
+    });
   }
 
   // perform critical checks right at the start
@@ -329,13 +334,17 @@ exports.update_vehicle = async (req, res, next) => {
       }
       return res.status(404).json(errorUtils.error_message(utils.VEHICLE_DOES_NOT_EXIST, 404));
     }
-    if ((includesFiles && vehicleToUpdate.totalPhotos >= 7) || (vehicleToUpdate.totalPhotos + req.files.length > 7)) {
+    
+    if ((includesFiles && vehicleToUpdate.photos.length >= 7) || (vehicleToUpdate.photos.length + req.files.length > 7)) {
       deleteFiles(req.files);
       return res.status(400).json(errorUtils.error_message(utils.REACHED_MAXIMUM_VEHICLE_PHOTOS, 400));
     }
 
     updatedVehicle = await VehicleModel.findOneAndUpdate({ _id: vehicleId, 'Dealership': userId },
-                            { $inc: { totalPhotos: req.files.length } }, updateData).populate('Dealership');
+                            {
+                              $inc: { totalPhotos: req.files.length },
+                              $push: { 'photos': photos }
+                            }, updateData).populate('Dealership');
 
     if (!updatedVehicle) {
       if (includesFiles) {

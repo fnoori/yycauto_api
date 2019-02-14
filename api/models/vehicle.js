@@ -37,6 +37,7 @@ const vehicleSchema = mongoose.Schema({
       ref: 'User',
     },
     'totalPhotos': {type: Number, required: true},
+    'photos': {type: Array, required: true},
     'AdTier': {type: String, required: true},
     'date': {
       'created': {type: Date, required: true},
