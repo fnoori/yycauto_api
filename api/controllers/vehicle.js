@@ -28,7 +28,7 @@ exports.get_all_tier_two_vehicles = (req, res, next) => {
   const skip = parseInt(req.params.skip);
 
   VehicleModel.find( { 'AdTier': utils.TIER_TWO } )
-  .populate('Dealership', '-_id -auth0_id -__v')
+  .populate('Dealership', '-auth0_id -__v')
   .skip(skip).limit(limit)
   .select('-__v')
   .exec()
@@ -64,12 +64,6 @@ exports.get_vehicle_by_id = (req, res, next) => {
 exports.get_tier_one_vehicles = (req, res, next) => {
   let query = req.params.search_query;
 
-/*
-  cloudinary.v2.api.resources(
-    { prefix:  },
-    function(error, result){console.log(result); });
-*/
-
   if (!_.isUndefined(query)) {
     query = query.split(/\s+/).map(kw => `"${kw}"`).join(' ');
     VehicleModel.aggregate([
@@ -87,7 +81,9 @@ exports.get_tier_one_vehicles = (req, res, next) => {
   } else {
     VehicleModel.aggregate([
       { '$match': { 'AdTier': { '$in': [utils.TIER_ONE] } } },
-      { '$sample': { 'size': utils.TIER_ONE_MAX } }]).exec()
+      { '$sample': { 'size': utils.TIER_ONE_MAX } },
+      { '$lookup': { from: 'dealerships', localField: 'Dealership._id', foreignField: '_id', as: 'Dealership._id' } }
+    ]).exec()
       .then(result => {
         res.json(result);
       }).catch(aggregateErr => {
