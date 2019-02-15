@@ -42,7 +42,8 @@ const vehicleSchema = mongoose.Schema({
     'date': {
       'created': {type: Date, required: true},
       'modified': {type: Date, require: true}
-    }
+    },
+    'views': {type: Number, required: true}
 });
 
 module.exports = mongoose.model('Vehicle', vehicleSchema);

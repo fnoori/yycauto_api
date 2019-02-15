@@ -123,7 +123,6 @@ exports.add_new_vehicle = async (req, res, next) => {
   var auth0Id = '';
   var id = '';
   var vehicleData = {};
-  let photos = [];
 
   if (_.isUndefined(req.files)) {
     return res.status(400).json(errorUtils.error_message(utils.MUST_UPLOAD_AT_LEAST_ONE, 400));
@@ -182,14 +181,11 @@ exports.add_new_vehicle = async (req, res, next) => {
    vehicleData['totalPhotos'] = req.files.length;
    vehicleData['date.created'] = new Date();
    vehicleData['date.modified'] = new Date();
+   vehicleData['views'] = 0;
 
    vehicleData['AdTier'] = req.body.ad_tier;
 
-   req.files.forEach((photo) => {
-     photos.push(`${photo.public_id.split('/')[2]}.${photo.format}`)
-   });
-
-   vehicleData['photos'] = photos;
+   vehicleData['photos'] = addFilenamesToDatabase(req.files);
 
    auth0Id = eval(process.env.AUTH0_ID_SOURCE);
    userId = req.body.id;
@@ -237,9 +233,7 @@ exports.update_vehicle = async (req, res, next) => {
   if (!_.isUndefined(req.files) && req.files.length > 0) {
     includesFiles = true;
 
-    req.files.forEach((photo) => {
-      photos.push(`${photo.public_id.split('/')[2]}.${photo.format}`)
-    });
+    photos = addFilenamesToDatabase(req.files);
   }
 
   // perform critical checks right at the start
@@ -452,6 +446,26 @@ exports.delete_vehicle = async (req, res, next) => {
   } catch (e) {
     return res.status(500).json({error: e.message});
   }
+}
+
+addFilenamesToDatabase = (files) => {
+  let photos = [];
+
+  if (validator.equals(process.env.NODE_ENV, process.env.ENVIRONMENT_DEV)) {
+    files.forEach((photo) => {
+      photos.push(photo.filename);
+    });
+  } else if (validator.equals(process.env.NODE_ENV, process.env.ENVIRONMENT_DEV_CLOUDINARY)) {
+    files.forEach((photo) => {
+      photos.push(`${photo.public_id.split('/')[2]}.${photo.format}`)
+    });
+  } else if (validator.equals(process.env.NODE_ENV, process.env.ENVIRONMENT_PRODUCTION)) {
+    files.forEach((photo) => {
+      photos.push(`${photo.public_id.split('/')[2]}.${photo.format}`)
+    });
+  }
+
+  return photos;
 }
 
 uploadFiles = async (user, vehicle, files) => {
