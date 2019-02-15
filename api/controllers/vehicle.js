@@ -40,19 +40,25 @@ exports.get_all_tier_two_vehicles = (req, res, next) => {
 }
 
 exports.get_vehicle_by_id = (req, res, next) => {
-  var vehicleId;
+  let vehicleId;
 
-  if (_.isUndefined(req.body.vehicle_id) || !validator.isMongoId(req.body.vehicle_id)) {
+  if (_.isUndefined(req.params.vehicle_id) || !validator.isMongoId(req.params.vehicle_id)) {
     return res.status(400).json(errorUtils.error_message(utils.MONGOOSE_INCORRECT_ID, 400));
   }
 
-  vehicleId = req.body.vehicle_id;
+  vehicleId = req.params.vehicle_id;
 
   VehicleModel.findById(vehicleId)
   .populate('Dealership', '-_id -auth0_id -__v')
   .select('-__v').exec()
   .then(vehicle => {
-    res.json(vehicle);
+    VehicleModel.findOneAndUpdate({ _id: vehicleId }, { $inc: { 'views': 1 } })
+    .exec().then(updatedViews => {
+      res.json(vehicle);
+    }).catch(findOneAndUpdateErr => {
+      errorUtils.storeError(500, findOneAndUpdateErr);
+      return res.status(500).json(errorUtils.error_message(utils.MONGOOSE_FIND_ONE_AND_UPDATE_FAIL, 500));
+    });
   }).catch(findByIdErr => {
     errorUtils.storeError(500, findByIdErr);
     return res.status(500).json(errorUtils.error_message(utils.MONGOOSE_FIND_BY_ID_FAIL, 500));
