@@ -49,7 +49,7 @@ exports.get_vehicle_by_id = (req, res, next) => {
   vehicleId = req.params.vehicle_id;
 
   VehicleModel.findById(vehicleId)
-  .populate('Dealership', '-_id -auth0_id -__v')
+  .populate('Dealership', '-auth0_id -__v')
   .select('-__v').exec()
   .then(vehicle => {
     VehicleModel.findOneAndUpdate({ _id: vehicleId }, { $inc: { 'views': 1 } })
