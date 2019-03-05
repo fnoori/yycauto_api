@@ -44,6 +44,18 @@ exports.get_dealership_by_id = (req, res, next) => {
   });
 }
 
+exports.get_dealership_by_auth0_id = (req, res, next) => {
+  let auth0Id = req.params.auth0_id;
+
+  UserModel.find({ 'auth0_id': auth0Id })
+  .then(user => {
+    res.status(201).json(user);
+  }).catch(findErr => {
+    errorUtils.storeError(500, findErr);
+    return res.status(500).json(errorUtils.error_message(utils.MONGOOSE_FIND_BY_ID_FAIL, 500));
+  });
+}
+
 // users are only allowed to update: phone, address, and dealership name from this API
 exports.update_dealership = async (req, res, next) => {
   var auth0Id = '';

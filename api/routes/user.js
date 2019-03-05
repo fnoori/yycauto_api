@@ -52,6 +52,7 @@ fileFilter = (req, file, cb) => {
 
 router.get('/get_all_dealerships', userController.get_all_dealerships);
 router.get('/get_dealership_by_id', userController.get_dealership_by_id);
+router.get('/get_dealership_by_auth0_id/:auth0_id', userController.get_dealership_by_auth0_id);
 
 router.patch('/update_dealership', checkJWT, upload.single('logo'), userController.update_dealership);
 router.patch('/update_dealership_hours', checkJWT, userController.update_dealership_hours);
