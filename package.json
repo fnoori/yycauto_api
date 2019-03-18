@@ -37,6 +37,8 @@
     "nodemon": "^1.18.9",
     "passport": "^0.4.0",
     "passport-auth0": "^1.1.0",
+    "passport-http-bearer": "^1.0.1",
+    "passport-local": "^1.0.0",
     "rimraf": "^2.6.3",
     "shelljs": "^0.8.3",
     "underscore": "^1.9.1",
